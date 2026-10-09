@@ -60,20 +60,26 @@ function askPassword(name,incorrect){$('password-message').textContent=`${name}�
 function finishPassword(value){const resolve=passwordResolve;passwordResolve=null;$('password').value='';$('password-dialog').close();resolve?.(value);}
 $('password-form').addEventListener('submit',event=>{event.preventDefault();finishPassword($('password').value);});
 $('password-cancel').addEventListener('click',()=>finishPassword(null));$('password-dialog').addEventListener('cancel',event=>{event.preventDefault();finishPassword(null);});
+function getSourcePage(source,index){
+  // PDF.js 5.4.624 shares its page-count mapper across documents. Restore the
+  // active document's count before lookup when PDFs of different sizes coexist.
+  pdfjs.PagesMapper.instance.pagesNumber=source.pdf.numPages;
+  return source.pdf.getPage(index+1);
+}
 async function renderBlob(source,index,dpi,type='png',thumbnail=false,edit={},options={}){
   if(edit.annotations?.length){
     let cached=annotationCache.get(edit.annotations);
     if(!cached){cached=(async()=>{const data=await assemblePdf([{...edit,sourceId:source.id,index,rotation:0,crop:null,ocr:null}],new Map([[source.id,source]]),'頁面標記');const task=pdfjs.getDocument({data,cMapUrl:new URL('./vendor/pdfjs/cmaps/',import.meta.url).href,cMapPacked:true,standardFontDataUrl:new URL('./vendor/pdfjs/standard_fonts/',import.meta.url).href,wasmUrl:new URL('./vendor/pdfjs/wasm/',import.meta.url).href,isEvalSupported:false});annotationTasks.add(task);return{pdf:await task.promise,task};})();annotationCache.set(edit.annotations,cached);cached.catch(()=>annotationCache.delete(edit.annotations));if(annotationCache.size>8){const [key,old]=annotationCache.entries().next().value;annotationCache.delete(key);void old.then(s=>{annotationTasks.delete(s.task);return s.task.destroy();}).catch(()=>{});}}
     source=await cached;index=0;
   }
-  const page=await source.pdf.getPage(index+1),rotation=(page.rotate+(edit.rotation||0))%360,base=page.getViewport({scale:1,rotation}),region=viewportCrop(base,edit.crop);
+  const page=await getSourcePage(source,index),rotation=(page.rotate+(edit.rotation||0))%360,base=page.getViewport({scale:1,rotation}),region=viewportCrop(base,edit.crop);
   let scale=thumbnail?Math.min(1,360/Math.max(region.width,region.height)):dpi/72;
   if(options.maxEdge>0)scale=Math.min(scale,options.maxEdge/Math.max(region.width,region.height));
   const viewport=page.getViewport({scale,rotation,offsetX:-region.x*scale,offsetY:-region.y*scale}),canvas=document.createElement('canvas');
   try{const ceiling=options.maxEdge||Infinity;const {width,height}=dimensions(Math.min(ceiling,region.width*scale),Math.min(ceiling,region.height*scale));canvas.width=width;canvas.height=height;renderTask=page.render({canvasContext:canvas.getContext('2d',{alpha:false}),viewport,background:'#fff'});await renderTask.promise;renderTask=null;const raw=await canvasBlob(canvas,type==='png'?'image/png':'image/jpeg',options.quality??.95);const effectiveDpi=Math.max(1,Math.round(scale*72));return{blob:thumbnail?raw:await withDensity(raw,effectiveDpi,type),width,height,dpi:effectiveDpi};}
   finally{renderTask=null;canvas.width=canvas.height=0;page.cleanup();}
 }
-async function pageViewport(source,edit){const page=await source.pdf.getPage(edit.index+1),rotation=(page.rotate+(edit.rotation||0))%360,base=page.getViewport({scale:1,rotation}),region=viewportCrop(base,edit.crop);const view=page.getViewport({scale:1,rotation,offsetX:-region.x,offsetY:-region.y});view.width=region.width;view.height=region.height;return view;}
+async function pageViewport(source,edit){const page=await getSourcePage(source,edit.index),rotation=(page.rotate+(edit.rotation||0))%360,base=page.getViewport({scale:1,rotation}),region=viewportCrop(base,edit.crop);const view=page.getViewport({scale:1,rotation,offsetX:-region.x,offsetY:-region.y});view.width=region.width;view.height=region.height;return view;}
 function updateRecords(edits){const replacements=new Map(edits.map(p=>[p.id,p]));snapshot();pages=pages.map(p=>replacements.get(p.id)||p);changed();}
 function canvasBlob(canvas,type='image/png',quality=.95){return new Promise((resolve,reject)=>canvas.toBlob(blob=>blob?resolve(blob):reject(new Error('圖片太大，請降低解析度。')),type,quality));}
 async function commitEdits(edits){
@@ -140,7 +146,7 @@ $('download-all').onclick=async()=>{if(busy||!results.length)return;setBusy(true
 
 // The optional browser tool shares selection and output settings with the UI.
 if(document.modelContext?.registerTool){const lifecycle=new AbortController();window.addEventListener('pagehide',()=>lifecycle.abort(),{once:true});try{Promise.resolve(document.modelContext.registerTool({name:'configure_pdf_image_output',title:'選取頁面與設定圖片輸出',description:'Select current workspace page numbers and configure image resolution and format. Does not start conversion or download.',inputSchema:{type:'object',properties:{dpi:{type:'integer',enum:[150,300,450,600]},format:{type:'string',enum:['png','jpeg']},pages:{type:'string'}},required:['dpi','format','pages'],additionalProperties:false},annotations:{readOnlyHint:false,untrustedContentHint:false},execute(input){if(busy)throw new Error('正在處理檔案。');if(!input||![150,300,450,600].includes(input.dpi)||!['png','jpeg'].includes(input.format)||typeof input.pages!=='string')throw new Error('無效設定。');const indices=parsePages(input.pages,pages.length);selected=new Set(indices.map(i=>pages[i-1].id));$('dpi').value=String(input.dpi);$('format').value=input.format;$('pages').value=input.pages;$('dpi').onchange();clearResults();drawPages();return{dpi:input.dpi,format:input.format,selectedPages:indices};}},{signal:lifecycle.signal})).catch(()=>{});}catch{}}
-const sharedApi={$,getPages:()=>pages,getSources:()=>sources,chosen,isBusy:()=>busy,setBusy,status,toast,filename,bytes,renderBlob,pageViewport,commitEdits,updateRecords,download,showImage};
+const sharedApi={$,getPages:()=>pages,getSources:()=>sources,getSourcePage,chosen,isBusy:()=>busy,setBusy,status,toast,filename,bytes,renderBlob,pageViewport,commitEdits,updateRecords,download,showImage};
 annotationTools=installAnnotations(sharedApi);ocrTools=installOcr(sharedApi);
 pageTools=installPageTools({$,getPages:()=>pages,getSources:()=>sources,chosen,isBusy:()=>busy,setBusy,status,toast,filename,bytes,renderBlob,commitEdits,download,showImage});
 updateControls();

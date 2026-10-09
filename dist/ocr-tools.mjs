@@ -5,7 +5,7 @@ export function installOcr(api){
   const {$}=api,dialog=$('ocr-dialog');let cancelJob=null,review=[],active=0,reviewUrl=null,loading=false,loadSerial=0;
   function refresh(){const items=api.chosen();$('ocr-start').disabled=api.isBusy()||!items.length;$('ocr-review').disabled=api.isBusy()||!api.getPages().some(p=>p.ocr);$('ocr-language').disabled=api.isBusy();}
   async function nativeText(source,page,viewport){
-    const pdfPage=await source.pdf.getPage(page.index+1),content=await pdfPage.getTextContent();
+    const pdfPage=await api.getSourcePage(source,page.index),content=await pdfPage.getTextContent();
     const lines=[];
     for(const item of content.items){if(!item.str?.trim())continue;const [a,b,c,d,x,y]=item.transform,w=Math.max(1,item.width),h=Math.max(1,item.height||Math.hypot(c,d)),u=Math.hypot(a,b)||1,v=Math.hypot(c,d)||1;
       const corners=[[x,y],[x+a/u*w,y+b/u*w],[x+c/v*h,y+d/v*h],[x+a/u*w+c/v*h,y+b/u*w+d/v*h]].map(p=>transformPoint(viewport.transform,...p));
