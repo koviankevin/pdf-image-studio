@@ -55,7 +55,7 @@
     window.addEventListener('drop',function(event){event.preventDefault();});
   </script>
   <script type="module">
-    import('./workspace.mjs').catch(function(){
+    import('./workspace.mjs?v=20261009-2').catch(function(){
       const status=document.getElementById('status');
       status.hidden=false;status.classList.add('error');
       status.textContent='轉換程式未能載入，請重新整理頁面，或使用新版 Chrome／Edge 開啟此網址。';
