@@ -1,5 +1,11 @@
 # 清晰 PDF
 
+[直接使用網站](https://koviankevin.github.io/pdf-image-studio/) · [原有網站](https://pdf-image-studio-kovia.koviankevin.chatgpt.site)
+
+## GitHub Pages
+
+網站由 `.github/workflows/pages.yml` 自動發布 `dist/`。更新 main 分支內的 `dist/` 後會自動部署，也可在 Actions → Publish website → Run workflow 手動發布。不需設定密鑰；發布流程只有程式碼讀取及 Pages 發布權限。
+
 純前端 PDF 合併、頁面標記、圖片轉 PDF、中文 OCR 與高解析度圖片工具。PDF 與密碼只在記憶體內處理，不上傳、不使用 localStorage，也沒有分析追蹤。網站程式庫隨網站提供，不使用外部 CDN。
 
 ## 使用
