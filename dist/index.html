@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>清晰 PDF｜標記、圖片轉 PDF 與中文 OCR</title>
+  <meta name="description" content="在瀏覽器內合併與整理 PDF，加入文字、螢光筆、箭頭及方框，將圖片轉成 PDF，辨識繁體中文並輸出可搜尋 PDF 或高解析度圖片。檔案不上傳。">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%232955df'/%3E%3Cpath d='M9 7h10l5 5v13H9z' fill='white'/%3E%3Cpath d='m12 22 4-5 3 3 2-2 2 4' fill='%232955df'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <header class="topbar"><a class="brand" href="./"><span class="brand-icon" aria-hidden="true">▧</span>清晰 <b>PDF</b><span class="brand-caption">PDF 與圖片工作室</span></a><span class="privacy"><span aria-hidden="true">◈</span> 檔案只在此裝置處理</span></header>
+  <main>
+    <div class="intro"><div><p class="eyebrow">YOUR PAGES, YOUR ORDER</p><h1>整理每一頁，自由輸出。</h1><p>加入 PDF 或圖片，整理、標記與辨識文字，再自由輸出。</p></div><span class="format-mark">PDF <span>／</span> PNG · JPG</span></div>
+    <div class="workspace">
+      <aside class="settings">
+        <section class="step"><h2><span class="step-number">01</span> 加入 PDF 或圖片</h2>
+          <label class="dropzone" id="dropzone" tabindex="0" role="button" aria-label="加入或拖曳 PDF 與圖片"><input id="file-input" type="file" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" multiple hidden><span class="upload-icon" aria-hidden="true">＋</span><strong>拖曳 PDF 或圖片到這裡</strong><span>或點擊選擇檔案</span><small>JPG、PNG、PDF · 支援 PDF 密碼</small></label>
+          <details class="image-import-settings"><summary>圖片轉 PDF 設定</summary><fieldset id="image-import-fields"><legend class="sr-only">圖片加入方式</legend><label class="field-label" for="image-page-size">頁面尺寸</label><select id="image-page-size"><option value="a4">A4</option><option value="original">依圖片尺寸（96 DPI）</option></select><label class="field-label" for="image-orientation">A4 方向</label><select id="image-orientation"><option value="portrait">直向</option><option value="landscape">橫向</option></select><label class="field-label" for="image-margin">A4 留白</label><select id="image-margin"><option value="24">一般留白</option><option value="0">不留白邊</option><option value="48">寬留白</option></select><p class="field-hint">套用於接著加入的圖片。保持比例、不裁掉內容；加入後仍可旋轉、排序及裁切。</p></fieldset></details><div id="source-list" class="source-list"></div><button id="reset" class="secondary full" disabled>清空工作區</button>
+        </section>
+        <section class="step"><h2><span class="step-number">03</span> 輸出選取的頁面</h2>
+          <label class="field-label" for="output-name">檔案名稱</label><input id="output-name" value="整理後的文件" maxlength="100">
+          <button id="export-pdf" class="primary full" disabled>下載新 PDF</button>
+          <p class="field-hint">保留原始文字與畫質。新 PDF 不加密；表單轉成固定內容，簽章與書籤不保留。</p>
+          <details class="split-settings"><summary>拆分成多份 PDF</summary><fieldset id="split-fields"><legend class="sr-only">拆分設定</legend><label class="field-label" for="split-mode">拆分方式</label><select id="split-mode"><option value="each">勾選的每頁各存一份</option><option value="ranges">自訂頁面範圍</option></select><div id="split-ranges-wrap" hidden><label class="field-label" for="split-ranges">每一組以分號或換行分隔</label><textarea id="split-ranges" rows="3" placeholder="1-3; 4-8&#10;或：1,3; 2,4"></textarea><p class="field-hint">使用目前工作區頁碼，不受勾選狀態影響。</p></div><p id="split-summary" class="field-hint">加入 PDF 後即可拆分。</p><button id="split-pdf" class="secondary full" disabled>下載拆分 ZIP</button></fieldset></details>
+          <details class="ocr-settings" open><summary>中文 OCR／擷取文字</summary><label class="field-label" for="ocr-language">辨識語言</label><select id="ocr-language"><option value="chi_tra+eng">繁體中文＋英文</option><option value="eng">英文</option></select><button id="ocr-start" class="secondary full" disabled>辨識選取頁面的文字</button><button id="ocr-cancel" class="secondary full" hidden>停止辨識</button><button id="ocr-review" class="secondary full" disabled>檢視／校對文字</button><p class="field-hint">已有文字先直接擷取；沒有文字的頁面才做 OCR。混合掃描圖片與文字的頁面，會先擷取既有文字。辨識結果需校對，表格不會轉成 Excel。</p></details><div class="output-divider">或轉成圖片</div>
+          <fieldset id="settings-fields"><legend class="sr-only">圖片輸出設定</legend>
+            <label class="field-label" for="dpi">解析度 <span>越高越清晰</span></label><select id="dpi"><option value="150">150 DPI · 一般螢幕閱讀</option><option value="300" selected>300 DPI · 清晰列印（推薦）</option><option value="450">450 DPI · 細節放大</option><option value="600">600 DPI · 超高解析度</option></select>
+            <label class="field-label" for="format">圖片格式</label><div class="select-wrap"><select id="format"><option value="png">PNG · 無損畫質</option><option value="jpeg">JPG · 較小檔案</option></select></div>
+            <div id="quality-wrap" hidden><label class="field-label" for="jpeg-quality">JPG 品質 <output id="quality-value">95%</output></label><input id="jpeg-quality" type="range" min="30" max="100" step="5" value="95"><p class="field-hint">較低品質能縮小檔案，但會減少細節。</p></div>
+            <label class="field-label" for="max-edge">圖片長邊上限 <span>0 表示不限</span></label><input id="max-edge" type="number" min="0" max="16384" step="1" value="0"><p class="field-hint">單位為 px；超過上限時按比例縮小。此設定只影響圖片。</p>
+            <p class="field-hint" id="size-hint">A4 在 300 DPI 約為 2480 × 3508 px</p>
+            <button id="estimate-size" class="secondary full" disabled>預估圖片檔案大小</button><p id="estimate-result" class="field-hint" aria-live="polite">依頁面內容、格式與尺寸估算。</p>
+          </fieldset>
+          <button id="convert" class="primary" disabled>轉換為圖片 <span aria-hidden="true">▧</span></button><button id="cancel" class="secondary full" hidden>停止轉換</button>
+          <p class="local-note">PDF 與密碼不會上傳，也不會儲存。<br>掃描文件的清晰度仍取決於原始畫質。</p>
+        </section>
+      </aside>
+      <section class="results" aria-labelledby="results-title"><div class="results-header"><div><h2 id="results-title"><span class="step-number">02</span> 整理頁面 <span id="page-count" class="count">0</span></h2><p id="selection-summary">加入 PDF 後，可拖曳頁面調整順序。</p></div><button id="undo" class="secondary" disabled>復原操作</button></div>
+        <div id="status" class="status" role="status" aria-live="polite" hidden></div><progress id="progress" max="100" value="0" hidden></progress>
+        <div id="empty" class="empty"><div class="empty-symbol" aria-hidden="true">▧</div><h3>從 PDF 或圖片開始</h3><p>整理好的頁面，可以直接輸出 PDF 或圖片。</p><div class="empty-tags"><span>多檔合併</span><span>文字與標記</span><span>中文 OCR</span><span>自由排序</span><span>高解析度圖片</span></div></div>
+        <fieldset id="editor-controls" hidden><legend class="sr-only">頁面選取與排序</legend><div class="editor-toolbar"><button id="select-all" class="secondary">全選</button><button id="select-none" class="secondary">全不選</button><button id="rotate-selected" class="secondary">旋轉選取 90°</button><button id="delete-selected" class="secondary danger">移除選取</button><div class="move-group"><label for="move-position">移至第</label><input id="move-position" type="number" min="1" value="1" aria-label="移至第幾頁"><span>頁</span><button id="move-selected" class="secondary">移動選取</button></div></div><div class="range-picker"><label for="pages">依目前頁碼選取</label><input id="pages" placeholder="例如：1, 3-5；留空全選" autocomplete="off"><button id="apply-range" class="secondary">套用</button></div><p class="field-hint">拖曳可排序；點擊縮圖可框選、裁切或複製局部；「文字／標記」可加文字、螢光筆、箭頭與方框。PDF 與圖片皆套用整理後的頁面設定。</p></fieldset>
+        <div id="page-grid" class="page-grid" aria-label="可排序的 PDF 頁面"></div>
+        <section id="image-results" hidden aria-label="轉換後的圖片"><div class="results-header image-results-header"><div><h2>圖片預覽 <span id="result-count" class="count">0</span></h2><p id="result-subtitle"></p></div><button id="download-all" class="secondary" disabled>全部下載 ZIP</button></div><div id="gallery" class="gallery"></div></section>
+      </section>
+    </div>
+    <footer><span>你的檔案，留在你的裝置。</span><span>PNG 複製後可貼到 Word、PowerPoint 或聊天視窗。</span></footer>
+  </main>
+  <dialog id="password-dialog"><form id="password-form"><span class="dialog-icon" aria-hidden="true">◇</span><h2>這份 PDF 需要密碼</h2><p id="password-message">輸入開啟文件的密碼，即可繼續轉換。</p><label class="field-label" for="password">PDF 密碼</label><input id="password" type="password" autocomplete="off" required><div class="dialog-actions"><button type="button" id="password-cancel" class="secondary">取消</button><button type="submit" class="primary">解鎖文件</button></div></form></dialog>
+  <dialog id="preview-dialog" class="preview-dialog"><div class="preview-header"><strong id="preview-title">圖片預覽</strong><button id="preview-close" class="secondary">關閉</button></div><p>可在圖片上按右鍵，或長按圖片，選擇複製或儲存。</p><img id="preview-image" alt="轉換後的完整圖片"></dialog>
+  <dialog id="crop-dialog" class="crop-dialog" aria-labelledby="crop-title"><div class="preview-header"><h2 id="crop-title">框選與裁切</h2><button id="crop-close" class="secondary">關閉</button></div><p class="crop-intro">在圖片上拖曳框選，或輸入範圍百分比。複製／下載局部不會更動頁面。</p><div class="crop-layout"><div class="crop-scroll"><div id="crop-stage" class="crop-stage"><img id="crop-image" alt="拖曳框選要保留的區域" draggable="false"><div id="crop-selection" class="crop-selection" hidden></div></div></div><fieldset id="crop-controls"><legend class="sr-only">框選控制</legend><div class="crop-rotations"><button id="crop-rotate-left" class="secondary">左轉 90°</button><button id="crop-rotate-right" class="secondary">右轉 90°</button></div><div class="crop-coordinates"><label>左側 %<input id="crop-x" type="number" min="0" max="99.9" step="0.1" value="0"></label><label>上方 %<input id="crop-y" type="number" min="0" max="99.9" step="0.1" value="0"></label><label>寬度 %<input id="crop-width" type="number" min="0.1" max="100" step="0.1" value="100"></label><label>高度 %<input id="crop-height" type="number" min="0.1" max="100" step="0.1" value="100"></label></div><button id="crop-full" class="secondary full">選取完整頁面</button><button id="crop-copy" class="copy full">複製框選區域</button><button id="crop-download" class="secondary full">下載框選圖片</button><p class="field-hint" id="crop-output-settings"></p><button id="crop-apply" class="primary full">套用旋轉與裁切</button><p class="field-hint">套用後會影響 PDF 與圖片，也可用「復原操作」還原。PDF 裁切只改變可見範圍，不會永久刪除範圍外內容。</p></fieldset></div><p id="crop-status" class="status" role="status" aria-live="polite">正在載入頁面…</p></dialog>
+  <div id="toast" class="toast" role="status" hidden></div>
+  <script>
+    // Install before loading modules so dropped files never navigate this page.
+    window.addEventListener('dragover',function(event){event.preventDefault();});
+    window.addEventListener('drop',function(event){event.preventDefault();});
+  </script>
+  <script type="module">
+    import('./workspace.mjs').catch(function(){
+      const status=document.getElementById('status');
+      status.hidden=false;status.classList.add('error');
+      status.textContent='轉換程式未能載入，請重新整理頁面，或使用新版 Chrome／Edge 開啟此網址。';
+    });
+  </script>
+</body></html>
