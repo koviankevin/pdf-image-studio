@@ -32,26 +32,6 @@ jobs:
         run: npx playwright install --with-deps chromium
       - name: Browser regression tests
         run: npm run test:browser
-      - name: One-off verification that removing the lookup fix fails
-        run: |
-          python - <<'PY'
-          from pathlib import Path
-          import subprocess, json
-          source = Path('dist/workspace.mjs')
-          original = source.read_bytes()
-          guard = b'pdfjs.PagesMapper.instance.pagesNumber=source.pdf.numPages;'
-          assert original.count(guard) == 1
-          try:
-              source.write_bytes(original.replace(guard, b'/* intentionally removed for regression verification */'))
-              result = subprocess.run(['npx', 'playwright', 'test', '--grep', 'B then A / batch:', '--reporter=json', '--output=probe-results'], capture_output=True, text=True, timeout=90)
-              report = json.loads(result.stdout)
-              assert result.returncode == 1 and report['stats']['unexpected'] == 1 and report['stats']['expected'] == 0 and report['stats']['skipped'] == 0, result.stdout + result.stderr
-              assert 'Invalid page request.' in result.stdout, result.stdout
-              print('CONFIRMED: removing the source page-count restore causes Invalid page request and the regression test fails (1/1).')
-          finally:
-              source.write_bytes(original)
-          PY
-          git diff --exit-code -- dist/
       - name: Upload failure diagnostics
         if: failure()
         uses: actions/upload-artifact@v4
