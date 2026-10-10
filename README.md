@@ -88,3 +88,8 @@ PDF 合併與解密參考：https://github.com/cantoo-scribe/pdf-lib。
 - OCR 不是 Word／Excel 版面還原；手寫、低畫質、直排、多欄與表格可能錯字或順序不正確。姓名、數字與重要資訊請對照原稿。
 
 新增套件：Tesseract.js 7.0.0、tesseract.js-core 7.0.0 與 tessdata_fast 繁中／英文（Apache-2.0）；@cantoo/fontkit 2.0.12（MIT）；Noto Sans CJK TC Regular（SIL OFL 1.1）。授權文件隨 `dist/vendor/` 提供。
+
+## 自動回歸測試
+
+以 Node.js 內建測試驗證排序與 PDF 組裝，另用 Playwright / Chromium 驗證不同來源 PDF 的頁面、文字與實際下載內容。
+執行方式與涵蓋範圍見 [測試說明](tests/README.md)。PR 與 main 更新會自動執行；既有 Pages 發布流程保持不變。
