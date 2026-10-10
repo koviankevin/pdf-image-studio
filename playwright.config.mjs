@@ -12,6 +12,8 @@ export default defineConfig({
   reporter: [['list'], ['html', {open: 'never'}]],
   use: {
     browserName: 'chromium',
+    // Keep both rows of page cards visible during native HTML drag gestures.
+    viewport: {width: 1440, height: 1600},
     headless: true,
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',

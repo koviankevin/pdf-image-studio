@@ -117,7 +117,8 @@ for (const order of [['A', 'B'], ['B', 'A']]) {
       }
 
       // Drag across documents, then exercise the keyboard-accessible move UI.
-      await page.locator('.page-card').nth(current.indexOf('B3')).dragTo(page.locator('.page-card').first());
+      await page.locator('.page-card').nth(current.indexOf('B3')).locator('.drag-handle')
+        .dragTo(page.locator('.page-card').first().locator('.drag-handle'));
       current = ['B3', ...current.filter(id => id !== 'B3')];
       await assertOrigins(page, current);
       for (const [i, id] of interleaved.entries()) {
@@ -133,6 +134,7 @@ for (const order of [['A', 'B'], ['B', 'A']]) {
       // B3 is above the smaller document's page count. Alternating sources
       // exercises getSourcePage in nativeText, pageViewport and renderBlob.
       await page.locator('#ocr-start').click();
+      await expect(page.locator('#status')).toContainText('已完成 5 頁文字處理');
       await expect(page.locator('#ocr-dialog')).toBeVisible();
       await expect(page.locator('#ocr-page option')).toHaveCount(5);
       for (const [i, id] of interleaved.entries()) {
