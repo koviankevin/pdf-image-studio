@@ -32,6 +32,14 @@ jobs:
         run: npx playwright install --with-deps chromium
       - name: Browser regression tests
         run: npm run test:browser
+      - name: Upload OCR accuracy measurements (informational)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ocr-accuracy-${{ github.run_attempt }}
+          path: test-results/**/ocr-accuracy.json
+          if-no-files-found: ignore
+          retention-days: 7
       - name: Upload failure diagnostics
         if: failure()
         uses: actions/upload-artifact@v4
