@@ -97,6 +97,9 @@ for (const order of [['A', 'B'], ['B', 'A']]) {
       const payloads = order.map(id => ({name: sources.get(id).name,
         mimeType: 'application/pdf', buffer: Buffer.from(sources.get(id).bytes)}));
       await page.goto('/');
+      // index.html dynamically imports the workspace; the load event can precede
+      // its event handlers. This attribute is set by the final updateControls().
+      await expect(page.locator('#dropzone')).toHaveAttribute('aria-disabled', 'false');
       let current = order.flatMap(sourceId => fixturePages.filter(p => p.sourceId === sourceId).map(p => p.id));
       if (mode === 'batch') {
         await page.locator('#file-input').setInputFiles(payloads);
