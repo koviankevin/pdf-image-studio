@@ -121,6 +121,34 @@ PDF.js 在辨識前確認兩頁都完全沒有文字，避免誤走原生文字�
 與二值化；輸出 `ocr-experiment-results/**/comparison.json`。這是選用的量測，
 不在日常 CI 執行，也不以 CER 為 pass/fail 門檻。
 
+## 掃描條件與閱讀順序（模擬樣本）
+
+`support/scan-conditions.mjs` 新增六頁固定資料：乾淨對照、正負 1.5° 傾斜、
+Canvas blur(1.2px)、灰字 170／灰底 210，以及左右各四行的雙欄中文。
+全部是無個資的電腦合成掃描模擬，**實體掃描樣本數為 0**，不代表一般文件準確率。
+既有 `support/scans.mjs`、正規化和 CER 完全不變。
+
+`browser/scan-conditions.spec.mjs` 經正式 UI 選 PSM 3／4，沿用原 PDF.js、Tesseract、
+字型、語言檔、300 DPI／3500 px 上限，不攔截修改 OCR 程式、不注入辨識結果。
+每種模式各一個六頁功能案例，納入既有日常 CI；原本八個瀏覽器案例保留。
+新案例檢查無原生文字、引擎載入、六頁完成、可編輯文字與有效框、校對儲存和精確 TXT。
+隱藏 PDF 文字層與原稿外觀仍由既有完整 OCR 端到端案例把關。
+
+每頁的校對前 UI 原始文字、逐行框、PNG SHA-256、預期文字、CER 與閱讀順序
+另存 `ocr-accuracy.json`，沿用既有 informational artifact；它們**不是 pass/fail 門檻**。
+閱讀順序以原稿框的欄／行位置觀察，雙欄預期為左欄由上到下，再右欄由上到下。
+跨欄合併、順序錯置、缺少／無法定位均分別標示，不重排 OCR 來降低 CER。
+此觀察器只適用本固定幾何資料，不是通用閱讀順序演算法。
+CI 另保存實際生成的 PNG／image-only PDF 七天，方便對照字型渲染或瀏覽器版本差異。
+
+```sh
+npm run test:ocr:conditions
+# 預先安排三次獨立 context/worker 量測，並非失敗重試
+npm run test:ocr:conditions -- --repeat-each=3
+```
+
+詳見 [掃描條件實測報告](reports/ocr-scan-conditions-20261011.md) 與同名 JSON 原始資料。
+
 ## 可選雙欄模式：中央分割、先左後右
 
 `two-column` 只處理中央留白、沒有跨欄內容的橫排雙欄掃描。以顯示中的頁面
@@ -130,7 +158,7 @@ PDF.js 在辨識前確認兩頁都完全沒有文字，避免誤走原生文字�
 
 `support/scan-conditions.mjs` 原封不動引用 PR #4 的
 `4b435401c3f06e32c6d4edd47e94803b2a92af55`，只取第六頁比較三種模式。
-PR #4 本身未修改，也不需要先合併；既有 CER／正規化未變。
+建立本功能 PR 期間，PR #4 已合併至 main；整合後保留其全部測試，既有 CER／正規化未變。
 
 `browser/two-column-ocr.spec.mjs` 使用正式 UI 和真實 Tesseract，核對固定樣本的
 八行文字、先左後右順序、原稿框、校對儲存、TXT、PDF 文字順序／座標、隱藏

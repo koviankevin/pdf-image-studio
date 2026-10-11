@@ -1,0 +1,2890 @@
+{
+  "baseCommit": "54bd95e8517ba4cc986df1b96f4d54003c72c29e",
+  "sampleKind": "synthetic-scan-simulation",
+  "physicalScans": 0,
+  "plannedIndependentRepeats": 3,
+  "gating": false,
+  "unchangedCerImplementation": "tests/support/scans.mjs",
+  "assetSha256": {
+    "dist/vendor/fonts/NotoSansCJKtc-Regular.otf": "dce08bd4fd91aa8aa76ed8fea4b694c2dfb8550f67871e326843212ddbeb88b4",
+    "dist/vendor/ocr/tesseract.mjs": "3067bc42260804d9bce0f9fc3344cf391f944ecbf14f693feed2331245c0ea22",
+    "dist/vendor/ocr/lang/chi_tra.traineddata": "529c5b5797d64b126065cd55f2bb4c7fd7b15790798091b1ff259941a829330b",
+    "dist/vendor/ocr/lang/eng.traineddata": "7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2"
+  },
+  "runs": [
+    {
+      "sampleKind": "synthetic-scan-simulation",
+      "physicalScans": 0,
+      "gating": false,
+      "language": "chi_tra+eng",
+      "layout": "auto",
+      "psm": 3,
+      "browser": "153.0.8010.0",
+      "node": "v24.19.0",
+      "repeat": 1,
+      "source": {
+        "width": 1600,
+        "height": 1000,
+        "font": "bundled NotoSansCJKtc-Regular.otf",
+        "fontPx": 52,
+        "pdfPoints": [
+          576,
+          360
+        ],
+        "ocrDpi": 300,
+        "maxEdge": 3500,
+        "sourceEffectiveDpi": 200
+      },
+      "normalization": "NFKC, lowercase, ignore whitespace/punctuation/symbols (unchanged)",
+      "measurements": [
+        {
+          "id": "clean-control",
+          "rotation": 0,
+          "blur": 0,
+          "foreground": 0,
+          "background": 255,
+          "columns": [
+            [
+              "繁體中文掃描測試",
+              "圖書館今天開放閱讀",
+              "學習文字辨識與校對",
+              "Synthetic scan page one"
+            ]
+          ],
+          "expected": "繁體中文掃描測試\n圖書館今天開放閱讀\n學習文字辨識與校對\nSynthetic scan page one",
+          "expectedOrder": [
+            "L1",
+            "L2",
+            "L3",
+            "L4"
+          ],
+          "sourcePngSha256": "3c9bc5316803a4e6975a286cdba7c015e599369218b3be5a10429e4f8dc1f27b",
+          "rawUiLines": [
+            "Fase PSC Hate All axl",
+            "圖書館今天開放閱讀",
+            "學習文字辨識與校對",
+            "Synthetic scan page one"
+          ],
+          "actual": "Fase PSC Hate All axl\n圖書館今天開放閱讀\n學習文字辨識與校對\nSynthetic scan page one",
+          "boxes": [
+            {
+              "x": 36.72,
+              "y": 36.48,
+              "width": 148.32,
+              "height": 18
+            },
+            {
+              "x": 37.44,
+              "y": 94.08,
+              "width": 166.32,
+              "height": 18
+            },
+            {
+              "x": 37.199999999999996,
+              "y": 151.68,
+              "width": 166.56,
+              "height": 18
+            },
+            {
+              "x": 37.199999999999996,
+              "y": 210.23999999999998,
+              "width": 209.76,
+              "height": 19.919999999999998
+            }
+          ],
+          "characterErrorRate": 0.3695652173913043,
+          "readingOrder": {
+            "method": "UI boxes mapped to fixed source rows/columns; consecutive fragments collapsed",
+            "expected": [
+              "L1",
+              "L2",
+              "L3",
+              "L4"
+            ],
+            "observed": [
+              "L1",
+              "L2",
+              "L3",
+              "L4"
+            ],
+            "status": "expected-order"
+          }
+        },
+        {
+          "id": "skew-plus-1.5",
+          "rotation": 1.5,
+          "blur": 0,
+          "foreground": 0,
+          "background": 255,
+          "columns": [
+            [
+              "繁體中文掃描測試",
+              "圖書館今天開放閱讀",
+              "學習文字辨識與校對",
+              "Synthetic scan page one"
+            ]
+          ],
+          "expected": "繁體中文掃描測試\n圖書館今天開放閱讀\n學習文字辨識與校對\nSynthetic scan page one",
+          "expectedOrder": [
+            "L1",
+            "L2",
+            "L3",
+            "L4"
+          ],
+          "sourcePngSha256": "ca06ff423782e88e1c5f2bb5806dfaf319f993a978e6067b441db453a316b1c6",
+          "rawUiLines": [
+            "繁髒中文掃描測試",
+            "圖書館今天開放閱讀",
+            "學習文字辨識與校對",
+            ">ynthetic scan page one"
+          ],
+          "actual": "繁髒中文掃描測試\n圖書館今天開放閱讀\n學習文字辨識與校對\n>ynthetic scan page one",
+          "boxes": [
+            {
+              "x": 40.8,
+              "y": 30.24,
+              "width": 147.84,
+              "height": 21.36
+            },
+            {
+              "x": 39.36,
+              "y": 88.56,
+              "width": 166.07999999999998,
+              "height": 20.64
+            },
+            {
+              "x": 37.44,
+              "y": 145.44,
+              "width": 166.56,
+              "height": 21.36
+            },
+            {
+              "x": 36,
+              "y": 204.95999999999998,
+              "width": 209.76,
+              "height": 22.56
+            }
+          ],
+          "characterErrorRate": 0.043478260869565216,
+          "readingOrder": {
+            "method": "UI boxes mapped to fixed source rows/columns; consecutive fragments collapsed",
+            "expected": [
+              "L1",
+              "L2",
+              "L3",
+              "L4"
+            ],
+            "observed": [
+              "L1",
+              "L2",
+              "L3",
+              "L4"
+            ],
+            "status": "expected-order"
+          }
+        },
+        {
+          "id": "skew-minus-1.5",
+          "rotation": -1.5,
+          "blur": 0,
+          "foreground": 0,
+          "background": 255,
+          "columns": [
+            [
+              "繁體中文掃描測試",
+              "圖書館今天開放閱讀",
+              "學習文字辨識與校對",
+              "Synthetic scan page one"
+            ]
+          ],
+          "expected": "繁體中文掃描測試\n圖書館今天開放閱讀\n學習文字辨識與校對\nSynthetic scan page one",
+          "expectedOrder": [
+            "L1",
+            "L2",
+            "L3",
+            "L4"
+          ],
+          "sourcePngSha256": "aa7d8baff314c81de078cb92010c5bbf7142c2e3ea0e584852f2b2c872554479",
+          "rawUiLines": [
+            "繁體中文掃描測試",
+            "圖書館今天開放閱讀",
+            "學習文字辨識與校對",
+            "Synthetic scan page one"
+          ],
+          "actual": "繁體中文掃描測試\n圖書館今天開放閱讀\n學習文字辨識與校對\nSynthetic scan page one",
+          "boxes": [
+            {
+              "x": 33.12,
+              "y": 39.6,
+              "width": 148.79999999999998,
+              "height": 20.88
+            },
+            {
+              "x": 35.28,
+              "y": 96.47999999999999,
+              "width": 166.56,
+              "height": 21.599999999999998
+            },
+            {
+              "x": 36.48,
+              "y": 154.07999999999998,
+              "width": 166.56,
+              "height": 21.36
+            },
+            {
+              "x": 38.64,
+              "y": 215.76,
+              "width": 209.04,
+              "height": 20.16
+            }
+          ],
+          "characterErrorRate": 0,
+          "readingOrder": {
+            "method": "UI boxes mapped to fixed source rows/columns; consecutive fragments collapsed",
+            "expected": [
+              "L1",
+              "L2",
+              "L3",
+              "L4"
+            ],
+            "observed": [
+              "L1",
+              "L2",
+              "L3",
+              "L4"
+            ],
+            "status": "expected-order"
+          }
+        },
+        {
+          "id": "blur-1.2",
+          "rotation": 0,
+          "blur": 1.2,
+          "foreground": 0,
+          "background": 255,
+          "columns": [
+            [
+              "繁體中文掃描測試",
+              "圖書館今天開放閱讀",
+              "學習文字辨識與校對",
+              "Synthetic scan page one"
+            ]
+          ],
+          "expected": "繁體中文掃描測試\n圖書館今天開放閱讀\n學習文字辨識與校對\nSynthetic scan page one",
+          "expectedOrder": [
+            "L1",
+            "L2",
+            "L3",
+            "L4"
+          ],
+          "sourcePngSha256": "3c0974159c0658f1797fb74b5b86b566d89b5c4d659fd2b1a271376ecb5cdbba",
+          "rawUiLines": [
+            "葵體中文掃描測試",
+            "SiS ARAM Bae",
+            "學習文字辨識與校對",
+            "Synthetic scan page one"
+          ],
+          "actual": "葵體中文掃描測試\nSiS ARAM Bae\n學習文字辨識與校對\nSynthetic scan page one",
+          "boxes": [
+            {
+              "x": 36.72,
+              "y": 36.48,
+              "width": 148.56,
+              "height": 18
+            },
+            {
+              "x": 37.44,
+              "y": 94.08,
+              "width": 166.32,
+              "height": 18
+            },
+            {
+              "x": 36.72,
+              "y": 151.68,
+              "width": 167.04,
+              "height": 18
+            },
+            {
+              "x": 37.199999999999996,
+              "y": 210.23999999999998,
+              "width": 209.76,
+              "height": 19.919999999999998
+            }
+          ],
+          "characterErrorRate": 0.2391304347826087,
+          "readingOrder": {
+            "method": "UI boxes mapped to fixed source rows/columns; consecutive fragments collapsed",
+            "expected": [
+              "L1",
+              "L2",
+              "L3",
+              "L4"
+            ],
+            "observed": [
+              "L1",
+              "L2",
+              "L3",
+              "L4"
+            ],
+            "status": "expected-order"
+          }
+        },
+        {
+          "id": "low-contrast",
+          "rotation": 0,
+          "blur": 0,
+          "foreground": 170,
+          "background": 210,
+          "columns": [
+            [
+              "繁體中文掃描測試",
+              "圖書館今天開放閱讀",
+              "學習文字辨識與校對",
+              "Synthetic scan page one"
+            ]
+          ],
+          "expected": "繁體中文掃描測試\n圖書館今天開放閱讀\n學習文字辨識與校對\nSynthetic scan page one",
+          "expectedOrder": [
+            "L1",
+            "L2",
+            "L3",
+            "L4"
+          ],
+          "sourcePngSha256": "1f3e40cc680e208edc9100c20a34ee787ac7afd560b364225cccaae3bd36e788",
+          "rawUiLines": [
+            "Fans HSC tee Allaah",
+            "圖書館今天開放閱讀",
+            "學習文字辨識與校對",
+            "Synthetic scan page one"
+          ],
+          "actual": "Fans HSC tee Allaah\n圖書館今天開放閱讀\n學習文字辨識與校對\nSynthetic scan page one",
+          "boxes": [
+            {
+              "x": 36.72,
+              "y": 36.48,
+              "width": 148.32,
+              "height": 18
+            },
+            {
+              "x": 37.44,
+              "y": 94.08,
+              "width": 166.32,
+              "height": 18
+            },
+            {
+              "x": 37.199999999999996,
+              "y": 151.68,
+              "width": 166.56,
+              "height": 18
+            },
+            {
+              "x": 37.199999999999996,
+              "y": 210.23999999999998,
+              "width": 209.76,
+              "height": 19.919999999999998
+            }
+          ],
+          "characterErrorRate": 0.34782608695652173,
+          "readingOrder": {
+            "method": "UI boxes mapped to fixed source rows/columns; consecutive fragments collapsed",
+            "expected": [
+              "L1",
+              "L2",
+              "L3",
+              "L4"
+            ],
+            "observed": [
+              "L1",
+              "L2",
+              "L3",
+              "L4"
+            ],
+            "status": "expected-order"
+          }
+        },
+        {
+          "id": "two-column-chinese",
+          "rotation": 0,
+          "blur": 0,
+          "foreground": 0,
+          "background": 255,
+          "columns": [
+            [
+              "春天適合戶外散步",
+              "花園種植各種植物",
+              "閱讀可以增長知識",
+              "今天一起練習寫字"
+            ],
+            [
+              "夏天注意補充水分",
+              "公園設有休息座椅",
+              "運動之後記得休息",
+              "明天繼續學習中文"
+            ]
+          ],
+          "expected": "春天適合戶外散步\n花園種植各種植物\n閱讀可以增長知識\n今天一起練習寫字\n夏天注意補充水分\n公園設有休息座椅\n運動之後記得休息\n明天繼續學習中文",
+          "expectedOrder": [
+            "L1",
+            "L2",
+            "L3",
+            "L4",
+            "R1",
+            "R2",
+            "R3",
+            "R4"
+          ],
+          "sourcePngSha256": "13741b3c0ea34a40fe46923f30a390872e83d685576d13ea063b6015540bba13",
+          "rawUiLines": [
+            "春天適合戶外散步      夏天注意補充水分",
+            "花園種植各種植物      公園設有休息座椅",
+            "閱讀可以增長知識      運動之後記得休息",
+            "今天一起練習寫字                       明天繼續學習中文"
+          ],
+          "actual": "春天適合戶外散步      夏天注意補充水分\n花園種植各種植物      公園設有休息座椅\n閱讀可以增長知識      運動之後記得休息\n今天一起練習寫字                       明天繼續學習中文",
+          "boxes": [
+            {
+              "x": 36.72,
+              "y": 35.519999999999996,
+              "width": 418.32,
+              "height": 25.439999999999998
+            },
+            {
+              "x": 36.72,
+              "y": 93.11999999999999,
+              "width": 418.32,
+              "height": 25.2
+            },
+            {
+              "x": 37.44,
+              "y": 151.68,
+              "width": 417.12,
+              "height": 18
+            },
+            {
+              "x": 36.72,
+              "y": 200.88,
+              "width": 418.32,
+              "height": 27.36
+            }
+          ],
+          "characterErrorRate": 0.71875,
+          "readingOrder": {
+            "method": "UI boxes mapped to fixed source rows/columns; consecutive fragments collapsed",
+            "expected": [
+              "L1",
+              "L2",
+              "L3",
+              "L4",
+              "R1",
+              "R2",
+              "R3",
+              "R4"
+            ],
+            "observed": [
+              "merged-LR1",
+              "merged-LR2",
+              "merged-LR3",
+              "merged-LR4"
+            ],
+            "status": "cross-column-lines"
+          }
+        }
+      ]
+    },
+    {
+      "sampleKind": "synthetic-scan-simulation",
+      "physicalScans": 0,
+      "gating": false,
+      "language": "chi_tra+eng",
+      "layout": "auto",
+      "psm": 3,
+      "browser": "153.0.8010.0",
+      "node": "v24.19.0",
+      "repeat": 2,
+      "source": {
+        "width": 1600,
+        "height": 1000,
+        "font": "bundled NotoSansCJKtc-Regular.otf",
+        "fontPx": 52,
+        "pdfPoints": [
+          576,
+          360
+        ],
+        "ocrDpi": 300,
+        "maxEdge": 3500,
+        "sourceEffectiveDpi": 200
+      },
+      "normalization": "NFKC, lowercase, ignore whitespace/punctuation/symbols (unchanged)",
+      "measurements": [
+        {
+          "id": "clean-control",
+          "rotation": 0,
+          "blur": 0,
+          "foreground": 0,
+          "background": 255,
+          "columns": [
+            [
+              "繁體中文掃描測試",
+              "圖書館今天開放閱讀",
+              "學習文字辨識與校對",
+              "Synthetic scan page one"
+            ]
+          ],
+          "expected": "繁體中文掃描測試\n圖書館今天開放閱讀\n學習文字辨識與校對\nSynthetic scan page one",
+          "expectedOrder": [
+            "L1",
+            "L2",
+            "L3",
+            "L4"
+          ],
+          "sourcePngSha256": "3c9bc5316803a4e6975a286cdba7c015e599369218b3be5a10429e4f8dc1f27b",
+          "rawUiLines": [
+            "Fase PSC Hate All axl",
+            "圖書館今天開放閱讀",
+            "學習文字辨識與校對",
+            "Synthetic scan page one"
+          ],
+          "actual": "Fase PSC Hate All axl\n圖書館今天開放閱讀\n學習文字辨識與校對\nSynthetic scan page one",
+          "boxes": [
+            {
+              "x": 36.72,
+              "y": 36.48,
+              "width": 148.32,
+              "height": 18
+            },
+            {
+              "x": 37.44,
+              "y": 94.08,
+              "width": 166.32,
+              "height": 18
+            },
+            {
+              "x": 37.199999999999996,
+              "y": 151.68,
+              "width": 166.56,
+              "height": 18
+            },
+            {
+              "x": 37.199999999999996,
+              "y": 210.23999999999998,
+              "width": 209.76,
+              "height": 19.919999999999998
+            }
+          ],
+          "characterErrorRate": 0.3695652173913043,
+          "readingOrder": {
+            "method": "UI boxes mapped to fixed source rows/columns; consecutive fragments collapsed",
+            "expected": [
+              "L1",
+              "L2",
+              "L3",
+              "L4"
+            ],
+            "observed": [
+              "L1",
+              "L2",
+              "L3",
+              "L4"
+            ],
+            "status": "expected-order"
+          }
+        },
+        {
+          "id": "skew-plus-1.5",
+          "rotation": 1.5,
+          "blur": 0,
+          "foreground": 0,
+          "background": 255,
+          "columns": [
+            [
+              "繁體中文掃描測試",
+              "圖書館今天開放閱讀",
+              "學習文字辨識與校對",
+              "Synthetic scan page one"
+            ]
+          ],
+          "expected": "繁體中文掃描測試\n圖書館今天開放閱讀\n學習文字辨識與校對\nSynthetic scan page one",
+          "expectedOrder": [
+            "L1",
+            "L2",
+            "L3",
+            "L4"
+          ],
+          "sourcePngSha256": "ca06ff423782e88e1c5f2bb5806dfaf319f993a978e6067b441db453a316b1c6",
+          "rawUiLines": [
+            "繁髒中文掃描測試",
+            "圖書館今天開放閱讀",
+            "學習文字辨識與校對",
+            ">ynthetic scan page one"
+          ],
+          "actual": "繁髒中文掃描測試\n圖書館今天開放閱讀\n學習文字辨識與校對\n>ynthetic scan page one",
+          "boxes": [
+            {
+              "x": 40.8,
+              "y": 30.24,
+              "width": 147.84,
+              "height": 21.36
+            },
+            {
+              "x": 39.36,
+              "y": 88.56,
+              "width": 166.07999999999998,
+              "height": 20.64
+            },
+            {
+              "x": 37.44,
+              "y": 145.44,
+              "width": 166.56,
+              "height": 21.36
+            },
+            {
+              "x": 36,
+              "y": 204.95999999999998,
+              "width": 209.76,
+              "height": 22.56
+            }
+          ],
+          "characterErrorRate": 0.043478260869565216,
+          "readingOrder": {
+            "method": "UI boxes mapped to fixed source rows/columns; consecutive fragments collapsed",
+            "expected": [
+              "L1",
+              "L2",
+              "L3",
+              "L4"
+            ],
+            "observed": [
+              "L1",
+              "L2",
+              "L3",
+              "L4"
+            ],
+            "status": "expected-order"
+          }
+        },
+        {
+          "id": "skew-minus-1.5",
+          "rotation": -1.5,
+          "blur": 0,
+          "foreground": 0,
+          "background": 255,
+          "columns": [
+            [
+              "繁體中文掃描測試",
+              "圖書館今天開放閱讀",
+              "學習文字辨識與校對",
+              "Synthetic scan page one"
+            ]
+          ],
+          "expected": "繁體中文掃描測試\n圖書館今天開放閱讀\n學習文字辨識與校對\nSynthetic scan page one",
+          "expectedOrder": [
+            "L1",
+            "L2",
+            "L3",
+            "L4"
+          ],
+          "sourcePngSha256": "aa7d8baff314c81de078cb92010c5bbf7142c2e3ea0e584852f2b2c872554479",
+          "rawUiLines": [
+            "繁體中文掃描測試",
+            "圖書館今天開放閱讀",
+            "學習文字辨識與校對",
+            "Synthetic scan page one"
+          ],
+          "actual": "繁體中文掃描測試\n圖書館今天開放閱讀\n學習文字辨識與校對\nSynthetic scan page one",
+          "boxes": [
+            {
+              "x": 33.12,
+              "y": 39.6,
+              "width": 148.79999999999998,
+              "height": 20.88
+            },
+            {
+              "x": 35.28,
+              "y": 96.47999999999999,
+              "width": 166.56,
+              "height": 21.599999999999998
+            },
+            {
+              "x": 36.48,
+              "y": 154.07999999999998,
+              "width": 166.56,
+              "height": 21.36
+            },
+            {
+              "x": 38.64,
+              "y": 215.76,
+              "width": 209.04,
+              "height": 20.16
+            }
+          ],
+          "characterErrorRate": 0,
+          "readingOrder": {
+            "method": "UI boxes mapped to fixed source rows/columns; consecutive fragments collapsed",
+            "expected": [
+              "L1",
+              "L2",
+              "L3",
+              "L4"
+            ],
+            "observed": [
+              "L1",
+              "L2",
+              "L3",
+              "L4"
+            ],
+            "status": "expected-order"
+          }
+        },
+        {
+          "id": "blur-1.2",
+          "rotation": 0,
+          "blur": 1.2,
+          "foreground": 0,
+          "background": 255,
+          "columns": [
+            [
+              "繁體中文掃描測試",
+              "圖書館今天開放閱讀",
+              "學習文字辨識與校對",
+              "Synthetic scan page one"
+            ]
+          ],
+          "expected": "繁體中文掃描測試\n圖書館今天開放閱讀\n學習文字辨識與校對\nSynthetic scan page one",
+          "expectedOrder": [
+            "L1",
+            "L2",
+            "L3",
+            "L4"
+          ],
+          "sourcePngSha256": "3c0974159c0658f1797fb74b5b86b566d89b5c4d659fd2b1a271376ecb5cdbba",
+          "rawUiLines": [
+            "葵體中文掃描測試",
+            "SiS ARAM Bae",
+            "學習文字辨識與校對",
+            "Synthetic scan page one"
+          ],
+          "actual": "葵體中文掃描測試\nSiS ARAM Bae\n學習文字辨識與校對\nSynthetic scan page one",
+          "boxes": [
+            {
+              "x": 36.72,
+              "y": 36.48,
+              "width": 148.56,
+              "height": 18
+            },
+            {
+              "x": 37.44,
+              "y": 94.08,
+              "width": 166.32,
+              "height": 18
+            },
+            {
+              "x": 36.72,
+              "y": 151.68,
+              "width": 167.04,
+              "height": 18
+            },
+            {
+              "x": 37.199999999999996,
+              "y": 210.23999999999998,
+              "width": 209.76,
+              "height": 19.919999999999998
+            }
+          ],
+          "characterErrorRate": 0.2391304347826087,
+          "readingOrder": {
+            "method": "UI boxes mapped to fixed source rows/columns; consecutive fragments collapsed",
+            "expected": [
+              "L1",
+              "L2",
+              "L3",
+              "L4"
+            ],
+            "observed": [
+              "L1",
+              "L2",
+              "L3",
+              "L4"
+            ],
+            "status": "expected-order"
+          }
+        },
+        {
+          "id": "low-contrast",
+          "rotation": 0,
+          "blur": 0,
+          "foreground": 170,
+          "background": 210,
+          "columns": [
+            [
+              "繁體中文掃描測試",
+              "圖書館今天開放閱讀",
+              "學習文字辨識與校對",
+              "Synthetic scan page one"
+            ]
+          ],
+          "expected": "繁體中文掃描測試\n圖書館今天開放閱讀\n學習文字辨識與校對\nSynthetic scan page one",
+          "expectedOrder": [
+            "L1",
+            "L2",
+            "L3",
+            "L4"
+          ],
+          "sourcePngSha256": "1f3e40cc680e208edc9100c20a34ee787ac7afd560b364225cccaae3bd36e788",
+          "rawUiLines": [
+            "Fans HSC tee Allaah",
+            "圖書館今天開放閱讀",
+            "學習文字辨識與校對",
+            "Synthetic scan page one"
+          ],
+          "actual": "Fans HSC tee Allaah\n圖書館今天開放閱讀\n學習文字辨識與校對\nSynthetic scan page one",
+          "boxes": [
+            {
+              "x": 36.72,
+              "y": 36.48,
+              "width": 148.32,
+              "height": 18
+            },
+            {
+              "x": 37.44,
+              "y": 94.08,
+              "width": 166.32,
+              "height": 18
+            },
+            {
+              "x": 37.199999999999996,
+              "y": 151.68,
+              "width": 166.56,
+              "height": 18
+            },
+            {
+              "x": 37.199999999999996,
+              "y": 210.23999999999998,
+              "width": 209.76,
+              "height": 19.919999999999998
+            }
+          ],
+          "characterErrorRate": 0.34782608695652173,
+          "readingOrder": {
+            "method": "UI boxes mapped to fixed source rows/columns; consecutive fragments collapsed",
+            "expected": [
+              "L1",
+              "L2",
+              "L3",
+              "L4"
+            ],
+            "observed": [
+              "L1",
+              "L2",
+              "L3",
+              "L4"
+            ],
+            "status": "expected-order"
+          }
+        },
+        {
+          "id": "two-column-chinese",
+          "rotation": 0,
+          "blur": 0,
+          "foreground": 0,
+          "background": 255,
+          "columns": [
+            [
+              "春天適合戶外散步",
+              "花園種植各種植物",
+              "閱讀可以增長知識",
+              "今天一起練習寫字"
+            ],
+            [
+              "夏天注意補充水分",
+              "公園設有休息座椅",
+              "運動之後記得休息",
+              "明天繼續學習中文"
+            ]
+          ],
+          "expected": "春天適合戶外散步\n花園種植各種植物\n閱讀可以增長知識\n今天一起練習寫字\n夏天注意補充水分\n公園設有休息座椅\n運動之後記得休息\n明天繼續學習中文",
+          "expectedOrder": [
+            "L1",
+            "L2",
+            "L3",
+            "L4",
+            "R1",
+            "R2",
+            "R3",
+            "R4"
+          ],
+          "sourcePngSha256": "13741b3c0ea34a40fe46923f30a390872e83d685576d13ea063b6015540bba13",
+          "rawUiLines": [
+            "春天適合戶外散步      夏天注意補充水分",
+            "花園種植各種植物      公園設有休息座椅",
+            "閱讀可以增長知識      運動之後記得休息",
+            "今天一起練習寫字                       明天繼續學習中文"
+          ],
+          "actual": "春天適合戶外散步      夏天注意補充水分\n花園種植各種植物      公園設有休息座椅\n閱讀可以增長知識      運動之後記得休息\n今天一起練習寫字                       明天繼續學習中文",
+          "boxes": [
+            {
+              "x": 36.72,
+              "y": 35.519999999999996,
+              "width": 418.32,
+              "height": 25.439999999999998
+            },
+            {
+              "x": 36.72,
+              "y": 93.11999999999999,
+              "width": 418.32,
+              "height": 25.2
+            },
+            {
+              "x": 37.44,
+              "y": 151.68,
+              "width": 417.12,
+              "height": 18
+            },
+            {
+              "x": 36.72,
+              "y": 200.88,
+              "width": 418.32,
+              "height": 27.36
+            }
+          ],
+          "characterErrorRate": 0.71875,
+          "readingOrder": {
+            "method": "UI boxes mapped to fixed source rows/columns; consecutive fragments collapsed",
+            "expected": [
+              "L1",
+              "L2",
+              "L3",
+              "L4",
+              "R1",
+              "R2",
+              "R3",
+              "R4"
+            ],
+            "observed": [
+              "merged-LR1",
+              "merged-LR2",
+              "merged-LR3",
+              "merged-LR4"
+            ],
+            "status": "cross-column-lines"
+          }
+        }
+      ]
+    },
+    {
+      "sampleKind": "synthetic-scan-simulation",
+      "physicalScans": 0,
+      "gating": false,
+      "language": "chi_tra+eng",
+      "layout": "auto",
+      "psm": 3,
+      "browser": "153.0.8010.0",
+      "node": "v24.19.0",
+      "repeat": 0,
+      "source": {
+        "width": 1600,
+        "height": 1000,
+        "font": "bundled NotoSansCJKtc-Regular.otf",
+        "fontPx": 52,
+        "pdfPoints": [
+          576,
+          360
+        ],
+        "ocrDpi": 300,
+        "maxEdge": 3500,
+        "sourceEffectiveDpi": 200
+      },
+      "normalization": "NFKC, lowercase, ignore whitespace/punctuation/symbols (unchanged)",
+      "measurements": [
+        {
+          "id": "clean-control",
+          "rotation": 0,
+          "blur": 0,
+          "foreground": 0,
+          "background": 255,
+          "columns": [
+            [
+              "繁體中文掃描測試",
+              "圖書館今天開放閱讀",
+              "學習文字辨識與校對",
+              "Synthetic scan page one"
+            ]
+          ],
+          "expected": "繁體中文掃描測試\n圖書館今天開放閱讀\n學習文字辨識與校對\nSynthetic scan page one",
+          "expectedOrder": [
+            "L1",
+            "L2",
+            "L3",
+            "L4"
+          ],
+          "sourcePngSha256": "3c9bc5316803a4e6975a286cdba7c015e599369218b3be5a10429e4f8dc1f27b",
+          "rawUiLines": [
+            "Fase PSC Hate All axl",
+            "圖書館今天開放閱讀",
+            "學習文字辨識與校對",
+            "Synthetic scan page one"
+          ],
+          "actual": "Fase PSC Hate All axl\n圖書館今天開放閱讀\n學習文字辨識與校對\nSynthetic scan page one",
+          "boxes": [
+            {
+              "x": 36.72,
+              "y": 36.48,
+              "width": 148.32,
+              "height": 18
+            },
+            {
+              "x": 37.44,
+              "y": 94.08,
+              "width": 166.32,
+              "height": 18
+            },
+            {
+              "x": 37.199999999999996,
+              "y": 151.68,
+              "width": 166.56,
+              "height": 18
+            },
+            {
+              "x": 37.199999999999996,
+              "y": 210.23999999999998,
+              "width": 209.76,
+              "height": 19.919999999999998
+            }
+          ],
+          "characterErrorRate": 0.3695652173913043,
+          "readingOrder": {
+            "method": "UI boxes mapped to fixed source rows/columns; consecutive fragments collapsed",
+            "expected": [
+              "L1",
+              "L2",
+              "L3",
+              "L4"
+            ],
+            "observed": [
+              "L1",
+              "L2",
+              "L3",
+              "L4"
+            ],
+            "status": "expected-order"
+          }
+        },
+        {
+          "id": "skew-plus-1.5",
+          "rotation": 1.5,
+          "blur": 0,
+          "foreground": 0,
+          "background": 255,
+          "columns": [
+            [
+              "繁體中文掃描測試",
+              "圖書館今天開放閱讀",
+              "學習文字辨識與校對",
+              "Synthetic scan page one"
+            ]
+          ],
+          "expected": "繁體中文掃描測試\n圖書館今天開放閱讀\n學習文字辨識與校對\nSynthetic scan page one",
+          "expectedOrder": [
+            "L1",
+            "L2",
+            "L3",
+            "L4"
+          ],
+          "sourcePngSha256": "ca06ff423782e88e1c5f2bb5806dfaf319f993a978e6067b441db453a316b1c6",
+          "rawUiLines": [
+            "繁髒中文掃描測試",
+            "圖書館今天開放閱讀",
+            "學習文字辨識與校對",
+            ">ynthetic scan page one"
+          ],
+          "actual": "繁髒中文掃描測試\n圖書館今天開放閱讀\n學習文字辨識與校對\n>ynthetic scan page one",
+          "boxes": [
+            {
+              "x": 40.8,
+              "y": 30.24,
+              "width": 147.84,
+              "height": 21.36
+            },
+            {
+              "x": 39.36,
+              "y": 88.56,
+              "width": 166.07999999999998,
+              "height": 20.64
+            },
+            {
+              "x": 37.44,
+              "y": 145.44,
+              "width": 166.56,
+              "height": 21.36
+            },
+            {
+              "x": 36,
+              "y": 204.95999999999998,
+              "width": 209.76,
+              "height": 22.56
+            }
+          ],
+          "characterErrorRate": 0.043478260869565216,
+          "readingOrder": {
+            "method": "UI boxes mapped to fixed source rows/columns; consecutive fragments collapsed",
+            "expected": [
+              "L1",
+              "L2",
+              "L3",
+              "L4"
+            ],
+            "observed": [
+              "L1",
+              "L2",
+              "L3",
+              "L4"
+            ],
+            "status": "expected-order"
+          }
+        },
+        {
+          "id": "skew-minus-1.5",
+          "rotation": -1.5,
+          "blur": 0,
+          "foreground": 0,
+          "background": 255,
+          "columns": [
+            [
+              "繁體中文掃描測試",
+              "圖書館今天開放閱讀",
+              "學習文字辨識與校對",
+              "Synthetic scan page one"
+            ]
+          ],
+          "expected": "繁體中文掃描測試\n圖書館今天開放閱讀\n學習文字辨識與校對\nSynthetic scan page one",
+          "expectedOrder": [
+            "L1",
+            "L2",
+            "L3",
+            "L4"
+          ],
+          "sourcePngSha256": "aa7d8baff314c81de078cb92010c5bbf7142c2e3ea0e584852f2b2c872554479",
+          "rawUiLines": [
+            "繁體中文掃描測試",
+            "圖書館今天開放閱讀",
+            "學習文字辨識與校對",
+            "Synthetic scan page one"
+          ],
+          "actual": "繁體中文掃描測試\n圖書館今天開放閱讀\n學習文字辨識與校對\nSynthetic scan page one",
+          "boxes": [
+            {
+              "x": 33.12,
+              "y": 39.6,
+              "width": 148.79999999999998,
+              "height": 20.88
+            },
+            {
+              "x": 35.28,
+              "y": 96.47999999999999,
+              "width": 166.56,
+              "height": 21.599999999999998
+            },
+            {
+              "x": 36.48,
+              "y": 154.07999999999998,
+              "width": 166.56,
+              "height": 21.36
+            },
+            {
+              "x": 38.64,
+              "y": 215.76,
+              "width": 209.04,
+              "height": 20.16
+            }
+          ],
+          "characterErrorRate": 0,
+          "readingOrder": {
+            "method": "UI boxes mapped to fixed source rows/columns; consecutive fragments collapsed",
+            "expected": [
+              "L1",
+              "L2",
+              "L3",
+              "L4"
+            ],
+            "observed": [
+              "L1",
+              "L2",
+              "L3",
+              "L4"
+            ],
+            "status": "expected-order"
+          }
+        },
+        {
+          "id": "blur-1.2",
+          "rotation": 0,
+          "blur": 1.2,
+          "foreground": 0,
+          "background": 255,
+          "columns": [
+            [
+              "繁體中文掃描測試",
+              "圖書館今天開放閱讀",
+              "學習文字辨識與校對",
+              "Synthetic scan page one"
+            ]
+          ],
+          "expected": "繁體中文掃描測試\n圖書館今天開放閱讀\n學習文字辨識與校對\nSynthetic scan page one",
+          "expectedOrder": [
+            "L1",
+            "L2",
+            "L3",
+            "L4"
+          ],
+          "sourcePngSha256": "3c0974159c0658f1797fb74b5b86b566d89b5c4d659fd2b1a271376ecb5cdbba",
+          "rawUiLines": [
+            "葵體中文掃描測試",
+            "SiS ARAM Bae",
+            "學習文字辨識與校對",
+            "Synthetic scan page one"
+          ],
+          "actual": "葵體中文掃描測試\nSiS ARAM Bae\n學習文字辨識與校對\nSynthetic scan page one",
+          "boxes": [
+            {
+              "x": 36.72,
+              "y": 36.48,
+              "width": 148.56,
+              "height": 18
+            },
+            {
+              "x": 37.44,
+              "y": 94.08,
+              "width": 166.32,
+              "height": 18
+            },
+            {
+              "x": 36.72,
+              "y": 151.68,
+              "width": 167.04,
+              "height": 18
+            },
+            {
+              "x": 37.199999999999996,
+              "y": 210.23999999999998,
+              "width": 209.76,
+              "height": 19.919999999999998
+            }
+          ],
+          "characterErrorRate": 0.2391304347826087,
+          "readingOrder": {
+            "method": "UI boxes mapped to fixed source rows/columns; consecutive fragments collapsed",
+            "expected": [
+              "L1",
+              "L2",
+              "L3",
+              "L4"
+            ],
+            "observed": [
+              "L1",
+              "L2",
+              "L3",
+              "L4"
+            ],
+            "status": "expected-order"
+          }
+        },
+        {
+          "id": "low-contrast",
+          "rotation": 0,
+          "blur": 0,
+          "foreground": 170,
+          "background": 210,
+          "columns": [
+            [
+              "繁體中文掃描測試",
+              "圖書館今天開放閱讀",
+              "學習文字辨識與校對",
+              "Synthetic scan page one"
+            ]
+          ],
+          "expected": "繁體中文掃描測試\n圖書館今天開放閱讀\n學習文字辨識與校對\nSynthetic scan page one",
+          "expectedOrder": [
+            "L1",
+            "L2",
+            "L3",
+            "L4"
+          ],
+          "sourcePngSha256": "1f3e40cc680e208edc9100c20a34ee787ac7afd560b364225cccaae3bd36e788",
+          "rawUiLines": [
+            "Fans HSC tee Allaah",
+            "圖書館今天開放閱讀",
+            "學習文字辨識與校對",
+            "Synthetic scan page one"
+          ],
+          "actual": "Fans HSC tee Allaah\n圖書館今天開放閱讀\n學習文字辨識與校對\nSynthetic scan page one",
+          "boxes": [
+            {
+              "x": 36.72,
+              "y": 36.48,
+              "width": 148.32,
+              "height": 18
+            },
+            {
+              "x": 37.44,
+              "y": 94.08,
+              "width": 166.32,
+              "height": 18
+            },
+            {
+              "x": 37.199999999999996,
+              "y": 151.68,
+              "width": 166.56,
+              "height": 18
+            },
+            {
+              "x": 37.199999999999996,
+              "y": 210.23999999999998,
+              "width": 209.76,
+              "height": 19.919999999999998
+            }
+          ],
+          "characterErrorRate": 0.34782608695652173,
+          "readingOrder": {
+            "method": "UI boxes mapped to fixed source rows/columns; consecutive fragments collapsed",
+            "expected": [
+              "L1",
+              "L2",
+              "L3",
+              "L4"
+            ],
+            "observed": [
+              "L1",
+              "L2",
+              "L3",
+              "L4"
+            ],
+            "status": "expected-order"
+          }
+        },
+        {
+          "id": "two-column-chinese",
+          "rotation": 0,
+          "blur": 0,
+          "foreground": 0,
+          "background": 255,
+          "columns": [
+            [
+              "春天適合戶外散步",
+              "花園種植各種植物",
+              "閱讀可以增長知識",
+              "今天一起練習寫字"
+            ],
+            [
+              "夏天注意補充水分",
+              "公園設有休息座椅",
+              "運動之後記得休息",
+              "明天繼續學習中文"
+            ]
+          ],
+          "expected": "春天適合戶外散步\n花園種植各種植物\n閱讀可以增長知識\n今天一起練習寫字\n夏天注意補充水分\n公園設有休息座椅\n運動之後記得休息\n明天繼續學習中文",
+          "expectedOrder": [
+            "L1",
+            "L2",
+            "L3",
+            "L4",
+            "R1",
+            "R2",
+            "R3",
+            "R4"
+          ],
+          "sourcePngSha256": "13741b3c0ea34a40fe46923f30a390872e83d685576d13ea063b6015540bba13",
+          "rawUiLines": [
+            "春天適合戶外散步      夏天注意補充水分",
+            "花園種植各種植物      公園設有休息座椅",
+            "閱讀可以增長知識      運動之後記得休息",
+            "今天一起練習寫字                       明天繼續學習中文"
+          ],
+          "actual": "春天適合戶外散步      夏天注意補充水分\n花園種植各種植物      公園設有休息座椅\n閱讀可以增長知識      運動之後記得休息\n今天一起練習寫字                       明天繼續學習中文",
+          "boxes": [
+            {
+              "x": 36.72,
+              "y": 35.519999999999996,
+              "width": 418.32,
+              "height": 25.439999999999998
+            },
+            {
+              "x": 36.72,
+              "y": 93.11999999999999,
+              "width": 418.32,
+              "height": 25.2
+            },
+            {
+              "x": 37.44,
+              "y": 151.68,
+              "width": 417.12,
+              "height": 18
+            },
+            {
+              "x": 36.72,
+              "y": 200.88,
+              "width": 418.32,
+              "height": 27.36
+            }
+          ],
+          "characterErrorRate": 0.71875,
+          "readingOrder": {
+            "method": "UI boxes mapped to fixed source rows/columns; consecutive fragments collapsed",
+            "expected": [
+              "L1",
+              "L2",
+              "L3",
+              "L4",
+              "R1",
+              "R2",
+              "R3",
+              "R4"
+            ],
+            "observed": [
+              "merged-LR1",
+              "merged-LR2",
+              "merged-LR3",
+              "merged-LR4"
+            ],
+            "status": "cross-column-lines"
+          }
+        }
+      ]
+    },
+    {
+      "sampleKind": "synthetic-scan-simulation",
+      "physicalScans": 0,
+      "gating": false,
+      "language": "chi_tra+eng",
+      "layout": "single-column",
+      "psm": 4,
+      "browser": "153.0.8010.0",
+      "node": "v24.19.0",
+      "repeat": 1,
+      "source": {
+        "width": 1600,
+        "height": 1000,
+        "font": "bundled NotoSansCJKtc-Regular.otf",
+        "fontPx": 52,
+        "pdfPoints": [
+          576,
+          360
+        ],
+        "ocrDpi": 300,
+        "maxEdge": 3500,
+        "sourceEffectiveDpi": 200
+      },
+      "normalization": "NFKC, lowercase, ignore whitespace/punctuation/symbols (unchanged)",
+      "measurements": [
+        {
+          "id": "clean-control",
+          "rotation": 0,
+          "blur": 0,
+          "foreground": 0,
+          "background": 255,
+          "columns": [
+            [
+              "繁體中文掃描測試",
+              "圖書館今天開放閱讀",
+              "學習文字辨識與校對",
+              "Synthetic scan page one"
+            ]
+          ],
+          "expected": "繁體中文掃描測試\n圖書館今天開放閱讀\n學習文字辨識與校對\nSynthetic scan page one",
+          "expectedOrder": [
+            "L1",
+            "L2",
+            "L3",
+            "L4"
+          ],
+          "sourcePngSha256": "3c9bc5316803a4e6975a286cdba7c015e599369218b3be5a10429e4f8dc1f27b",
+          "rawUiLines": [
+            "繁體中文掃描測試",
+            "圖書館今天開放閱讀",
+            "學習文字辨識與校對",
+            "Synthetic scan page one"
+          ],
+          "actual": "繁體中文掃描測試\n圖書館今天開放閱讀\n學習文字辨識與校對\nSynthetic scan page one",
+          "boxes": [
+            {
+              "x": 36.72,
+              "y": 36.48,
+              "width": 148.32,
+              "height": 18
+            },
+            {
+              "x": 37.44,
+              "y": 94.08,
+              "width": 166.32,
+              "height": 18
+            },
+            {
+              "x": 37.199999999999996,
+              "y": 151.68,
+              "width": 166.56,
+              "height": 18
+            },
+            {
+              "x": 37.199999999999996,
+              "y": 210.23999999999998,
+              "width": 209.76,
+              "height": 19.919999999999998
+            }
+          ],
+          "characterErrorRate": 0,
+          "readingOrder": {
+            "method": "UI boxes mapped to fixed source rows/columns; consecutive fragments collapsed",
+            "expected": [
+              "L1",
+              "L2",
+              "L3",
+              "L4"
+            ],
+            "observed": [
+              "L1",
+              "L2",
+              "L3",
+              "L4"
+            ],
+            "status": "expected-order"
+          }
+        },
+        {
+          "id": "skew-plus-1.5",
+          "rotation": 1.5,
+          "blur": 0,
+          "foreground": 0,
+          "background": 255,
+          "columns": [
+            [
+              "繁體中文掃描測試",
+              "圖書館今天開放閱讀",
+              "學習文字辨識與校對",
+              "Synthetic scan page one"
+            ]
+          ],
+          "expected": "繁體中文掃描測試\n圖書館今天開放閱讀\n學習文字辨識與校對\nSynthetic scan page one",
+          "expectedOrder": [
+            "L1",
+            "L2",
+            "L3",
+            "L4"
+          ],
+          "sourcePngSha256": "ca06ff423782e88e1c5f2bb5806dfaf319f993a978e6067b441db453a316b1c6",
+          "rawUiLines": [
+            "繁髒中文掃描測試",
+            "圖書館今天開放閱讀",
+            "學習文字辨識與校對",
+            ">ynthetic scan page one"
+          ],
+          "actual": "繁髒中文掃描測試\n圖書館今天開放閱讀\n學習文字辨識與校對\n>ynthetic scan page one",
+          "boxes": [
+            {
+              "x": 40.8,
+              "y": 30.24,
+              "width": 147.84,
+              "height": 21.36
+            },
+            {
+              "x": 39.36,
+              "y": 88.56,
+              "width": 166.07999999999998,
+              "height": 20.64
+            },
+            {
+              "x": 37.44,
+              "y": 145.44,
+              "width": 166.56,
+              "height": 21.36
+            },
+            {
+              "x": 36,
+              "y": 204.95999999999998,
+              "width": 209.76,
+              "height": 22.56
+            }
+          ],
+          "characterErrorRate": 0.043478260869565216,
+          "readingOrder": {
+            "method": "UI boxes mapped to fixed source rows/columns; consecutive fragments collapsed",
+            "expected": [
+              "L1",
+              "L2",
+              "L3",
+              "L4"
+            ],
+            "observed": [
+              "L1",
+              "L2",
+              "L3",
+              "L4"
+            ],
+            "status": "expected-order"
+          }
+        },
+        {
+          "id": "skew-minus-1.5",
+          "rotation": -1.5,
+          "blur": 0,
+          "foreground": 0,
+          "background": 255,
+          "columns": [
+            [
+              "繁體中文掃描測試",
+              "圖書館今天開放閱讀",
+              "學習文字辨識與校對",
+              "Synthetic scan page one"
+            ]
+          ],
+          "expected": "繁體中文掃描測試\n圖書館今天開放閱讀\n學習文字辨識與校對\nSynthetic scan page one",
+          "expectedOrder": [
+            "L1",
+            "L2",
+            "L3",
+            "L4"
+          ],
+          "sourcePngSha256": "aa7d8baff314c81de078cb92010c5bbf7142c2e3ea0e584852f2b2c872554479",
+          "rawUiLines": [
+            "繁體中文掃描測試",
+            "圖書館今天開放閱讀",
+            "學習文字辨識與校對",
+            "Synthetic scan page one"
+          ],
+          "actual": "繁體中文掃描測試\n圖書館今天開放閱讀\n學習文字辨識與校對\nSynthetic scan page one",
+          "boxes": [
+            {
+              "x": 33.12,
+              "y": 39.6,
+              "width": 148.79999999999998,
+              "height": 20.88
+            },
+            {
+              "x": 35.28,
+              "y": 96.47999999999999,
+              "width": 166.56,
+              "height": 21.599999999999998
+            },
+            {
+              "x": 36.48,
+              "y": 154.07999999999998,
+              "width": 166.56,
+              "height": 21.36
+            },
+            {
+              "x": 38.64,
+              "y": 215.76,
+              "width": 209.04,
+              "height": 20.16
+            }
+          ],
+          "characterErrorRate": 0,
+          "readingOrder": {
+            "method": "UI boxes mapped to fixed source rows/columns; consecutive fragments collapsed",
+            "expected": [
+              "L1",
+              "L2",
+              "L3",
+              "L4"
+            ],
+            "observed": [
+              "L1",
+              "L2",
+              "L3",
+              "L4"
+            ],
+            "status": "expected-order"
+          }
+        },
+        {
+          "id": "blur-1.2",
+          "rotation": 0,
+          "blur": 1.2,
+          "foreground": 0,
+          "background": 255,
+          "columns": [
+            [
+              "繁體中文掃描測試",
+              "圖書館今天開放閱讀",
+              "學習文字辨識與校對",
+              "Synthetic scan page one"
+            ]
+          ],
+          "expected": "繁體中文掃描測試\n圖書館今天開放閱讀\n學習文字辨識與校對\nSynthetic scan page one",
+          "expectedOrder": [
+            "L1",
+            "L2",
+            "L3",
+            "L4"
+          ],
+          "sourcePngSha256": "3c0974159c0658f1797fb74b5b86b566d89b5c4d659fd2b1a271376ecb5cdbba",
+          "rawUiLines": [
+            "葵體中文掃描測試",
+            "SiS ARAM Bae",
+            "學習文字辨識與校對",
+            "Synthetic scan page one"
+          ],
+          "actual": "葵體中文掃描測試\nSiS ARAM Bae\n學習文字辨識與校對\nSynthetic scan page one",
+          "boxes": [
+            {
+              "x": 36.72,
+              "y": 36.48,
+              "width": 148.56,
+              "height": 18
+            },
+            {
+              "x": 37.44,
+              "y": 94.08,
+              "width": 166.32,
+              "height": 18
+            },
+            {
+              "x": 36.72,
+              "y": 151.68,
+              "width": 167.04,
+              "height": 18
+            },
+            {
+              "x": 37.199999999999996,
+              "y": 210.23999999999998,
+              "width": 209.76,
+              "height": 19.919999999999998
+            }
+          ],
+          "characterErrorRate": 0.2391304347826087,
+          "readingOrder": {
+            "method": "UI boxes mapped to fixed source rows/columns; consecutive fragments collapsed",
+            "expected": [
+              "L1",
+              "L2",
+              "L3",
+              "L4"
+            ],
+            "observed": [
+              "L1",
+              "L2",
+              "L3",
+              "L4"
+            ],
+            "status": "expected-order"
+          }
+        },
+        {
+          "id": "low-contrast",
+          "rotation": 0,
+          "blur": 0,
+          "foreground": 170,
+          "background": 210,
+          "columns": [
+            [
+              "繁體中文掃描測試",
+              "圖書館今天開放閱讀",
+              "學習文字辨識與校對",
+              "Synthetic scan page one"
+            ]
+          ],
+          "expected": "繁體中文掃描測試\n圖書館今天開放閱讀\n學習文字辨識與校對\nSynthetic scan page one",
+          "expectedOrder": [
+            "L1",
+            "L2",
+            "L3",
+            "L4"
+          ],
+          "sourcePngSha256": "1f3e40cc680e208edc9100c20a34ee787ac7afd560b364225cccaae3bd36e788",
+          "rawUiLines": [
+            "Fans HSC tee Allaah",
+            "圖書館今天開放閱讀",
+            "學習文字辨識與校對",
+            "Synthetic scan page one"
+          ],
+          "actual": "Fans HSC tee Allaah\n圖書館今天開放閱讀\n學習文字辨識與校對\nSynthetic scan page one",
+          "boxes": [
+            {
+              "x": 36.72,
+              "y": 36.48,
+              "width": 148.32,
+              "height": 18
+            },
+            {
+              "x": 37.44,
+              "y": 94.08,
+              "width": 166.32,
+              "height": 18
+            },
+            {
+              "x": 37.199999999999996,
+              "y": 151.68,
+              "width": 166.56,
+              "height": 18
+            },
+            {
+              "x": 37.199999999999996,
+              "y": 210.23999999999998,
+              "width": 209.76,
+              "height": 19.919999999999998
+            }
+          ],
+          "characterErrorRate": 0.34782608695652173,
+          "readingOrder": {
+            "method": "UI boxes mapped to fixed source rows/columns; consecutive fragments collapsed",
+            "expected": [
+              "L1",
+              "L2",
+              "L3",
+              "L4"
+            ],
+            "observed": [
+              "L1",
+              "L2",
+              "L3",
+              "L4"
+            ],
+            "status": "expected-order"
+          }
+        },
+        {
+          "id": "two-column-chinese",
+          "rotation": 0,
+          "blur": 0,
+          "foreground": 0,
+          "background": 255,
+          "columns": [
+            [
+              "春天適合戶外散步",
+              "花園種植各種植物",
+              "閱讀可以增長知識",
+              "今天一起練習寫字"
+            ],
+            [
+              "夏天注意補充水分",
+              "公園設有休息座椅",
+              "運動之後記得休息",
+              "明天繼續學習中文"
+            ]
+          ],
+          "expected": "春天適合戶外散步\n花園種植各種植物\n閱讀可以增長知識\n今天一起練習寫字\n夏天注意補充水分\n公園設有休息座椅\n運動之後記得休息\n明天繼續學習中文",
+          "expectedOrder": [
+            "L1",
+            "L2",
+            "L3",
+            "L4",
+            "R1",
+            "R2",
+            "R3",
+            "R4"
+          ],
+          "sourcePngSha256": "13741b3c0ea34a40fe46923f30a390872e83d685576d13ea063b6015540bba13",
+          "rawUiLines": [
+            "春天適合戶外散步      夏天注意補充水分",
+            "花園種植各種植物      公園設有休息座椅",
+            "閱讀可以增長知識      運動之後記得休息",
+            "今天一起練習寫字                       明天繼續學習中文"
+          ],
+          "actual": "春天適合戶外散步      夏天注意補充水分\n花園種植各種植物      公園設有休息座椅\n閱讀可以增長知識      運動之後記得休息\n今天一起練習寫字                       明天繼續學習中文",
+          "boxes": [
+            {
+              "x": 36.72,
+              "y": 35.519999999999996,
+              "width": 418.32,
+              "height": 25.439999999999998
+            },
+            {
+              "x": 36.72,
+              "y": 93.11999999999999,
+              "width": 418.32,
+              "height": 25.2
+            },
+            {
+              "x": 37.44,
+              "y": 151.68,
+              "width": 417.12,
+              "height": 18
+            },
+            {
+              "x": 36.72,
+              "y": 200.88,
+              "width": 418.32,
+              "height": 27.36
+            }
+          ],
+          "characterErrorRate": 0.71875,
+          "readingOrder": {
+            "method": "UI boxes mapped to fixed source rows/columns; consecutive fragments collapsed",
+            "expected": [
+              "L1",
+              "L2",
+              "L3",
+              "L4",
+              "R1",
+              "R2",
+              "R3",
+              "R4"
+            ],
+            "observed": [
+              "merged-LR1",
+              "merged-LR2",
+              "merged-LR3",
+              "merged-LR4"
+            ],
+            "status": "cross-column-lines"
+          }
+        }
+      ]
+    },
+    {
+      "sampleKind": "synthetic-scan-simulation",
+      "physicalScans": 0,
+      "gating": false,
+      "language": "chi_tra+eng",
+      "layout": "single-column",
+      "psm": 4,
+      "browser": "153.0.8010.0",
+      "node": "v24.19.0",
+      "repeat": 2,
+      "source": {
+        "width": 1600,
+        "height": 1000,
+        "font": "bundled NotoSansCJKtc-Regular.otf",
+        "fontPx": 52,
+        "pdfPoints": [
+          576,
+          360
+        ],
+        "ocrDpi": 300,
+        "maxEdge": 3500,
+        "sourceEffectiveDpi": 200
+      },
+      "normalization": "NFKC, lowercase, ignore whitespace/punctuation/symbols (unchanged)",
+      "measurements": [
+        {
+          "id": "clean-control",
+          "rotation": 0,
+          "blur": 0,
+          "foreground": 0,
+          "background": 255,
+          "columns": [
+            [
+              "繁體中文掃描測試",
+              "圖書館今天開放閱讀",
+              "學習文字辨識與校對",
+              "Synthetic scan page one"
+            ]
+          ],
+          "expected": "繁體中文掃描測試\n圖書館今天開放閱讀\n學習文字辨識與校對\nSynthetic scan page one",
+          "expectedOrder": [
+            "L1",
+            "L2",
+            "L3",
+            "L4"
+          ],
+          "sourcePngSha256": "3c9bc5316803a4e6975a286cdba7c015e599369218b3be5a10429e4f8dc1f27b",
+          "rawUiLines": [
+            "繁體中文掃描測試",
+            "圖書館今天開放閱讀",
+            "學習文字辨識與校對",
+            "Synthetic scan page one"
+          ],
+          "actual": "繁體中文掃描測試\n圖書館今天開放閱讀\n學習文字辨識與校對\nSynthetic scan page one",
+          "boxes": [
+            {
+              "x": 36.72,
+              "y": 36.48,
+              "width": 148.32,
+              "height": 18
+            },
+            {
+              "x": 37.44,
+              "y": 94.08,
+              "width": 166.32,
+              "height": 18
+            },
+            {
+              "x": 37.199999999999996,
+              "y": 151.68,
+              "width": 166.56,
+              "height": 18
+            },
+            {
+              "x": 37.199999999999996,
+              "y": 210.23999999999998,
+              "width": 209.76,
+              "height": 19.919999999999998
+            }
+          ],
+          "characterErrorRate": 0,
+          "readingOrder": {
+            "method": "UI boxes mapped to fixed source rows/columns; consecutive fragments collapsed",
+            "expected": [
+              "L1",
+              "L2",
+              "L3",
+              "L4"
+            ],
+            "observed": [
+              "L1",
+              "L2",
+              "L3",
+              "L4"
+            ],
+            "status": "expected-order"
+          }
+        },
+        {
+          "id": "skew-plus-1.5",
+          "rotation": 1.5,
+          "blur": 0,
+          "foreground": 0,
+          "background": 255,
+          "columns": [
+            [
+              "繁體中文掃描測試",
+              "圖書館今天開放閱讀",
+              "學習文字辨識與校對",
+              "Synthetic scan page one"
+            ]
+          ],
+          "expected": "繁體中文掃描測試\n圖書館今天開放閱讀\n學習文字辨識與校對\nSynthetic scan page one",
+          "expectedOrder": [
+            "L1",
+            "L2",
+            "L3",
+            "L4"
+          ],
+          "sourcePngSha256": "ca06ff423782e88e1c5f2bb5806dfaf319f993a978e6067b441db453a316b1c6",
+          "rawUiLines": [
+            "繁髒中文掃描測試",
+            "圖書館今天開放閱讀",
+            "學習文字辨識與校對",
+            ">ynthetic scan page one"
+          ],
+          "actual": "繁髒中文掃描測試\n圖書館今天開放閱讀\n學習文字辨識與校對\n>ynthetic scan page one",
+          "boxes": [
+            {
+              "x": 40.8,
+              "y": 30.24,
+              "width": 147.84,
+              "height": 21.36
+            },
+            {
+              "x": 39.36,
+              "y": 88.56,
+              "width": 166.07999999999998,
+              "height": 20.64
+            },
+            {
+              "x": 37.44,
+              "y": 145.44,
+              "width": 166.56,
+              "height": 21.36
+            },
+            {
+              "x": 36,
+              "y": 204.95999999999998,
+              "width": 209.76,
+              "height": 22.56
+            }
+          ],
+          "characterErrorRate": 0.043478260869565216,
+          "readingOrder": {
+            "method": "UI boxes mapped to fixed source rows/columns; consecutive fragments collapsed",
+            "expected": [
+              "L1",
+              "L2",
+              "L3",
+              "L4"
+            ],
+            "observed": [
+              "L1",
+              "L2",
+              "L3",
+              "L4"
+            ],
+            "status": "expected-order"
+          }
+        },
+        {
+          "id": "skew-minus-1.5",
+          "rotation": -1.5,
+          "blur": 0,
+          "foreground": 0,
+          "background": 255,
+          "columns": [
+            [
+              "繁體中文掃描測試",
+              "圖書館今天開放閱讀",
+              "學習文字辨識與校對",
+              "Synthetic scan page one"
+            ]
+          ],
+          "expected": "繁體中文掃描測試\n圖書館今天開放閱讀\n學習文字辨識與校對\nSynthetic scan page one",
+          "expectedOrder": [
+            "L1",
+            "L2",
+            "L3",
+            "L4"
+          ],
+          "sourcePngSha256": "aa7d8baff314c81de078cb92010c5bbf7142c2e3ea0e584852f2b2c872554479",
+          "rawUiLines": [
+            "繁體中文掃描測試",
+            "圖書館今天開放閱讀",
+            "學習文字辨識與校對",
+            "Synthetic scan page one"
+          ],
+          "actual": "繁體中文掃描測試\n圖書館今天開放閱讀\n學習文字辨識與校對\nSynthetic scan page one",
+          "boxes": [
+            {
+              "x": 33.12,
+              "y": 39.6,
+              "width": 148.79999999999998,
+              "height": 20.88
+            },
+            {
+              "x": 35.28,
+              "y": 96.47999999999999,
+              "width": 166.56,
+              "height": 21.599999999999998
+            },
+            {
+              "x": 36.48,
+              "y": 154.07999999999998,
+              "width": 166.56,
+              "height": 21.36
+            },
+            {
+              "x": 38.64,
+              "y": 215.76,
+              "width": 209.04,
+              "height": 20.16
+            }
+          ],
+          "characterErrorRate": 0,
+          "readingOrder": {
+            "method": "UI boxes mapped to fixed source rows/columns; consecutive fragments collapsed",
+            "expected": [
+              "L1",
+              "L2",
+              "L3",
+              "L4"
+            ],
+            "observed": [
+              "L1",
+              "L2",
+              "L3",
+              "L4"
+            ],
+            "status": "expected-order"
+          }
+        },
+        {
+          "id": "blur-1.2",
+          "rotation": 0,
+          "blur": 1.2,
+          "foreground": 0,
+          "background": 255,
+          "columns": [
+            [
+              "繁體中文掃描測試",
+              "圖書館今天開放閱讀",
+              "學習文字辨識與校對",
+              "Synthetic scan page one"
+            ]
+          ],
+          "expected": "繁體中文掃描測試\n圖書館今天開放閱讀\n學習文字辨識與校對\nSynthetic scan page one",
+          "expectedOrder": [
+            "L1",
+            "L2",
+            "L3",
+            "L4"
+          ],
+          "sourcePngSha256": "3c0974159c0658f1797fb74b5b86b566d89b5c4d659fd2b1a271376ecb5cdbba",
+          "rawUiLines": [
+            "葵體中文掃描測試",
+            "SiS ARAM Bae",
+            "學習文字辨識與校對",
+            "Synthetic scan page one"
+          ],
+          "actual": "葵體中文掃描測試\nSiS ARAM Bae\n學習文字辨識與校對\nSynthetic scan page one",
+          "boxes": [
+            {
+              "x": 36.72,
+              "y": 36.48,
+              "width": 148.56,
+              "height": 18
+            },
+            {
+              "x": 37.44,
+              "y": 94.08,
+              "width": 166.32,
+              "height": 18
+            },
+            {
+              "x": 36.72,
+              "y": 151.68,
+              "width": 167.04,
+              "height": 18
+            },
+            {
+              "x": 37.199999999999996,
+              "y": 210.23999999999998,
+              "width": 209.76,
+              "height": 19.919999999999998
+            }
+          ],
+          "characterErrorRate": 0.2391304347826087,
+          "readingOrder": {
+            "method": "UI boxes mapped to fixed source rows/columns; consecutive fragments collapsed",
+            "expected": [
+              "L1",
+              "L2",
+              "L3",
+              "L4"
+            ],
+            "observed": [
+              "L1",
+              "L2",
+              "L3",
+              "L4"
+            ],
+            "status": "expected-order"
+          }
+        },
+        {
+          "id": "low-contrast",
+          "rotation": 0,
+          "blur": 0,
+          "foreground": 170,
+          "background": 210,
+          "columns": [
+            [
+              "繁體中文掃描測試",
+              "圖書館今天開放閱讀",
+              "學習文字辨識與校對",
+              "Synthetic scan page one"
+            ]
+          ],
+          "expected": "繁體中文掃描測試\n圖書館今天開放閱讀\n學習文字辨識與校對\nSynthetic scan page one",
+          "expectedOrder": [
+            "L1",
+            "L2",
+            "L3",
+            "L4"
+          ],
+          "sourcePngSha256": "1f3e40cc680e208edc9100c20a34ee787ac7afd560b364225cccaae3bd36e788",
+          "rawUiLines": [
+            "Fans HSC tee Allaah",
+            "圖書館今天開放閱讀",
+            "學習文字辨識與校對",
+            "Synthetic scan page one"
+          ],
+          "actual": "Fans HSC tee Allaah\n圖書館今天開放閱讀\n學習文字辨識與校對\nSynthetic scan page one",
+          "boxes": [
+            {
+              "x": 36.72,
+              "y": 36.48,
+              "width": 148.32,
+              "height": 18
+            },
+            {
+              "x": 37.44,
+              "y": 94.08,
+              "width": 166.32,
+              "height": 18
+            },
+            {
+              "x": 37.199999999999996,
+              "y": 151.68,
+              "width": 166.56,
+              "height": 18
+            },
+            {
+              "x": 37.199999999999996,
+              "y": 210.23999999999998,
+              "width": 209.76,
+              "height": 19.919999999999998
+            }
+          ],
+          "characterErrorRate": 0.34782608695652173,
+          "readingOrder": {
+            "method": "UI boxes mapped to fixed source rows/columns; consecutive fragments collapsed",
+            "expected": [
+              "L1",
+              "L2",
+              "L3",
+              "L4"
+            ],
+            "observed": [
+              "L1",
+              "L2",
+              "L3",
+              "L4"
+            ],
+            "status": "expected-order"
+          }
+        },
+        {
+          "id": "two-column-chinese",
+          "rotation": 0,
+          "blur": 0,
+          "foreground": 0,
+          "background": 255,
+          "columns": [
+            [
+              "春天適合戶外散步",
+              "花園種植各種植物",
+              "閱讀可以增長知識",
+              "今天一起練習寫字"
+            ],
+            [
+              "夏天注意補充水分",
+              "公園設有休息座椅",
+              "運動之後記得休息",
+              "明天繼續學習中文"
+            ]
+          ],
+          "expected": "春天適合戶外散步\n花園種植各種植物\n閱讀可以增長知識\n今天一起練習寫字\n夏天注意補充水分\n公園設有休息座椅\n運動之後記得休息\n明天繼續學習中文",
+          "expectedOrder": [
+            "L1",
+            "L2",
+            "L3",
+            "L4",
+            "R1",
+            "R2",
+            "R3",
+            "R4"
+          ],
+          "sourcePngSha256": "13741b3c0ea34a40fe46923f30a390872e83d685576d13ea063b6015540bba13",
+          "rawUiLines": [
+            "春天適合戶外散步      夏天注意補充水分",
+            "花園種植各種植物      公園設有休息座椅",
+            "閱讀可以增長知識      運動之後記得休息",
+            "今天一起練習寫字                       明天繼續學習中文"
+          ],
+          "actual": "春天適合戶外散步      夏天注意補充水分\n花園種植各種植物      公園設有休息座椅\n閱讀可以增長知識      運動之後記得休息\n今天一起練習寫字                       明天繼續學習中文",
+          "boxes": [
+            {
+              "x": 36.72,
+              "y": 35.519999999999996,
+              "width": 418.32,
+              "height": 25.439999999999998
+            },
+            {
+              "x": 36.72,
+              "y": 93.11999999999999,
+              "width": 418.32,
+              "height": 25.2
+            },
+            {
+              "x": 37.44,
+              "y": 151.68,
+              "width": 417.12,
+              "height": 18
+            },
+            {
+              "x": 36.72,
+              "y": 200.88,
+              "width": 418.32,
+              "height": 27.36
+            }
+          ],
+          "characterErrorRate": 0.71875,
+          "readingOrder": {
+            "method": "UI boxes mapped to fixed source rows/columns; consecutive fragments collapsed",
+            "expected": [
+              "L1",
+              "L2",
+              "L3",
+              "L4",
+              "R1",
+              "R2",
+              "R3",
+              "R4"
+            ],
+            "observed": [
+              "merged-LR1",
+              "merged-LR2",
+              "merged-LR3",
+              "merged-LR4"
+            ],
+            "status": "cross-column-lines"
+          }
+        }
+      ]
+    },
+    {
+      "sampleKind": "synthetic-scan-simulation",
+      "physicalScans": 0,
+      "gating": false,
+      "language": "chi_tra+eng",
+      "layout": "single-column",
+      "psm": 4,
+      "browser": "153.0.8010.0",
+      "node": "v24.19.0",
+      "repeat": 0,
+      "source": {
+        "width": 1600,
+        "height": 1000,
+        "font": "bundled NotoSansCJKtc-Regular.otf",
+        "fontPx": 52,
+        "pdfPoints": [
+          576,
+          360
+        ],
+        "ocrDpi": 300,
+        "maxEdge": 3500,
+        "sourceEffectiveDpi": 200
+      },
+      "normalization": "NFKC, lowercase, ignore whitespace/punctuation/symbols (unchanged)",
+      "measurements": [
+        {
+          "id": "clean-control",
+          "rotation": 0,
+          "blur": 0,
+          "foreground": 0,
+          "background": 255,
+          "columns": [
+            [
+              "繁體中文掃描測試",
+              "圖書館今天開放閱讀",
+              "學習文字辨識與校對",
+              "Synthetic scan page one"
+            ]
+          ],
+          "expected": "繁體中文掃描測試\n圖書館今天開放閱讀\n學習文字辨識與校對\nSynthetic scan page one",
+          "expectedOrder": [
+            "L1",
+            "L2",
+            "L3",
+            "L4"
+          ],
+          "sourcePngSha256": "3c9bc5316803a4e6975a286cdba7c015e599369218b3be5a10429e4f8dc1f27b",
+          "rawUiLines": [
+            "繁體中文掃描測試",
+            "圖書館今天開放閱讀",
+            "學習文字辨識與校對",
+            "Synthetic scan page one"
+          ],
+          "actual": "繁體中文掃描測試\n圖書館今天開放閱讀\n學習文字辨識與校對\nSynthetic scan page one",
+          "boxes": [
+            {
+              "x": 36.72,
+              "y": 36.48,
+              "width": 148.32,
+              "height": 18
+            },
+            {
+              "x": 37.44,
+              "y": 94.08,
+              "width": 166.32,
+              "height": 18
+            },
+            {
+              "x": 37.199999999999996,
+              "y": 151.68,
+              "width": 166.56,
+              "height": 18
+            },
+            {
+              "x": 37.199999999999996,
+              "y": 210.23999999999998,
+              "width": 209.76,
+              "height": 19.919999999999998
+            }
+          ],
+          "characterErrorRate": 0,
+          "readingOrder": {
+            "method": "UI boxes mapped to fixed source rows/columns; consecutive fragments collapsed",
+            "expected": [
+              "L1",
+              "L2",
+              "L3",
+              "L4"
+            ],
+            "observed": [
+              "L1",
+              "L2",
+              "L3",
+              "L4"
+            ],
+            "status": "expected-order"
+          }
+        },
+        {
+          "id": "skew-plus-1.5",
+          "rotation": 1.5,
+          "blur": 0,
+          "foreground": 0,
+          "background": 255,
+          "columns": [
+            [
+              "繁體中文掃描測試",
+              "圖書館今天開放閱讀",
+              "學習文字辨識與校對",
+              "Synthetic scan page one"
+            ]
+          ],
+          "expected": "繁體中文掃描測試\n圖書館今天開放閱讀\n學習文字辨識與校對\nSynthetic scan page one",
+          "expectedOrder": [
+            "L1",
+            "L2",
+            "L3",
+            "L4"
+          ],
+          "sourcePngSha256": "ca06ff423782e88e1c5f2bb5806dfaf319f993a978e6067b441db453a316b1c6",
+          "rawUiLines": [
+            "繁髒中文掃描測試",
+            "圖書館今天開放閱讀",
+            "學習文字辨識與校對",
+            ">ynthetic scan page one"
+          ],
+          "actual": "繁髒中文掃描測試\n圖書館今天開放閱讀\n學習文字辨識與校對\n>ynthetic scan page one",
+          "boxes": [
+            {
+              "x": 40.8,
+              "y": 30.24,
+              "width": 147.84,
+              "height": 21.36
+            },
+            {
+              "x": 39.36,
+              "y": 88.56,
+              "width": 166.07999999999998,
+              "height": 20.64
+            },
+            {
+              "x": 37.44,
+              "y": 145.44,
+              "width": 166.56,
+              "height": 21.36
+            },
+            {
+              "x": 36,
+              "y": 204.95999999999998,
+              "width": 209.76,
+              "height": 22.56
+            }
+          ],
+          "characterErrorRate": 0.043478260869565216,
+          "readingOrder": {
+            "method": "UI boxes mapped to fixed source rows/columns; consecutive fragments collapsed",
+            "expected": [
+              "L1",
+              "L2",
+              "L3",
+              "L4"
+            ],
+            "observed": [
+              "L1",
+              "L2",
+              "L3",
+              "L4"
+            ],
+            "status": "expected-order"
+          }
+        },
+        {
+          "id": "skew-minus-1.5",
+          "rotation": -1.5,
+          "blur": 0,
+          "foreground": 0,
+          "background": 255,
+          "columns": [
+            [
+              "繁體中文掃描測試",
+              "圖書館今天開放閱讀",
+              "學習文字辨識與校對",
+              "Synthetic scan page one"
+            ]
+          ],
+          "expected": "繁體中文掃描測試\n圖書館今天開放閱讀\n學習文字辨識與校對\nSynthetic scan page one",
+          "expectedOrder": [
+            "L1",
+            "L2",
+            "L3",
+            "L4"
+          ],
+          "sourcePngSha256": "aa7d8baff314c81de078cb92010c5bbf7142c2e3ea0e584852f2b2c872554479",
+          "rawUiLines": [
+            "繁體中文掃描測試",
+            "圖書館今天開放閱讀",
+            "學習文字辨識與校對",
+            "Synthetic scan page one"
+          ],
+          "actual": "繁體中文掃描測試\n圖書館今天開放閱讀\n學習文字辨識與校對\nSynthetic scan page one",
+          "boxes": [
+            {
+              "x": 33.12,
+              "y": 39.6,
+              "width": 148.79999999999998,
+              "height": 20.88
+            },
+            {
+              "x": 35.28,
+              "y": 96.47999999999999,
+              "width": 166.56,
+              "height": 21.599999999999998
+            },
+            {
+              "x": 36.48,
+              "y": 154.07999999999998,
+              "width": 166.56,
+              "height": 21.36
+            },
+            {
+              "x": 38.64,
+              "y": 215.76,
+              "width": 209.04,
+              "height": 20.16
+            }
+          ],
+          "characterErrorRate": 0,
+          "readingOrder": {
+            "method": "UI boxes mapped to fixed source rows/columns; consecutive fragments collapsed",
+            "expected": [
+              "L1",
+              "L2",
+              "L3",
+              "L4"
+            ],
+            "observed": [
+              "L1",
+              "L2",
+              "L3",
+              "L4"
+            ],
+            "status": "expected-order"
+          }
+        },
+        {
+          "id": "blur-1.2",
+          "rotation": 0,
+          "blur": 1.2,
+          "foreground": 0,
+          "background": 255,
+          "columns": [
+            [
+              "繁體中文掃描測試",
+              "圖書館今天開放閱讀",
+              "學習文字辨識與校對",
+              "Synthetic scan page one"
+            ]
+          ],
+          "expected": "繁體中文掃描測試\n圖書館今天開放閱讀\n學習文字辨識與校對\nSynthetic scan page one",
+          "expectedOrder": [
+            "L1",
+            "L2",
+            "L3",
+            "L4"
+          ],
+          "sourcePngSha256": "3c0974159c0658f1797fb74b5b86b566d89b5c4d659fd2b1a271376ecb5cdbba",
+          "rawUiLines": [
+            "葵體中文掃描測試",
+            "SiS ARAM Bae",
+            "學習文字辨識與校對",
+            "Synthetic scan page one"
+          ],
+          "actual": "葵體中文掃描測試\nSiS ARAM Bae\n學習文字辨識與校對\nSynthetic scan page one",
+          "boxes": [
+            {
+              "x": 36.72,
+              "y": 36.48,
+              "width": 148.56,
+              "height": 18
+            },
+            {
+              "x": 37.44,
+              "y": 94.08,
+              "width": 166.32,
+              "height": 18
+            },
+            {
+              "x": 36.72,
+              "y": 151.68,
+              "width": 167.04,
+              "height": 18
+            },
+            {
+              "x": 37.199999999999996,
+              "y": 210.23999999999998,
+              "width": 209.76,
+              "height": 19.919999999999998
+            }
+          ],
+          "characterErrorRate": 0.2391304347826087,
+          "readingOrder": {
+            "method": "UI boxes mapped to fixed source rows/columns; consecutive fragments collapsed",
+            "expected": [
+              "L1",
+              "L2",
+              "L3",
+              "L4"
+            ],
+            "observed": [
+              "L1",
+              "L2",
+              "L3",
+              "L4"
+            ],
+            "status": "expected-order"
+          }
+        },
+        {
+          "id": "low-contrast",
+          "rotation": 0,
+          "blur": 0,
+          "foreground": 170,
+          "background": 210,
+          "columns": [
+            [
+              "繁體中文掃描測試",
+              "圖書館今天開放閱讀",
+              "學習文字辨識與校對",
+              "Synthetic scan page one"
+            ]
+          ],
+          "expected": "繁體中文掃描測試\n圖書館今天開放閱讀\n學習文字辨識與校對\nSynthetic scan page one",
+          "expectedOrder": [
+            "L1",
+            "L2",
+            "L3",
+            "L4"
+          ],
+          "sourcePngSha256": "1f3e40cc680e208edc9100c20a34ee787ac7afd560b364225cccaae3bd36e788",
+          "rawUiLines": [
+            "Fans HSC tee Allaah",
+            "圖書館今天開放閱讀",
+            "學習文字辨識與校對",
+            "Synthetic scan page one"
+          ],
+          "actual": "Fans HSC tee Allaah\n圖書館今天開放閱讀\n學習文字辨識與校對\nSynthetic scan page one",
+          "boxes": [
+            {
+              "x": 36.72,
+              "y": 36.48,
+              "width": 148.32,
+              "height": 18
+            },
+            {
+              "x": 37.44,
+              "y": 94.08,
+              "width": 166.32,
+              "height": 18
+            },
+            {
+              "x": 37.199999999999996,
+              "y": 151.68,
+              "width": 166.56,
+              "height": 18
+            },
+            {
+              "x": 37.199999999999996,
+              "y": 210.23999999999998,
+              "width": 209.76,
+              "height": 19.919999999999998
+            }
+          ],
+          "characterErrorRate": 0.34782608695652173,
+          "readingOrder": {
+            "method": "UI boxes mapped to fixed source rows/columns; consecutive fragments collapsed",
+            "expected": [
+              "L1",
+              "L2",
+              "L3",
+              "L4"
+            ],
+            "observed": [
+              "L1",
+              "L2",
+              "L3",
+              "L4"
+            ],
+            "status": "expected-order"
+          }
+        },
+        {
+          "id": "two-column-chinese",
+          "rotation": 0,
+          "blur": 0,
+          "foreground": 0,
+          "background": 255,
+          "columns": [
+            [
+              "春天適合戶外散步",
+              "花園種植各種植物",
+              "閱讀可以增長知識",
+              "今天一起練習寫字"
+            ],
+            [
+              "夏天注意補充水分",
+              "公園設有休息座椅",
+              "運動之後記得休息",
+              "明天繼續學習中文"
+            ]
+          ],
+          "expected": "春天適合戶外散步\n花園種植各種植物\n閱讀可以增長知識\n今天一起練習寫字\n夏天注意補充水分\n公園設有休息座椅\n運動之後記得休息\n明天繼續學習中文",
+          "expectedOrder": [
+            "L1",
+            "L2",
+            "L3",
+            "L4",
+            "R1",
+            "R2",
+            "R3",
+            "R4"
+          ],
+          "sourcePngSha256": "13741b3c0ea34a40fe46923f30a390872e83d685576d13ea063b6015540bba13",
+          "rawUiLines": [
+            "春天適合戶外散步      夏天注意補充水分",
+            "花園種植各種植物      公園設有休息座椅",
+            "閱讀可以增長知識      運動之後記得休息",
+            "今天一起練習寫字                       明天繼續學習中文"
+          ],
+          "actual": "春天適合戶外散步      夏天注意補充水分\n花園種植各種植物      公園設有休息座椅\n閱讀可以增長知識      運動之後記得休息\n今天一起練習寫字                       明天繼續學習中文",
+          "boxes": [
+            {
+              "x": 36.72,
+              "y": 35.519999999999996,
+              "width": 418.32,
+              "height": 25.439999999999998
+            },
+            {
+              "x": 36.72,
+              "y": 93.11999999999999,
+              "width": 418.32,
+              "height": 25.2
+            },
+            {
+              "x": 37.44,
+              "y": 151.68,
+              "width": 417.12,
+              "height": 18
+            },
+            {
+              "x": 36.72,
+              "y": 200.88,
+              "width": 418.32,
+              "height": 27.36
+            }
+          ],
+          "characterErrorRate": 0.71875,
+          "readingOrder": {
+            "method": "UI boxes mapped to fixed source rows/columns; consecutive fragments collapsed",
+            "expected": [
+              "L1",
+              "L2",
+              "L3",
+              "L4",
+              "R1",
+              "R2",
+              "R3",
+              "R4"
+            ],
+            "observed": [
+              "merged-LR1",
+              "merged-LR2",
+              "merged-LR3",
+              "merged-LR4"
+            ],
+            "status": "cross-column-lines"
+          }
+        }
+      ]
+    }
+  ]
+}
