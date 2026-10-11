@@ -40,6 +40,16 @@ jobs:
           path: test-results/**/ocr-accuracy.json
           if-no-files-found: ignore
           retention-days: 7
+      - name: Upload two-column review and PDF evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: two-column-validation-${{ github.run_attempt }}
+          path: |
+            test-results/two-column-*/*.pdf
+            test-results/two-column-*/*.png
+          if-no-files-found: ignore
+          retention-days: 7
       - name: Upload failure diagnostics
         if: failure()
         uses: actions/upload-artifact@v4
