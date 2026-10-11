@@ -60,8 +60,8 @@ async function expectLines(fields, expected) {
   for (const [i, text] of expected.entries()) await expect(fields.nth(i)).toHaveValue(text);
 }
 
-for (const scenario of scanCases) {
-  test(`${scenario.language}: real scanned OCR, line correction, TXT and invisible PDF text`, async ({page, context}, testInfo) => {
+for (const layout of ['auto', 'single-column']) for (const scenario of scanCases) {
+  test(`${layout}, ${scenario.language}: real scanned OCR, line correction, TXT and invisible PDF text`, async ({page, context}, testInfo) => {
     // Actual worker/WASM startup and recognition need more time than native text.
     test.setTimeout(180_000);
     const errors = [], external = [], failedAssets = [], loaded = new Set(), workers = [];
@@ -92,9 +92,12 @@ for (const scenario of scanCases) {
     await expect(page.locator('#file-input')).toBeEnabled();
     await page.locator('#select-all').click();
     await page.locator('#ocr-language').selectOption(scenario.language);
+    if (layout === 'auto') await expect(page.locator('#ocr-layout')).toHaveValue('auto');
+    else await page.locator('#ocr-layout').selectOption(layout);
 
     await test.step('Real Tesseract recognition (no native text shortcut)', async () => {
       await page.locator('#ocr-start').click();
+      await expect(page.locator('#ocr-layout')).toBeDisabled();
       await expect(page.locator('#ocr-dialog')).toBeVisible({timeout: 120_000});
       await expect(page.locator('#status')).toContainText('已完成 2 頁文字處理');
       await expect(page.locator('#status')).not.toHaveClass(/error/);
@@ -137,11 +140,11 @@ for (const scenario of scanCases) {
       // segmentation without breaking the editing/export contract.
       const accuracyPath = testInfo.outputPath('ocr-accuracy.json');
       await writeFile(accuracyPath, JSON.stringify({
-        language: scenario.language, gating: false, normalization: 'NFKC, lowercase, ignore whitespace/punctuation/symbols',
+        language: scenario.language, layout, gating: false, normalization: 'NFKC, lowercase, ignore whitespace/punctuation/symbols',
         pages: accuracy,
       }, null, 2));
       await testInfo.attach('ocr-accuracy.json', {path: accuracyPath, contentType: 'application/json'});
-      console.log(`OCR accuracy (${scenario.language}, informational CER): ${accuracy.map(p => p.characterErrorRate.toFixed(3)).join(', ')}`);
+      console.log(`OCR accuracy (${layout}, ${scenario.language}, informational CER): ${accuracy.map(p => p.characterErrorRate.toFixed(3)).join(', ')}`);
     });
 
     await test.step('Save, reopen and download exact corrected UTF-8 text', async () => {
