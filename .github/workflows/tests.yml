@@ -40,6 +40,16 @@ jobs:
           path: test-results/**/ocr-accuracy.json
           if-no-files-found: ignore
           retention-days: 7
+      - name: Upload synthetic scan fixtures (not physical scans)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ocr-scan-simulations-${{ github.run_attempt }}
+          path: |
+            test-results/scan-conditions-*/simulated-scans.pdf
+            test-results/scan-conditions-*/*.png
+          if-no-files-found: ignore
+          retention-days: 7
       - name: Upload failure diagnostics
         if: failure()
         uses: actions/upload-artifact@v4
