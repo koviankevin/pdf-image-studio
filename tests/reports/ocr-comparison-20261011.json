@@ -1,0 +1,1829 @@
+{
+  "baselineCommit": "5745c0da2de76a57a85329fa690bfe59c85c8428",
+  "date": "2026-10-11",
+  "reports": [
+    {
+      "browser": "153.0.8010.0",
+      "gating": false,
+      "normalization": "NFKC, lowercase, ignore whitespace/punctuation/symbols",
+      "results": [
+        {
+          "name": "baseline",
+          "psm": 3,
+          "dpi": 300,
+          "language": "chi_tra+eng",
+          "pages": [
+            {
+              "text": "Fase PSC Hate All axl\n圖書館今天開放閱讀\n學習文字辨識與校對\n\nSynthetic scan page one\n",
+              "confidence": 77,
+              "width": 2400,
+              "height": 1500,
+              "dpi": 300,
+              "imageSha256": "e4d872420efec7f56ea2df5f55ac1f2c203e936ac33f2991f9844cf6ff835030",
+              "lines": [
+                {
+                  "text": "Fase PSC Hate All axl",
+                  "bbox": {
+                    "x0": 153,
+                    "y0": 152,
+                    "x1": 771,
+                    "y1": 227
+                  },
+                  "confidence": 32
+                },
+                {
+                  "text": "圖書館今天開放閱讀",
+                  "bbox": {
+                    "x0": 156,
+                    "y0": 392,
+                    "x1": 849,
+                    "y1": 467
+                  },
+                  "confidence": 86
+                },
+                {
+                  "text": "學習文字辨識與校對",
+                  "bbox": {
+                    "x0": 155,
+                    "y0": 632,
+                    "x1": 849,
+                    "y1": 707
+                  },
+                  "confidence": 95
+                },
+                {
+                  "text": "Synthetic scan page one",
+                  "bbox": {
+                    "x0": 155,
+                    "y0": 876,
+                    "x1": 1029,
+                    "y1": 959
+                  },
+                  "confidence": 89
+                }
+              ],
+              "page": 1,
+              "expected": "繁體中文掃描測試\n圖書館今天開放閱讀\n學習文字辨識與校對\nSynthetic scan page one",
+              "actual": "Fase PSC Hate All axl\n圖書館今天開放閱讀\n學習文字辨識與校對\nSynthetic scan page one",
+              "characterErrorRate": 0.3695652173913043
+            },
+            {
+              "text": "這是第二頁測試資料\n文字校對完成後儲存\n所有內容都是合成資料\n\nSynthetic scan page two\n",
+              "confidence": 94,
+              "width": 2400,
+              "height": 1500,
+              "dpi": 300,
+              "imageSha256": "df43017a576747968b86dcba46f41a2ea23550df66acce3d8fa1b54ff9e17832",
+              "lines": [
+                {
+                  "text": "這是第二頁測試資料",
+                  "bbox": {
+                    "x0": 153,
+                    "y0": 152,
+                    "x1": 849,
+                    "y1": 227
+                  },
+                  "confidence": 96
+                },
+                {
+                  "text": "文字校對完成後儲存",
+                  "bbox": {
+                    "x0": 153,
+                    "y0": 392,
+                    "x1": 849,
+                    "y1": 467
+                  },
+                  "confidence": 96
+                },
+                {
+                  "text": "所有內容都是合成資料",
+                  "bbox": {
+                    "x0": 153,
+                    "y0": 632,
+                    "x1": 927,
+                    "y1": 707
+                  },
+                  "confidence": 95
+                },
+                {
+                  "text": "Synthetic scan page two",
+                  "bbox": {
+                    "x0": 155,
+                    "y0": 876,
+                    "x1": 1029,
+                    "y1": 959
+                  },
+                  "confidence": 90
+                }
+              ],
+              "page": 2,
+              "expected": "這是第二頁測試資料\n文字校對完成後儲存\n所有內容都是合成資料\nSynthetic scan page two",
+              "actual": "這是第二頁測試資料\n文字校對完成後儲存\n所有內容都是合成資料\nSynthetic scan page two",
+              "characterErrorRate": 0
+            }
+          ]
+        },
+        {
+          "name": "single-column",
+          "psm": 4,
+          "dpi": 300,
+          "language": "chi_tra+eng",
+          "pages": [
+            {
+              "text": "繁體中文掃描測試\n圖書館今天開放閱讀\n學習文字辨識與校對\n\nSynthetic scan page one\n",
+              "confidence": 90,
+              "width": 2400,
+              "height": 1500,
+              "dpi": 300,
+              "imageSha256": "e4d872420efec7f56ea2df5f55ac1f2c203e936ac33f2991f9844cf6ff835030",
+              "lines": [
+                {
+                  "text": "繁體中文掃描測試",
+                  "bbox": {
+                    "x0": 153,
+                    "y0": 152,
+                    "x1": 771,
+                    "y1": 227
+                  },
+                  "confidence": 85
+                },
+                {
+                  "text": "圖書館今天開放閱讀",
+                  "bbox": {
+                    "x0": 156,
+                    "y0": 392,
+                    "x1": 849,
+                    "y1": 467
+                  },
+                  "confidence": 93
+                },
+                {
+                  "text": "學習文字辨識與校對",
+                  "bbox": {
+                    "x0": 155,
+                    "y0": 632,
+                    "x1": 849,
+                    "y1": 707
+                  },
+                  "confidence": 93
+                },
+                {
+                  "text": "Synthetic scan page one",
+                  "bbox": {
+                    "x0": 155,
+                    "y0": 876,
+                    "x1": 1029,
+                    "y1": 959
+                  },
+                  "confidence": 89
+                }
+              ],
+              "page": 1,
+              "expected": "繁體中文掃描測試\n圖書館今天開放閱讀\n學習文字辨識與校對\nSynthetic scan page one",
+              "actual": "繁體中文掃描測試\n圖書館今天開放閱讀\n學習文字辨識與校對\nSynthetic scan page one",
+              "characterErrorRate": 0
+            },
+            {
+              "text": "這是第二頁測試資料\n文字校對完成後儲存\n所有內容都是合成資料\n\nSynthetic scan page two\n",
+              "confidence": 94,
+              "width": 2400,
+              "height": 1500,
+              "dpi": 300,
+              "imageSha256": "df43017a576747968b86dcba46f41a2ea23550df66acce3d8fa1b54ff9e17832",
+              "lines": [
+                {
+                  "text": "這是第二頁測試資料",
+                  "bbox": {
+                    "x0": 153,
+                    "y0": 152,
+                    "x1": 849,
+                    "y1": 227
+                  },
+                  "confidence": 96
+                },
+                {
+                  "text": "文字校對完成後儲存",
+                  "bbox": {
+                    "x0": 153,
+                    "y0": 392,
+                    "x1": 849,
+                    "y1": 467
+                  },
+                  "confidence": 96
+                },
+                {
+                  "text": "所有內容都是合成資料",
+                  "bbox": {
+                    "x0": 153,
+                    "y0": 632,
+                    "x1": 927,
+                    "y1": 707
+                  },
+                  "confidence": 95
+                },
+                {
+                  "text": "Synthetic scan page two",
+                  "bbox": {
+                    "x0": 155,
+                    "y0": 876,
+                    "x1": 1029,
+                    "y1": 959
+                  },
+                  "confidence": 90
+                }
+              ],
+              "page": 2,
+              "expected": "這是第二頁測試資料\n文字校對完成後儲存\n所有內容都是合成資料\nSynthetic scan page two",
+              "actual": "這是第二頁測試資料\n文字校對完成後儲存\n所有內容都是合成資料\nSynthetic scan page two",
+              "characterErrorRate": 0
+            }
+          ]
+        },
+        {
+          "name": "single-block",
+          "psm": 6,
+          "dpi": 300,
+          "language": "chi_tra+eng",
+          "pages": [
+            {
+              "text": "或體中文掃描測試\n\n圖書館今天開放閱讀\n\n學習文字辨識與校對\nSynthetic scan page one\n",
+              "confidence": 88,
+              "width": 2400,
+              "height": 1500,
+              "dpi": 300,
+              "imageSha256": "e4d872420efec7f56ea2df5f55ac1f2c203e936ac33f2991f9844cf6ff835030",
+              "lines": [
+                {
+                  "text": "或體中文掃描測試",
+                  "bbox": {
+                    "x0": 153,
+                    "y0": 152,
+                    "x1": 771,
+                    "y1": 227
+                  },
+                  "confidence": 79
+                },
+                {
+                  "text": "圖書館今天開放閱讀",
+                  "bbox": {
+                    "x0": 156,
+                    "y0": 392,
+                    "x1": 849,
+                    "y1": 467
+                  },
+                  "confidence": 90
+                },
+                {
+                  "text": "學習文字辨識與校對",
+                  "bbox": {
+                    "x0": 155,
+                    "y0": 632,
+                    "x1": 849,
+                    "y1": 707
+                  },
+                  "confidence": 95
+                },
+                {
+                  "text": "Synthetic scan page one",
+                  "bbox": {
+                    "x0": 155,
+                    "y0": 876,
+                    "x1": 1029,
+                    "y1": 959
+                  },
+                  "confidence": 89
+                }
+              ],
+              "page": 1,
+              "expected": "繁體中文掃描測試\n圖書館今天開放閱讀\n學習文字辨識與校對\nSynthetic scan page one",
+              "actual": "或體中文掃描測試\n圖書館今天開放閱讀\n學習文字辨識與校對\nSynthetic scan page one",
+              "characterErrorRate": 0.021739130434782608
+            },
+            {
+              "text": "這是第二頁測試資料\n\n文字校對完成後儲存\n\n所有內容都是合成資料\nSynthetic scan page two\n",
+              "confidence": 94,
+              "width": 2400,
+              "height": 1500,
+              "dpi": 300,
+              "imageSha256": "df43017a576747968b86dcba46f41a2ea23550df66acce3d8fa1b54ff9e17832",
+              "lines": [
+                {
+                  "text": "這是第二頁測試資料",
+                  "bbox": {
+                    "x0": 153,
+                    "y0": 152,
+                    "x1": 849,
+                    "y1": 227
+                  },
+                  "confidence": 95
+                },
+                {
+                  "text": "文字校對完成後儲存",
+                  "bbox": {
+                    "x0": 153,
+                    "y0": 392,
+                    "x1": 849,
+                    "y1": 467
+                  },
+                  "confidence": 95
+                },
+                {
+                  "text": "所有內容都是合成資料",
+                  "bbox": {
+                    "x0": 153,
+                    "y0": 632,
+                    "x1": 927,
+                    "y1": 707
+                  },
+                  "confidence": 94
+                },
+                {
+                  "text": "Synthetic scan page two",
+                  "bbox": {
+                    "x0": 155,
+                    "y0": 876,
+                    "x1": 1029,
+                    "y1": 959
+                  },
+                  "confidence": 91
+                }
+              ],
+              "page": 2,
+              "expected": "這是第二頁測試資料\n文字校對完成後儲存\n所有內容都是合成資料\nSynthetic scan page two",
+              "actual": "這是第二頁測試資料\n文字校對完成後儲存\n所有內容都是合成資料\nSynthetic scan page two",
+              "characterErrorRate": 0
+            }
+          ]
+        },
+        {
+          "name": "sparse",
+          "psm": 11,
+          "dpi": 300,
+          "language": "chi_tra+eng",
+          "pages": [
+            {
+              "text": "Fans SCh tee Allaah\n\n圖書館今天開放閱讀\n\n學習文字辨識與校對\n\nSynthetic scan page one\n",
+              "confidence": 77,
+              "width": 2400,
+              "height": 1500,
+              "dpi": 300,
+              "imageSha256": "e4d872420efec7f56ea2df5f55ac1f2c203e936ac33f2991f9844cf6ff835030",
+              "lines": [
+                {
+                  "text": "Fans SCh tee Allaah",
+                  "bbox": {
+                    "x0": 153,
+                    "y0": 152,
+                    "x1": 771,
+                    "y1": 227
+                  },
+                  "confidence": 18
+                },
+                {
+                  "text": "圖書館今天開放閱讀",
+                  "bbox": {
+                    "x0": 156,
+                    "y0": 392,
+                    "x1": 849,
+                    "y1": 467
+                  },
+                  "confidence": 88
+                },
+                {
+                  "text": "學習文字辨識與校對",
+                  "bbox": {
+                    "x0": 155,
+                    "y0": 632,
+                    "x1": 849,
+                    "y1": 707
+                  },
+                  "confidence": 95
+                },
+                {
+                  "text": "Synthetic scan page one",
+                  "bbox": {
+                    "x0": 155,
+                    "y0": 876,
+                    "x1": 1029,
+                    "y1": 959
+                  },
+                  "confidence": 89
+                }
+              ],
+              "page": 1,
+              "expected": "繁體中文掃描測試\n圖書館今天開放閱讀\n學習文字辨識與校對\nSynthetic scan page one",
+              "actual": "Fans SCh tee Allaah\n圖書館今天開放閱讀\n學習文字辨識與校對\nSynthetic scan page one",
+              "characterErrorRate": 0.34782608695652173
+            },
+            {
+              "text": "es ae\n\n45 7E\n\n—\n\n頁測試資料\n\n文字校對完成後儲存\n\n所有內容都是合成資料\n\nSynthetic scan page two\n",
+              "confidence": 82,
+              "width": 2400,
+              "height": 1500,
+              "dpi": 300,
+              "imageSha256": "df43017a576747968b86dcba46f41a2ea23550df66acce3d8fa1b54ff9e17832",
+              "lines": [
+                {
+                  "text": "es ae",
+                  "bbox": {
+                    "x0": 158,
+                    "y0": 152,
+                    "x1": 452,
+                    "y1": 182
+                  },
+                  "confidence": 30
+                },
+                {
+                  "text": "45 7E",
+                  "bbox": {
+                    "x0": 153,
+                    "y0": 171,
+                    "x1": 377,
+                    "y1": 225
+                  },
+                  "confidence": 53
+                },
+                {
+                  "text": "—",
+                  "bbox": {
+                    "x0": 389,
+                    "y0": 212,
+                    "x1": 536,
+                    "y1": 225
+                  },
+                  "confidence": 54
+                },
+                {
+                  "text": "頁測試資料",
+                  "bbox": {
+                    "x0": 468,
+                    "y0": 153,
+                    "x1": 849,
+                    "y1": 227
+                  },
+                  "confidence": 84
+                },
+                {
+                  "text": "文字校對完成後儲存",
+                  "bbox": {
+                    "x0": 153,
+                    "y0": 392,
+                    "x1": 849,
+                    "y1": 467
+                  },
+                  "confidence": 96
+                },
+                {
+                  "text": "所有內容都是合成資料",
+                  "bbox": {
+                    "x0": 153,
+                    "y0": 632,
+                    "x1": 927,
+                    "y1": 707
+                  },
+                  "confidence": 92
+                },
+                {
+                  "text": "Synthetic scan page two",
+                  "bbox": {
+                    "x0": 155,
+                    "y0": 876,
+                    "x1": 1029,
+                    "y1": 959
+                  },
+                  "confidence": 90
+                }
+              ],
+              "page": 2,
+              "expected": "這是第二頁測試資料\n文字校對完成後儲存\n所有內容都是合成資料\nSynthetic scan page two",
+              "actual": "es ae\n45 7E\n—\n頁測試資料\n文字校對完成後儲存\n所有內容都是合成資料\nSynthetic scan page two",
+              "characterErrorRate": 0.16666666666666666
+            }
+          ]
+        },
+        {
+          "name": "dpi200",
+          "psm": 3,
+          "dpi": 200,
+          "language": "chi_tra+eng",
+          "pages": [
+            {
+              "text": "繁體中文掃描測試\n圖書館今天開放閱讀\n學習文字辨識與校對\n\nSynthetic scan page one\n",
+              "confidence": 92,
+              "width": 1600,
+              "height": 1000,
+              "dpi": 200,
+              "imageSha256": "4520dddc5001ec276c75a348e4736de7785dc006e158bf4b4a9a95850fe250c7",
+              "lines": [
+                {
+                  "text": "繁體中文掃描測試",
+                  "bbox": {
+                    "x0": 102,
+                    "y0": 101,
+                    "x1": 514,
+                    "y1": 151
+                  },
+                  "confidence": 95
+                },
+                {
+                  "text": "圖書館今天開放閱讀",
+                  "bbox": {
+                    "x0": 104,
+                    "y0": 261,
+                    "x1": 566,
+                    "y1": 311
+                  },
+                  "confidence": 92
+                },
+                {
+                  "text": "學習文字辨識與校對",
+                  "bbox": {
+                    "x0": 103,
+                    "y0": 421,
+                    "x1": 566,
+                    "y1": 471
+                  },
+                  "confidence": 91
+                },
+                {
+                  "text": "Synthetic scan page one",
+                  "bbox": {
+                    "x0": 103,
+                    "y0": 584,
+                    "x1": 686,
+                    "y1": 639
+                  },
+                  "confidence": 92
+                }
+              ],
+              "page": 1,
+              "expected": "繁體中文掃描測試\n圖書館今天開放閱讀\n學習文字辨識與校對\nSynthetic scan page one",
+              "actual": "繁體中文掃描測試\n圖書館今天開放閱讀\n學習文字辨識與校對\nSynthetic scan page one",
+              "characterErrorRate": 0
+            },
+            {
+              "text": "nlf\n\n二頁測試資料\n文字校對完成後儲存\n所有內容都是合成資料\n\nSynthetic scan page two\n",
+              "confidence": 91,
+              "width": 1600,
+              "height": 1000,
+              "dpi": 200,
+              "imageSha256": "64d4b2aad4ec2dcd1e002b99f875775759b4efbeee5e2f267cb4fda3b56cbe9f",
+              "lines": [
+                {
+                  "text": "nlf",
+                  "bbox": {
+                    "x0": 105,
+                    "y0": 101,
+                    "x1": 149,
+                    "y1": 141
+                  },
+                  "confidence": 34
+                },
+                {
+                  "text": "二頁測試資料",
+                  "bbox": {
+                    "x0": 259,
+                    "y0": 102,
+                    "x1": 566,
+                    "y1": 151
+                  },
+                  "confidence": 93
+                },
+                {
+                  "text": "文字校對完成後儲存",
+                  "bbox": {
+                    "x0": 102,
+                    "y0": 261,
+                    "x1": 566,
+                    "y1": 311
+                  },
+                  "confidence": 96
+                },
+                {
+                  "text": "所有內容都是合成資料",
+                  "bbox": {
+                    "x0": 102,
+                    "y0": 421,
+                    "x1": 618,
+                    "y1": 471
+                  },
+                  "confidence": 95
+                },
+                {
+                  "text": "Synthetic scan page two",
+                  "bbox": {
+                    "x0": 103,
+                    "y0": 584,
+                    "x1": 686,
+                    "y1": 639
+                  },
+                  "confidence": 92
+                }
+              ],
+              "page": 2,
+              "expected": "這是第二頁測試資料\n文字校對完成後儲存\n所有內容都是合成資料\nSynthetic scan page two",
+              "actual": "nlf\n二頁測試資料\n文字校對完成後儲存\n所有內容都是合成資料\nSynthetic scan page two",
+              "characterErrorRate": 0.0625
+            }
+          ]
+        },
+        {
+          "name": "dpi400",
+          "psm": 3,
+          "dpi": 400,
+          "language": "chi_tra+eng",
+          "pages": [
+            {
+              "text": "Safe PN fate ell ast\nEl Sie AR Bae\n學習文字辨識與校對\n\nSynthetic scan page one\n",
+              "confidence": 63,
+              "width": 3200,
+              "height": 2000,
+              "dpi": 400,
+              "imageSha256": "e73890108e45dffb723487e59e1ef15480c8413802378fd2387fc8cd95ffcee8",
+              "lines": [
+                {
+                  "text": "Safe PN fate ell ast",
+                  "bbox": {
+                    "x0": 204,
+                    "y0": 202,
+                    "x1": 1028,
+                    "y1": 302
+                  },
+                  "confidence": 34
+                },
+                {
+                  "text": "El Sie AR Bae",
+                  "bbox": {
+                    "x0": 208,
+                    "y0": 522,
+                    "x1": 1132,
+                    "y1": 622
+                  },
+                  "confidence": 32
+                },
+                {
+                  "text": "學習文字辨識與校對",
+                  "bbox": {
+                    "x0": 206,
+                    "y0": 842,
+                    "x1": 1132,
+                    "y1": 942
+                  },
+                  "confidence": 87
+                },
+                {
+                  "text": "Synthetic scan page one",
+                  "bbox": {
+                    "x0": 206,
+                    "y0": 1168,
+                    "x1": 1372,
+                    "y1": 1278
+                  },
+                  "confidence": 90
+                }
+              ],
+              "page": 1,
+              "expected": "繁體中文掃描測試\n圖書館今天開放閱讀\n學習文字辨識與校對\nSynthetic scan page one",
+              "actual": "Safe PN fate ell ast\nEl Sie AR Bae\n學習文字辨識與校對\nSynthetic scan page one",
+              "characterErrorRate": 0.5652173913043478
+            },
+            {
+              "text": "mn\n\n二頁測試資料\n文字校對完成後儲存\n所有內容都是合成資料\n\nSynthetic scan page two\n",
+              "confidence": 87,
+              "width": 3200,
+              "height": 2000,
+              "dpi": 400,
+              "imageSha256": "a26fce85a289d041b76803a76ecede60edba0d32acd99fdb77c8a5b718c1ff15",
+              "lines": [
+                {
+                  "text": "mn",
+                  "bbox": {
+                    "x0": 210,
+                    "y0": 202,
+                    "x1": 298,
+                    "y1": 282
+                  },
+                  "confidence": 28
+                },
+                {
+                  "text": "二頁測試資料",
+                  "bbox": {
+                    "x0": 518,
+                    "y0": 204,
+                    "x1": 1132,
+                    "y1": 302
+                  },
+                  "confidence": 85
+                },
+                {
+                  "text": "文字校對完成後儲存",
+                  "bbox": {
+                    "x0": 204,
+                    "y0": 522,
+                    "x1": 1132,
+                    "y1": 622
+                  },
+                  "confidence": 96
+                },
+                {
+                  "text": "所有內容都是合成資料",
+                  "bbox": {
+                    "x0": 204,
+                    "y0": 842,
+                    "x1": 1236,
+                    "y1": 942
+                  },
+                  "confidence": 90
+                },
+                {
+                  "text": "Synthetic scan page two",
+                  "bbox": {
+                    "x0": 206,
+                    "y0": 1168,
+                    "x1": 1372,
+                    "y1": 1278
+                  },
+                  "confidence": 89
+                }
+              ],
+              "page": 2,
+              "expected": "這是第二頁測試資料\n文字校對完成後儲存\n所有內容都是合成資料\nSynthetic scan page two",
+              "actual": "mn\n二頁測試資料\n文字校對完成後儲存\n所有內容都是合成資料\nSynthetic scan page two",
+              "characterErrorRate": 0.0625
+            }
+          ]
+        },
+        {
+          "name": "chinese-only",
+          "psm": 3,
+          "dpi": 300,
+          "language": "chi_tra",
+          "pages": [
+            {
+              "text": "葵體中文掃描測試\n圖書館今天開放閱讀\n學習文字辨識與校對\n\nSynthetic scan page one\n",
+              "confidence": 82,
+              "width": 2400,
+              "height": 1500,
+              "dpi": 300,
+              "imageSha256": "e4d872420efec7f56ea2df5f55ac1f2c203e936ac33f2991f9844cf6ff835030",
+              "lines": [
+                {
+                  "text": "葵體中文掃描測試",
+                  "bbox": {
+                    "x0": 153,
+                    "y0": 152,
+                    "x1": 771,
+                    "y1": 227
+                  },
+                  "confidence": 58
+                },
+                {
+                  "text": "圖書館今天開放閱讀",
+                  "bbox": {
+                    "x0": 156,
+                    "y0": 392,
+                    "x1": 849,
+                    "y1": 467
+                  },
+                  "confidence": 86
+                },
+                {
+                  "text": "學習文字辨識與校對",
+                  "bbox": {
+                    "x0": 155,
+                    "y0": 632,
+                    "x1": 849,
+                    "y1": 707
+                  },
+                  "confidence": 95
+                },
+                {
+                  "text": "Synthetic scan page one",
+                  "bbox": {
+                    "x0": 155,
+                    "y0": 876,
+                    "x1": 1029,
+                    "y1": 959
+                  },
+                  "confidence": 89
+                }
+              ],
+              "page": 1,
+              "expected": "繁體中文掃描測試\n圖書館今天開放閱讀\n學習文字辨識與校對\nSynthetic scan page one",
+              "actual": "葵體中文掃描測試\n圖書館今天開放閱讀\n學習文字辨識與校對\nSynthetic scan page one",
+              "characterErrorRate": 0.021739130434782608
+            },
+            {
+              "text": "這是第二頁測試資料\n文字校對完成後儲存\n所有內容都是合成資料\n\nSynthetic scan page two\n",
+              "confidence": 94,
+              "width": 2400,
+              "height": 1500,
+              "dpi": 300,
+              "imageSha256": "df43017a576747968b86dcba46f41a2ea23550df66acce3d8fa1b54ff9e17832",
+              "lines": [
+                {
+                  "text": "這是第二頁測試資料",
+                  "bbox": {
+                    "x0": 153,
+                    "y0": 152,
+                    "x1": 849,
+                    "y1": 227
+                  },
+                  "confidence": 96
+                },
+                {
+                  "text": "文字校對完成後儲存",
+                  "bbox": {
+                    "x0": 153,
+                    "y0": 392,
+                    "x1": 849,
+                    "y1": 467
+                  },
+                  "confidence": 96
+                },
+                {
+                  "text": "所有內容都是合成資料",
+                  "bbox": {
+                    "x0": 153,
+                    "y0": 632,
+                    "x1": 927,
+                    "y1": 707
+                  },
+                  "confidence": 95
+                },
+                {
+                  "text": "Synthetic scan page two",
+                  "bbox": {
+                    "x0": 155,
+                    "y0": 876,
+                    "x1": 1029,
+                    "y1": 959
+                  },
+                  "confidence": 90
+                }
+              ],
+              "page": 2,
+              "expected": "這是第二頁測試資料\n文字校對完成後儲存\n所有內容都是合成資料\nSynthetic scan page two",
+              "actual": "這是第二頁測試資料\n文字校對完成後儲存\n所有內容都是合成資料\nSynthetic scan page two",
+              "characterErrorRate": 0
+            }
+          ]
+        },
+        {
+          "name": "english-first",
+          "psm": 3,
+          "dpi": 300,
+          "language": "eng+chi_tra",
+          "pages": [
+            {
+              "text": "Fase PSC Hate All axl\n圖書館今天開放閱讀\n學習文字辨識與校對\n\nSynthetic scan page one\n",
+              "confidence": 77,
+              "width": 2400,
+              "height": 1500,
+              "dpi": 300,
+              "imageSha256": "e4d872420efec7f56ea2df5f55ac1f2c203e936ac33f2991f9844cf6ff835030",
+              "lines": [
+                {
+                  "text": "Fase PSC Hate All axl",
+                  "bbox": {
+                    "x0": 153,
+                    "y0": 152,
+                    "x1": 771,
+                    "y1": 227
+                  },
+                  "confidence": 32
+                },
+                {
+                  "text": "圖書館今天開放閱讀",
+                  "bbox": {
+                    "x0": 156,
+                    "y0": 392,
+                    "x1": 849,
+                    "y1": 467
+                  },
+                  "confidence": 86
+                },
+                {
+                  "text": "學習文字辨識與校對",
+                  "bbox": {
+                    "x0": 155,
+                    "y0": 632,
+                    "x1": 849,
+                    "y1": 707
+                  },
+                  "confidence": 95
+                },
+                {
+                  "text": "Synthetic scan page one",
+                  "bbox": {
+                    "x0": 155,
+                    "y0": 876,
+                    "x1": 1029,
+                    "y1": 959
+                  },
+                  "confidence": 89
+                }
+              ],
+              "page": 1,
+              "expected": "繁體中文掃描測試\n圖書館今天開放閱讀\n學習文字辨識與校對\nSynthetic scan page one",
+              "actual": "Fase PSC Hate All axl\n圖書館今天開放閱讀\n學習文字辨識與校對\nSynthetic scan page one",
+              "characterErrorRate": 0.3695652173913043
+            },
+            {
+              "text": "這是第二頁測試資料\n文字校對完成後儲存\n所有內容都是合成資料\n\nSynthetic scan page two\n",
+              "confidence": 94,
+              "width": 2400,
+              "height": 1500,
+              "dpi": 300,
+              "imageSha256": "df43017a576747968b86dcba46f41a2ea23550df66acce3d8fa1b54ff9e17832",
+              "lines": [
+                {
+                  "text": "這是第二頁測試資料",
+                  "bbox": {
+                    "x0": 153,
+                    "y0": 152,
+                    "x1": 849,
+                    "y1": 227
+                  },
+                  "confidence": 96
+                },
+                {
+                  "text": "文字校對完成後儲存",
+                  "bbox": {
+                    "x0": 153,
+                    "y0": 392,
+                    "x1": 849,
+                    "y1": 467
+                  },
+                  "confidence": 96
+                },
+                {
+                  "text": "所有內容都是合成資料",
+                  "bbox": {
+                    "x0": 153,
+                    "y0": 632,
+                    "x1": 927,
+                    "y1": 707
+                  },
+                  "confidence": 95
+                },
+                {
+                  "text": "Synthetic scan page two",
+                  "bbox": {
+                    "x0": 155,
+                    "y0": 876,
+                    "x1": 1029,
+                    "y1": 959
+                  },
+                  "confidence": 90
+                }
+              ],
+              "page": 2,
+              "expected": "這是第二頁測試資料\n文字校對完成後儲存\n所有內容都是合成資料\nSynthetic scan page two",
+              "actual": "這是第二頁測試資料\n文字校對完成後儲存\n所有內容都是合成資料\nSynthetic scan page two",
+              "characterErrorRate": 0
+            }
+          ]
+        },
+        {
+          "name": "sauvola",
+          "psm": 3,
+          "dpi": 300,
+          "parameters": {
+            "thresholding_method": "2"
+          },
+          "language": "chi_tra+eng",
+          "pages": [
+            {
+              "text": "藉體中文掃指測試\n圖書館今天開放閱讀\n學習文字辨識與校對\n\nSynthetic scan page one\n",
+              "confidence": 80,
+              "width": 2400,
+              "height": 1500,
+              "dpi": 300,
+              "imageSha256": "e4d872420efec7f56ea2df5f55ac1f2c203e936ac33f2991f9844cf6ff835030",
+              "lines": [
+                {
+                  "text": "藉體中文掃指測試",
+                  "bbox": {
+                    "x0": 153,
+                    "y0": 152,
+                    "x1": 772,
+                    "y1": 227
+                  },
+                  "confidence": 41
+                },
+                {
+                  "text": "圖書館今天開放閱讀",
+                  "bbox": {
+                    "x0": 156,
+                    "y0": 392,
+                    "x1": 849,
+                    "y1": 467
+                  },
+                  "confidence": 88
+                },
+                {
+                  "text": "學習文字辨識與校對",
+                  "bbox": {
+                    "x0": 153,
+                    "y0": 632,
+                    "x1": 849,
+                    "y1": 707
+                  },
+                  "confidence": 93
+                },
+                {
+                  "text": "Synthetic scan page one",
+                  "bbox": {
+                    "x0": 153,
+                    "y0": 876,
+                    "x1": 1029,
+                    "y1": 959
+                  },
+                  "confidence": 91
+                }
+              ],
+              "page": 1,
+              "expected": "繁體中文掃描測試\n圖書館今天開放閱讀\n學習文字辨識與校對\nSynthetic scan page one",
+              "actual": "藉體中文掃指測試\n圖書館今天開放閱讀\n學習文字辨識與校對\nSynthetic scan page one",
+              "characterErrorRate": 0.043478260869565216
+            },
+            {
+              "text": "這是第二頁測試資料\n\nOl\n\n文字校對完成後儲存\n所有內容都是合成資料\n\nSynthetic scan page two\n",
+              "confidence": 92,
+              "width": 2400,
+              "height": 1500,
+              "dpi": 300,
+              "imageSha256": "df43017a576747968b86dcba46f41a2ea23550df66acce3d8fa1b54ff9e17832",
+              "lines": [
+                {
+                  "text": "這是第二頁測試資料",
+                  "bbox": {
+                    "x0": 156,
+                    "y0": 152,
+                    "x1": 849,
+                    "y1": 227
+                  },
+                  "confidence": 95
+                },
+                {
+                  "text": "Ol",
+                  "bbox": {
+                    "x0": 180,
+                    "y0": 173,
+                    "x1": 218,
+                    "y1": 212
+                  },
+                  "confidence": 50
+                },
+                {
+                  "text": "文字校對完成後儲存",
+                  "bbox": {
+                    "x0": 153,
+                    "y0": 392,
+                    "x1": 849,
+                    "y1": 467
+                  },
+                  "confidence": 96
+                },
+                {
+                  "text": "所有內容都是合成資料",
+                  "bbox": {
+                    "x0": 152,
+                    "y0": 632,
+                    "x1": 927,
+                    "y1": 707
+                  },
+                  "confidence": 93
+                },
+                {
+                  "text": "Synthetic scan page two",
+                  "bbox": {
+                    "x0": 153,
+                    "y0": 876,
+                    "x1": 1029,
+                    "y1": 959
+                  },
+                  "confidence": 91
+                }
+              ],
+              "page": 2,
+              "expected": "這是第二頁測試資料\n文字校對完成後儲存\n所有內容都是合成資料\nSynthetic scan page two",
+              "actual": "這是第二頁測試資料\nOl\n文字校對完成後儲存\n所有內容都是合成資料\nSynthetic scan page two",
+              "characterErrorRate": 0.041666666666666664
+            }
+          ]
+        },
+        {
+          "name": "no-vertical",
+          "psm": 3,
+          "dpi": 300,
+          "parameters": {
+            "textord_tabfind_vertical_text": "0"
+          },
+          "language": "chi_tra+eng",
+          "pages": [
+            {
+              "text": "Fase PSC Hate All axl\n圖書館今天開放閱讀\n學習文字辨識與校對\n\nSynthetic scan page one\n",
+              "confidence": 77,
+              "width": 2400,
+              "height": 1500,
+              "dpi": 300,
+              "imageSha256": "e4d872420efec7f56ea2df5f55ac1f2c203e936ac33f2991f9844cf6ff835030",
+              "lines": [
+                {
+                  "text": "Fase PSC Hate All axl",
+                  "bbox": {
+                    "x0": 153,
+                    "y0": 152,
+                    "x1": 771,
+                    "y1": 227
+                  },
+                  "confidence": 32
+                },
+                {
+                  "text": "圖書館今天開放閱讀",
+                  "bbox": {
+                    "x0": 156,
+                    "y0": 392,
+                    "x1": 849,
+                    "y1": 467
+                  },
+                  "confidence": 86
+                },
+                {
+                  "text": "學習文字辨識與校對",
+                  "bbox": {
+                    "x0": 155,
+                    "y0": 632,
+                    "x1": 849,
+                    "y1": 707
+                  },
+                  "confidence": 95
+                },
+                {
+                  "text": "Synthetic scan page one",
+                  "bbox": {
+                    "x0": 155,
+                    "y0": 876,
+                    "x1": 1029,
+                    "y1": 959
+                  },
+                  "confidence": 89
+                }
+              ],
+              "page": 1,
+              "expected": "繁體中文掃描測試\n圖書館今天開放閱讀\n學習文字辨識與校對\nSynthetic scan page one",
+              "actual": "Fase PSC Hate All axl\n圖書館今天開放閱讀\n學習文字辨識與校對\nSynthetic scan page one",
+              "characterErrorRate": 0.3695652173913043
+            },
+            {
+              "text": "這是第二頁測試資料\n文字校對完成後儲存\n所有內容都是合成資料\n\nSynthetic scan page two\n",
+              "confidence": 94,
+              "width": 2400,
+              "height": 1500,
+              "dpi": 300,
+              "imageSha256": "df43017a576747968b86dcba46f41a2ea23550df66acce3d8fa1b54ff9e17832",
+              "lines": [
+                {
+                  "text": "這是第二頁測試資料",
+                  "bbox": {
+                    "x0": 153,
+                    "y0": 152,
+                    "x1": 849,
+                    "y1": 227
+                  },
+                  "confidence": 96
+                },
+                {
+                  "text": "文字校對完成後儲存",
+                  "bbox": {
+                    "x0": 153,
+                    "y0": 392,
+                    "x1": 849,
+                    "y1": 467
+                  },
+                  "confidence": 96
+                },
+                {
+                  "text": "所有內容都是合成資料",
+                  "bbox": {
+                    "x0": 153,
+                    "y0": 632,
+                    "x1": 927,
+                    "y1": 707
+                  },
+                  "confidence": 95
+                },
+                {
+                  "text": "Synthetic scan page two",
+                  "bbox": {
+                    "x0": 155,
+                    "y0": 876,
+                    "x1": 1029,
+                    "y1": 959
+                  },
+                  "confidence": 90
+                }
+              ],
+              "page": 2,
+              "expected": "這是第二頁測試資料\n文字校對完成後儲存\n所有內容都是合成資料\nSynthetic scan page two",
+              "actual": "這是第二頁測試資料\n文字校對完成後儲存\n所有內容都是合成資料\nSynthetic scan page two",
+              "characterErrorRate": 0
+            }
+          ]
+        },
+        {
+          "name": "no-tables",
+          "psm": 3,
+          "dpi": 300,
+          "parameters": {
+            "textord_tabfind_find_tables": "0"
+          },
+          "language": "chi_tra+eng",
+          "pages": [
+            {
+              "text": "Fase PSC Hate All axl\n圖書館今天開放閱讀\n學習文字辨識與校對\n\nSynthetic scan page one\n",
+              "confidence": 77,
+              "width": 2400,
+              "height": 1500,
+              "dpi": 300,
+              "imageSha256": "e4d872420efec7f56ea2df5f55ac1f2c203e936ac33f2991f9844cf6ff835030",
+              "lines": [
+                {
+                  "text": "Fase PSC Hate All axl",
+                  "bbox": {
+                    "x0": 153,
+                    "y0": 152,
+                    "x1": 771,
+                    "y1": 227
+                  },
+                  "confidence": 32
+                },
+                {
+                  "text": "圖書館今天開放閱讀",
+                  "bbox": {
+                    "x0": 156,
+                    "y0": 392,
+                    "x1": 849,
+                    "y1": 467
+                  },
+                  "confidence": 86
+                },
+                {
+                  "text": "學習文字辨識與校對",
+                  "bbox": {
+                    "x0": 155,
+                    "y0": 632,
+                    "x1": 849,
+                    "y1": 707
+                  },
+                  "confidence": 95
+                },
+                {
+                  "text": "Synthetic scan page one",
+                  "bbox": {
+                    "x0": 155,
+                    "y0": 876,
+                    "x1": 1029,
+                    "y1": 959
+                  },
+                  "confidence": 89
+                }
+              ],
+              "page": 1,
+              "expected": "繁體中文掃描測試\n圖書館今天開放閱讀\n學習文字辨識與校對\nSynthetic scan page one",
+              "actual": "Fase PSC Hate All axl\n圖書館今天開放閱讀\n學習文字辨識與校對\nSynthetic scan page one",
+              "characterErrorRate": 0.3695652173913043
+            },
+            {
+              "text": "這是第二頁測試資料\n文字校對完成後儲存\n所有內容都是合成資料\n\nSynthetic scan page two\n",
+              "confidence": 94,
+              "width": 2400,
+              "height": 1500,
+              "dpi": 300,
+              "imageSha256": "df43017a576747968b86dcba46f41a2ea23550df66acce3d8fa1b54ff9e17832",
+              "lines": [
+                {
+                  "text": "這是第二頁測試資料",
+                  "bbox": {
+                    "x0": 153,
+                    "y0": 152,
+                    "x1": 849,
+                    "y1": 227
+                  },
+                  "confidence": 96
+                },
+                {
+                  "text": "文字校對完成後儲存",
+                  "bbox": {
+                    "x0": 153,
+                    "y0": 392,
+                    "x1": 849,
+                    "y1": 467
+                  },
+                  "confidence": 96
+                },
+                {
+                  "text": "所有內容都是合成資料",
+                  "bbox": {
+                    "x0": 153,
+                    "y0": 632,
+                    "x1": 927,
+                    "y1": 707
+                  },
+                  "confidence": 95
+                },
+                {
+                  "text": "Synthetic scan page two",
+                  "bbox": {
+                    "x0": 155,
+                    "y0": 876,
+                    "x1": 1029,
+                    "y1": 959
+                  },
+                  "confidence": 90
+                }
+              ],
+              "page": 2,
+              "expected": "這是第二頁測試資料\n文字校對完成後儲存\n所有內容都是合成資料\nSynthetic scan page two",
+              "actual": "這是第二頁測試資料\n文字校對完成後儲存\n所有內容都是合成資料\nSynthetic scan page two",
+              "characterErrorRate": 0
+            }
+          ]
+        },
+        {
+          "name": "single-column-repeat2",
+          "psm": 4,
+          "dpi": 300,
+          "language": "chi_tra+eng",
+          "pages": [
+            {
+              "text": "繁體中文掃描測試\n圖書館今天開放閱讀\n學習文字辨識與校對\n\nSynthetic scan page one\n",
+              "confidence": 90,
+              "width": 2400,
+              "height": 1500,
+              "dpi": 300,
+              "imageSha256": "e4d872420efec7f56ea2df5f55ac1f2c203e936ac33f2991f9844cf6ff835030",
+              "lines": [
+                {
+                  "text": "繁體中文掃描測試",
+                  "bbox": {
+                    "x0": 153,
+                    "y0": 152,
+                    "x1": 771,
+                    "y1": 227
+                  },
+                  "confidence": 85
+                },
+                {
+                  "text": "圖書館今天開放閱讀",
+                  "bbox": {
+                    "x0": 156,
+                    "y0": 392,
+                    "x1": 849,
+                    "y1": 467
+                  },
+                  "confidence": 93
+                },
+                {
+                  "text": "學習文字辨識與校對",
+                  "bbox": {
+                    "x0": 155,
+                    "y0": 632,
+                    "x1": 849,
+                    "y1": 707
+                  },
+                  "confidence": 93
+                },
+                {
+                  "text": "Synthetic scan page one",
+                  "bbox": {
+                    "x0": 155,
+                    "y0": 876,
+                    "x1": 1029,
+                    "y1": 959
+                  },
+                  "confidence": 89
+                }
+              ],
+              "page": 1,
+              "expected": "繁體中文掃描測試\n圖書館今天開放閱讀\n學習文字辨識與校對\nSynthetic scan page one",
+              "actual": "繁體中文掃描測試\n圖書館今天開放閱讀\n學習文字辨識與校對\nSynthetic scan page one",
+              "characterErrorRate": 0
+            },
+            {
+              "text": "這是第二頁測試資料\n文字校對完成後儲存\n所有內容都是合成資料\n\nSynthetic scan page two\n",
+              "confidence": 94,
+              "width": 2400,
+              "height": 1500,
+              "dpi": 300,
+              "imageSha256": "df43017a576747968b86dcba46f41a2ea23550df66acce3d8fa1b54ff9e17832",
+              "lines": [
+                {
+                  "text": "這是第二頁測試資料",
+                  "bbox": {
+                    "x0": 153,
+                    "y0": 152,
+                    "x1": 849,
+                    "y1": 227
+                  },
+                  "confidence": 96
+                },
+                {
+                  "text": "文字校對完成後儲存",
+                  "bbox": {
+                    "x0": 153,
+                    "y0": 392,
+                    "x1": 849,
+                    "y1": 467
+                  },
+                  "confidence": 96
+                },
+                {
+                  "text": "所有內容都是合成資料",
+                  "bbox": {
+                    "x0": 153,
+                    "y0": 632,
+                    "x1": 927,
+                    "y1": 707
+                  },
+                  "confidence": 95
+                },
+                {
+                  "text": "Synthetic scan page two",
+                  "bbox": {
+                    "x0": 155,
+                    "y0": 876,
+                    "x1": 1029,
+                    "y1": 959
+                  },
+                  "confidence": 90
+                }
+              ],
+              "page": 2,
+              "expected": "這是第二頁測試資料\n文字校對完成後儲存\n所有內容都是合成資料\nSynthetic scan page two",
+              "actual": "這是第二頁測試資料\n文字校對完成後儲存\n所有內容都是合成資料\nSynthetic scan page two",
+              "characterErrorRate": 0
+            }
+          ]
+        },
+        {
+          "name": "single-column-repeat3",
+          "psm": 4,
+          "dpi": 300,
+          "language": "chi_tra+eng",
+          "pages": [
+            {
+              "text": "繁體中文掃描測試\n圖書館今天開放閱讀\n學習文字辨識與校對\n\nSynthetic scan page one\n",
+              "confidence": 90,
+              "width": 2400,
+              "height": 1500,
+              "dpi": 300,
+              "imageSha256": "e4d872420efec7f56ea2df5f55ac1f2c203e936ac33f2991f9844cf6ff835030",
+              "lines": [
+                {
+                  "text": "繁體中文掃描測試",
+                  "bbox": {
+                    "x0": 153,
+                    "y0": 152,
+                    "x1": 771,
+                    "y1": 227
+                  },
+                  "confidence": 85
+                },
+                {
+                  "text": "圖書館今天開放閱讀",
+                  "bbox": {
+                    "x0": 156,
+                    "y0": 392,
+                    "x1": 849,
+                    "y1": 467
+                  },
+                  "confidence": 93
+                },
+                {
+                  "text": "學習文字辨識與校對",
+                  "bbox": {
+                    "x0": 155,
+                    "y0": 632,
+                    "x1": 849,
+                    "y1": 707
+                  },
+                  "confidence": 93
+                },
+                {
+                  "text": "Synthetic scan page one",
+                  "bbox": {
+                    "x0": 155,
+                    "y0": 876,
+                    "x1": 1029,
+                    "y1": 959
+                  },
+                  "confidence": 89
+                }
+              ],
+              "page": 1,
+              "expected": "繁體中文掃描測試\n圖書館今天開放閱讀\n學習文字辨識與校對\nSynthetic scan page one",
+              "actual": "繁體中文掃描測試\n圖書館今天開放閱讀\n學習文字辨識與校對\nSynthetic scan page one",
+              "characterErrorRate": 0
+            },
+            {
+              "text": "這是第二頁測試資料\n文字校對完成後儲存\n所有內容都是合成資料\n\nSynthetic scan page two\n",
+              "confidence": 94,
+              "width": 2400,
+              "height": 1500,
+              "dpi": 300,
+              "imageSha256": "df43017a576747968b86dcba46f41a2ea23550df66acce3d8fa1b54ff9e17832",
+              "lines": [
+                {
+                  "text": "這是第二頁測試資料",
+                  "bbox": {
+                    "x0": 153,
+                    "y0": 152,
+                    "x1": 849,
+                    "y1": 227
+                  },
+                  "confidence": 96
+                },
+                {
+                  "text": "文字校對完成後儲存",
+                  "bbox": {
+                    "x0": 153,
+                    "y0": 392,
+                    "x1": 849,
+                    "y1": 467
+                  },
+                  "confidence": 96
+                },
+                {
+                  "text": "所有內容都是合成資料",
+                  "bbox": {
+                    "x0": 153,
+                    "y0": 632,
+                    "x1": 927,
+                    "y1": 707
+                  },
+                  "confidence": 95
+                },
+                {
+                  "text": "Synthetic scan page two",
+                  "bbox": {
+                    "x0": 155,
+                    "y0": 876,
+                    "x1": 1029,
+                    "y1": 959
+                  },
+                  "confidence": 90
+                }
+              ],
+              "page": 2,
+              "expected": "這是第二頁測試資料\n文字校對完成後儲存\n所有內容都是合成資料\nSynthetic scan page two",
+              "actual": "這是第二頁測試資料\n文字校對完成後儲存\n所有內容都是合成資料\nSynthetic scan page two",
+              "characterErrorRate": 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "browser": "153.0.8010.0",
+      "gating": false,
+      "normalization": "NFKC, lowercase, ignore whitespace/punctuation/symbols",
+      "results": [
+        {
+          "name": "baseline",
+          "psm": 3,
+          "dpi": 300,
+          "language": "eng",
+          "pages": [
+            {
+              "text": "SYNTHETIC SCAN TEST\nThe library is open today\nRead and review every line\n\nSample page one number 12345\n",
+              "confidence": 95,
+              "width": 2400,
+              "height": 1500,
+              "dpi": 300,
+              "imageSha256": "00096cd81400e1251a4fa589a5b0efb62f5baa16abb256d0ba483c73107cacbb",
+              "lines": [
+                {
+                  "text": "SYNTHETIC SCAN TEST",
+                  "bbox": {
+                    "x0": 155,
+                    "y0": 161,
+                    "x1": 982,
+                    "y1": 221
+                  },
+                  "confidence": 96
+                },
+                {
+                  "text": "The library is open today",
+                  "bbox": {
+                    "x0": 153,
+                    "y0": 396,
+                    "x1": 1048,
+                    "y1": 477
+                  },
+                  "confidence": 96
+                },
+                {
+                  "text": "Read and review every line",
+                  "bbox": {
+                    "x0": 158,
+                    "y0": 636,
+                    "x1": 1116,
+                    "y1": 717
+                  },
+                  "confidence": 96
+                },
+                {
+                  "text": "Sample page one number 12345",
+                  "bbox": {
+                    "x0": 155,
+                    "y0": 876,
+                    "x1": 1315,
+                    "y1": 959
+                  },
+                  "confidence": 96
+                }
+              ],
+              "page": 1,
+              "expected": "SYNTHETIC SCAN TEST\nThe library is open today\nRead and review every line\nSample page one number 12345",
+              "actual": "SYNTHETIC SCAN TEST\nThe library is open today\nRead and review every line\nSample page one number 12345",
+              "characterErrorRate": 0
+            },
+            {
+              "text": "SECOND SCANNED PAGE\nSave the corrected document\nAll content is synthetic\n\nSample page two number 67890\n",
+              "confidence": 95,
+              "width": 2400,
+              "height": 1500,
+              "dpi": 300,
+              "imageSha256": "5393835b303762d74ea53586ee2c394dd67bca3b28461759c136b4e69102feb9",
+              "lines": [
+                {
+                  "text": "SECOND SCANNED PAGE",
+                  "bbox": {
+                    "x0": 155,
+                    "y0": 161,
+                    "x1": 1041,
+                    "y1": 221
+                  },
+                  "confidence": 95
+                },
+                {
+                  "text": "Save the corrected document",
+                  "bbox": {
+                    "x0": 155,
+                    "y0": 396,
+                    "x1": 1224,
+                    "y1": 461
+                  },
+                  "confidence": 95
+                },
+                {
+                  "text": "All content is synthetic",
+                  "bbox": {
+                    "x0": 150,
+                    "y0": 636,
+                    "x1": 972,
+                    "y1": 717
+                  },
+                  "confidence": 96
+                },
+                {
+                  "text": "Sample page two number 67890",
+                  "bbox": {
+                    "x0": 155,
+                    "y0": 876,
+                    "x1": 1317,
+                    "y1": 959
+                  },
+                  "confidence": 96
+                }
+              ],
+              "page": 2,
+              "expected": "SECOND SCANNED PAGE\nSave the corrected document\nAll content is synthetic\nSample page two number 67890",
+              "actual": "SECOND SCANNED PAGE\nSave the corrected document\nAll content is synthetic\nSample page two number 67890",
+              "characterErrorRate": 0
+            }
+          ]
+        },
+        {
+          "name": "single-column",
+          "psm": 4,
+          "dpi": 300,
+          "language": "eng",
+          "pages": [
+            {
+              "text": "SYNTHETIC SCAN TEST\nThe library is open today\nRead and review every line\n\nSample page one number 12345\n",
+              "confidence": 95,
+              "width": 2400,
+              "height": 1500,
+              "dpi": 300,
+              "imageSha256": "00096cd81400e1251a4fa589a5b0efb62f5baa16abb256d0ba483c73107cacbb",
+              "lines": [
+                {
+                  "text": "SYNTHETIC SCAN TEST",
+                  "bbox": {
+                    "x0": 155,
+                    "y0": 161,
+                    "x1": 982,
+                    "y1": 221
+                  },
+                  "confidence": 96
+                },
+                {
+                  "text": "The library is open today",
+                  "bbox": {
+                    "x0": 153,
+                    "y0": 396,
+                    "x1": 1048,
+                    "y1": 477
+                  },
+                  "confidence": 96
+                },
+                {
+                  "text": "Read and review every line",
+                  "bbox": {
+                    "x0": 158,
+                    "y0": 636,
+                    "x1": 1116,
+                    "y1": 717
+                  },
+                  "confidence": 96
+                },
+                {
+                  "text": "Sample page one number 12345",
+                  "bbox": {
+                    "x0": 155,
+                    "y0": 876,
+                    "x1": 1315,
+                    "y1": 959
+                  },
+                  "confidence": 96
+                }
+              ],
+              "page": 1,
+              "expected": "SYNTHETIC SCAN TEST\nThe library is open today\nRead and review every line\nSample page one number 12345",
+              "actual": "SYNTHETIC SCAN TEST\nThe library is open today\nRead and review every line\nSample page one number 12345",
+              "characterErrorRate": 0
+            },
+            {
+              "text": "SECOND SCANNED PAGE\nSave the corrected document\nAll content is synthetic\n\nSample page two number 67890\n",
+              "confidence": 95,
+              "width": 2400,
+              "height": 1500,
+              "dpi": 300,
+              "imageSha256": "5393835b303762d74ea53586ee2c394dd67bca3b28461759c136b4e69102feb9",
+              "lines": [
+                {
+                  "text": "SECOND SCANNED PAGE",
+                  "bbox": {
+                    "x0": 155,
+                    "y0": 161,
+                    "x1": 1041,
+                    "y1": 221
+                  },
+                  "confidence": 95
+                },
+                {
+                  "text": "Save the corrected document",
+                  "bbox": {
+                    "x0": 155,
+                    "y0": 396,
+                    "x1": 1224,
+                    "y1": 461
+                  },
+                  "confidence": 95
+                },
+                {
+                  "text": "All content is synthetic",
+                  "bbox": {
+                    "x0": 150,
+                    "y0": 636,
+                    "x1": 972,
+                    "y1": 717
+                  },
+                  "confidence": 96
+                },
+                {
+                  "text": "Sample page two number 67890",
+                  "bbox": {
+                    "x0": 155,
+                    "y0": 876,
+                    "x1": 1317,
+                    "y1": 959
+                  },
+                  "confidence": 96
+                }
+              ],
+              "page": 2,
+              "expected": "SECOND SCANNED PAGE\nSave the corrected document\nAll content is synthetic\nSample page two number 67890",
+              "actual": "SECOND SCANNED PAGE\nSave the corrected document\nAll content is synthetic\nSample page two number 67890",
+              "characterErrorRate": 0
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

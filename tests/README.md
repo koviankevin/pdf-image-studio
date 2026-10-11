@@ -63,7 +63,7 @@ CI 另保留 trace、截圖及 HTML 報告七天。沒有自動重試或允許�
 ## 掃描 OCR 端到端回歸
 
 `browser/scanned-ocr.spec.mjs` 沿用相同 Playwright、伺服器與 Chromium，分別測試
-`chi_tra+eng`（繁中＋英文）與 `eng`（英文），各兩頁。
+`chi_tra+eng`（繁中＋英文）與 `eng`（英文），各兩頁，並各自跑自動版面與單欄版面。
 `support/scans.mjs` 用內附 Noto Sans CJK TC 字型在 Canvas 畫出固定的合成內容，
 再以 PNG 嵌入 PDF；沒有姓名、帳號等個資，也不需外部資料或新增二進位 fixture。
 PDF.js 在辨識前確認兩頁都完全沒有文字，避免誤走原生文字捷徑。
@@ -94,7 +94,7 @@ PDF.js 在辨識前確認兩頁都完全沒有文字，避免誤走原生文字�
 報告附於 Playwright HTML，CI 不論成功或失敗都上傳已產生的 `ocr-accuracy-*` artifact（七天）。
 尚未完成辨識就失敗時可能沒有準確率報告，可查看既有 failure diagnostics。
 單案例上限 180 秒、辨識等待 120 秒，沿用零重試，避免用重試掩蓋回歸。
-測試不修改正式程式，也不改既有原生文字測試「不可載入 Tesseract」的檢查。
+功能回歸不注入辨識參數或結果，也不改既有原生文字測試「不可載入 Tesseract」的檢查。
 
 尚未涵蓋低品質照片、手寫、複雜表格、密碼 PDF、所有標記工具、
 大檔壓力、Safari 或 Firefox；這些可在有對應回歸風險時再加入。
@@ -109,3 +109,14 @@ PDF.js 在辨識前確認兩頁都完全沒有文字，避免誤走原生文字�
 若要在合併前強制把關，可在 main 的 branch protection/ruleset 將
 `Node and Chromium regression` 設為 required status check，並要求透過 PR 合併。
 本 PR 不調整儲存庫的權限或分支保護規則。
+
+## 繁中準確率調查與選用實驗
+
+2026-10-11 調查確認第一頁錯誤集中在第一行的中英文誤認；單欄 PSM 4 在本合成資料
+將第一頁 CER 0.369565 降為 0，第二頁與英文控制組均維持 0。
+正式 UI 加入單欄選項，預設仍為自動版面，不假設一般文件都只有一欄。
+完整原因、對照數字與限制見 [調查報告](reports/ocr-investigation-20261011.md)。
+
+`npm run test:ocr:compare` 使用相同 fixture、字型、引擎與 CER，對照 PSM、DPI、語言順序
+與二值化；輸出 `ocr-experiment-results/**/comparison.json`。這是選用的量測，
+不在日常 CI 執行，也不以 CER 為 pass/fail 門檻。

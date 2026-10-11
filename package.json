@@ -7,7 +7,8 @@
     "test:unit": "node --test tests/unit/*.test.mjs",
     "test:browser": "playwright test",
     "test:ocr": "playwright test scanned-ocr.spec.mjs",
-    "test:browser:ui": "playwright test --ui"
+    "test:browser:ui": "playwright test --ui",
+    "test:ocr:compare": "playwright test --config playwright.ocr-experiment.config.mjs"
   },
   "engines": {
     "node": ">=22"
