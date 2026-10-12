@@ -1,4 +1,5 @@
 import {inverse,multiply,transformPoint} from './document-model.mjs';
+import {recognizeTwoColumns} from './ocr-columns.mjs';
 
 export function installOcr(api){
   document.body.insertAdjacentHTML('beforeend',`<dialog id="ocr-dialog" class="work-dialog" aria-labelledby="ocr-title"><div class="preview-header"><h2 id="ocr-title">文字辨識與校對</h2><button id="ocr-close" class="secondary">關閉</button></div><div class="ocr-toolbar"><label for="ocr-page">校對頁面</label><select id="ocr-page"></select><button id="ocr-copy" class="copy">複製此頁文字</button><button id="ocr-text-download" class="secondary">下載全部文字 TXT</button><button id="ocr-save" class="primary">儲存校對</button></div><p class="field-hint">掃描頁可逐行修改；儲存後的 OCR 文字會加入 PDF 的隱藏文字層，原稿外觀不變。原本已有文字的頁面直接擷取，僅供複製。</p><div class="document-layout ocr-layout"><div class="document-scroll"><div id="ocr-stage" class="document-stage"><img id="ocr-image" alt="對照辨識文字的原稿"><svg id="ocr-overlay" aria-hidden="true"></svg></div></div><div><p id="ocr-page-info" class="status"></p><div id="ocr-lines" class="ocr-lines"></div></div></div><p id="ocr-review-status" class="status" role="status"></p></dialog>`);
@@ -19,7 +20,8 @@ export function installOcr(api){
     const items=api.chosen();if(api.isBusy()||!items.length)return;if(items.length>100){api.status('OCR 一次最多 100 頁，請分批勾選。',true);return;}
     // Keep automatic segmentation for general layouts. A known single column
     // can avoid CJK/Latin misclassification; it is not safe to assume globally.
-    const pageSegMode=$('ocr-layout').value==='single-column'?'4':'3';
+    const layout=$('ocr-layout').value;
+    const pageSegMode=layout==='single-column'||layout==='two-column'?'4':'3';
     api.setBusy(true);$('ocr-cancel').hidden=false;$('ocr-cancel').disabled=false;$('progress').hidden=false;$('progress').max=items.length;$('progress').value=0;
     let worker=null,stopped=false,completed=[],rejectCancel,jobLabel='';const abort=new Promise((_,reject)=>rejectCancel=reject);abort.catch(()=>{});
     cancelJob=()=>{stopped=true;rejectCancel(new Error('已停止辨識'));void worker?.terminate();$('ocr-cancel').disabled=true;};
@@ -34,10 +36,14 @@ export function installOcr(api){
             pending.then(w=>{if(stopped)void w.terminate();}).catch(()=>{});worker=await race(pending);await race(worker.setParameters({tessedit_pageseg_mode:pageSegMode,preserve_interword_spaces:'1'}));
           }
           const rendered=await race(api.renderBlob(source,page.index,300,'png',false,{...page,annotations:[]},{maxEdge:3500}));
+          if(layout==='two-column'){
+            lines=await recognizeTwoColumns(worker,rendered,viewport,race,column=>{jobLabel=`文字辨識 ${i+1} / ${items.length} · ${column?'右':'左'}欄`;api.status(`${jobLabel}：準備分欄影像…`);});
+          }else{
           const {data}=await race(worker.recognize(rendered.blob,{user_defined_dpi:String(rendered.dpi)},{text:true,blocks:true}));
           const sx=viewport.width/rendered.width,sy=viewport.height/rendered.height;
           lines=(data.blocks||[]).flatMap(b=>b.paragraphs||[]).flatMap(p=>p.lines||[]).filter(l=>l.text?.trim()).map(l=>({text:l.text.trim(),x:l.bbox.x0*sx,y:l.bbox.y0*sy,width:(l.bbox.x1-l.bbox.x0)*sx,height:(l.bbox.y1-l.bbox.y0)*sy,confidence:l.confidence??data.confidence??0}));
           if(!lines.length&&data.text.trim())lines=[{text:data.text.trim(),x:0,y:0,width:viewport.width,height:viewport.height,confidence:0}];
+          }
         }
         completed.push({...page,ocr:{mode,frame:inverse(viewport.transform),lines}});$('progress').value=i+1;
       }

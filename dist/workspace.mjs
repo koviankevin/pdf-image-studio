@@ -5,7 +5,7 @@ import {parsePages,withDensity,dimensions} from './utils.mjs';
 import {movePages,assemblePdf,viewportCrop} from './editor-core.mjs';
 import {installPageTools} from './page-tools.mjs';
 import {installAnnotations} from './annotation-tools.mjs';
-import {installOcr} from './ocr-tools.mjs?v=20261011-ocr-layout';
+import {installOcr} from './ocr-tools.mjs?v=20261011-ocr-two-column';
 import {imageToPdf} from './document-model.mjs';
 
 pdfjs.GlobalWorkerOptions.workerSrc=new URL('./vendor/pdfjs/pdf.worker.mjs',import.meta.url).href;

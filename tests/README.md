@@ -148,3 +148,32 @@ npm run test:ocr:conditions -- --repeat-each=3
 ```
 
 詳見 [掃描條件實測報告](reports/ocr-scan-conditions-20261011.md) 與同名 JSON 原始資料。
+
+## 可選雙欄模式：中央分割、先左後右
+
+`two-column` 只處理中央留白、沒有跨欄內容的橫排雙欄掃描。以顯示中的頁面
+（套用旋轉／裁切後）中央為界，先切圖再用 PSM 4 分別辨識左右兩欄；右欄座標
+加回切割偏移，兩欄都成功才提交該頁。自動 PSM 3／單欄 PSM 4 的整頁路徑不變。
+這不是自動偵測欄縫，不支援跨欄標題、表格、直排、非中央分欄或任意多欄。
+
+`support/scan-conditions.mjs` 原封不動引用 PR #4 的
+`4b435401c3f06e32c6d4edd47e94803b2a92af55`，只取第六頁比較三種模式。
+建立本功能 PR 期間，PR #4 已合併至 main；整合後保留其全部測試，既有 CER／正規化未變。
+
+`browser/two-column-ocr.spec.mjs` 使用正式 UI 和真實 Tesseract，核對固定樣本的
+八行文字、先左後右順序、原稿框、校對儲存、TXT、PDF 文字順序／座標、隱藏
+模式及完全相同的可見像素；另驗證開始處理右欄時取消不保存半頁、可重新辨識。
+其中一個獨立裁圖測試用 worker spy 檢查奇數寬度的像素覆蓋、空欄及錯誤傳播，
+此測試不屬於 OCR 準確率量測。單元測試保護座標換算、欄內排序及缺框 fallback。
+CER 仍是報告值；新模式的固定 fixture 文字及欄序是功能回歸契約，不代表一般
+文件準確率。自動／單欄模式沒有「必須保持錯誤」的斷言。
+
+```sh
+npm run test:browser -- two-column-ocr.spec.mjs
+# 選用：記錄兩種整頁模式的原始 blocks／paragraphs／lines／words
+npm run test:ocr:compare -- two-column-layout.spec.mjs
+```
+
+原始階層檢查只在記憶體中的 served copy 加入結果記錄，不更動引擎輸出。
+日常端到端測試不攔截或改寫正式 OCR 模組。CI 保存 OCR JSON 與雙欄校對 PNG／
+PDF 七天。實測範圍與數據見 [雙欄報告](reports/ocr-two-column-20261011.md)。
