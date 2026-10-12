@@ -1,0 +1,256 @@
+{
+  "version": 1,
+  "annotationMethod": "Manually transcribed from source scan before running OCR; rectangles in original PDF points, top-left origin. Deliberately partial ground truth; never report these scores as whole-page CER.",
+  "sources": [
+    {
+      "id": "army1954",
+      "file": "newspaperchinese00army.pdf",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/5/50/Newspaper_Chinese._%28IA_newspaperchinese00army%29.pdf",
+      "sha256": "8f34edd36e64534012731abb3c5f8ef5c74ba19668099a6ddd7a9cb6316242f2",
+      "title": "Newspaper Chinese, Army Language School (U.S.), 1954",
+      "rightsUrl": "https://commons.wikimedia.org/w/index.php?title=File:Newspaper_Chinese._(IA_newspaperchinese00army).pdf&oldid=975731528",
+      "institutionMetadata": "https://archive.org/metadata/newspaperchinese00army",
+      "rights": "Commons identifies PD-USGov / Public Domain Mark; Library of Congress metadata says unaware of copyright restrictions. Use original vocabulary/notes only, not third-party newspaper reproductions in later pages.",
+      "scanEvidence": "Library of Congress contributed digitization; Internet Archive metadata records Sony Alpha-A6300, 300 ppi, scan date 2019-07-02. Paper shading and show-through visible."
+    },
+    {
+      "id": "eb1911",
+      "file": "1911EB.pdf",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/b/b0/1911EB.pdf",
+      "sha256": "c8554deefd09027192058a4b19016b7ed0147d09f106b5656d74335f629055c6",
+      "title": "Encyclopaedia Britannica, 11th edition (1911), article scan, printed page 369",
+      "rightsUrl": "https://commons.wikimedia.org/w/index.php?title=File:1911EB.pdf&oldid=948467380",
+      "rights": "Commons identifies PD-US (expired copyright; 1911 publication), credits Hugh Chisholm (1866-1924). No blanket claim for unrelated documents or every jurisdiction. Original scans stay in ignored local cache.",
+      "scanEvidence": "Commons category 1911 Encyclopaedia Britannica scans; PDF metadata Full page photo; contains scanned paper raster with yellowing and printed two-column rule."
+    }
+  ],
+  "pages": [
+    {
+      "id": "army-notes-p12",
+      "source": "army1954",
+      "page": 12,
+      "language": "chi_tra+eng",
+      "layout": "Handwritten Traditional Chinese examples within a typewritten bilingual teaching page; examples cross the page centre. Not independent narrative columns.",
+      "privacy": "Vocabulary and example sentences only; no private records or identifiers.",
+      "regions": [
+        {
+          "id": "C1",
+          "rect": [
+            232,
+            188,
+            477,
+            212
+          ],
+          "text": "比方說要是你有錢你就可以買車"
+        },
+        {
+          "id": "C2",
+          "rect": [
+            231,
+            216,
+            350,
+            239
+          ],
+          "text": "這個比方很好"
+        },
+        {
+          "id": "C3",
+          "rect": [
+            243,
+            490,
+            370,
+            522
+          ],
+          "text": "罷了，你別再講了。"
+        }
+      ]
+    },
+    {
+      "id": "army-vocabulary-p19",
+      "source": "army1954",
+      "page": 19,
+      "language": "chi_tra+eng",
+      "layout": "Bilingual vocabulary aligned in rows (Chinese / romanization / English), not newspaper-style column reading.",
+      "privacy": "Common vocabulary only; no personal names or private data.",
+      "regions": [
+        {
+          "id": "L1",
+          "rect": [
+            75,
+            176,
+            200,
+            199
+          ],
+          "text": "7.1 鄰人"
+        },
+        {
+          "id": "R1",
+          "rect": [
+            338,
+            179,
+            447,
+            198
+          ],
+          "text": "N: neighbour"
+        },
+        {
+          "id": "L2",
+          "rect": [
+            75,
+            206,
+            201,
+            234
+          ],
+          "text": "7.2 近鄰"
+        },
+        {
+          "id": "R2",
+          "rect": [
+            338,
+            208,
+            478,
+            229
+          ],
+          "text": "N: near neighbour"
+        },
+        {
+          "id": "L3",
+          "rect": [
+            75,
+            295,
+            201,
+            326
+          ],
+          "text": "8.1 鄰居"
+        },
+        {
+          "id": "R3",
+          "rect": [
+            338,
+            297,
+            447,
+            318
+          ],
+          "text": "N: neighbour"
+        }
+      ]
+    },
+    {
+      "id": "eb-two-column-p1",
+      "source": "eb1911",
+      "page": 1,
+      "language": "eng",
+      "layout": "Dense printed two-column narrative, narrow central rule near page midpoint, spanning running title; Greek and italic text elsewhere on page.",
+      "privacy": "Published encyclopaedia text; no private records. Evaluated excerpts avoid personal biography.",
+      "regions": [
+        {
+          "id": "H",
+          "rect": [
+            197,
+            20,
+            420,
+            42
+          ],
+          "text": "ENCKE—ENCYCLOPAEDIA"
+        },
+        {
+          "id": "L1",
+          "rect": [
+            48,
+            48,
+            305,
+            69
+          ],
+          "text": "lyrical poems are remarkable for their intense sincerity and\ndevout grace."
+        },
+        {
+          "id": "L2",
+          "rect": [
+            48,
+            525,
+            305,
+            557
+          ],
+          "text": "ENCLAVE (a French word from enclaver, to enclose), a term\nsignifying a country or, more commonly, an outlying portion of\na country, entirely surrounded by the territories of a foreign or"
+        },
+        {
+          "id": "R1",
+          "rect": [
+            310,
+            48,
+            568,
+            69
+          ],
+          "text": "were in pairs and placed in opposite angles; more often than\nnot the top was formed of a slab of coloured marble."
+        },
+        {
+          "id": "R2",
+          "rect": [
+            310,
+            458,
+            568,
+            479
+          ],
+          "text": "The word encyclopaedia was probably first used in English\nby Sir Thomas Elyot. “In an oratour is required to be a heape"
+        }
+      ]
+    },
+    {
+      "id": "eb-two-column-body",
+      "source": "eb1911",
+      "page": 1,
+      "language": "eng",
+      "layout": "Paired body-only crop of the same real scan: remove spanning running title; retain original central rule, paper texture and both full-width narrative columns. Not an additional physical sample.",
+      "privacy": "Published encyclopaedia text; no private records. Evaluated excerpts avoid personal biography.",
+      "regions": [
+        {
+          "id": "L1",
+          "rect": [
+            48,
+            2,
+            305,
+            23
+          ],
+          "text": "lyrical poems are remarkable for their intense sincerity and\ndevout grace."
+        },
+        {
+          "id": "L2",
+          "rect": [
+            48,
+            479,
+            305,
+            511
+          ],
+          "text": "ENCLAVE (a French word from enclaver, to enclose), a term\nsignifying a country or, more commonly, an outlying portion of\na country, entirely surrounded by the territories of a foreign or"
+        },
+        {
+          "id": "R1",
+          "rect": [
+            310,
+            2,
+            568,
+            23
+          ],
+          "text": "were in pairs and placed in opposite angles; more often than\nnot the top was formed of a slab of coloured marble."
+        },
+        {
+          "id": "R2",
+          "rect": [
+            310,
+            412,
+            568,
+            433
+          ],
+          "text": "The word encyclopaedia was probably first used in English\nby Sir Thomas Elyot. “In an oratour is required to be a heape"
+        }
+      ],
+      "derivedFrom": "eb-two-column-p1",
+      "crop": [
+        0,
+        46,
+        612,
+        792
+      ]
+    }
+  ]
+}

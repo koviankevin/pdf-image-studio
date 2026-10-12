@@ -9,7 +9,8 @@
     "test:ocr": "playwright test scanned-ocr.spec.mjs",
     "test:browser:ui": "playwright test --ui",
     "test:ocr:compare": "playwright test --config playwright.ocr-experiment.config.mjs",
-    "test:ocr:conditions": "playwright test scan-conditions.spec.mjs"
+    "test:ocr:conditions": "playwright test scan-conditions.spec.mjs",
+    "test:ocr:real": "playwright test --config playwright.real-scans.config.mjs"
   },
   "engines": {
     "node": ">=22"

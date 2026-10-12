@@ -7,3 +7,9 @@ node_modules/
 playwright-report/
 test-results/
 ocr-experiment-results/
+
+.cache/real-scans/
+real-scan-results/
+playwright.local*.mjs
+real-scan-body-results/
+tests/real-scans/__pycache__/
