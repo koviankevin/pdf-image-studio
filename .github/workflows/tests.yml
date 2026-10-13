@@ -12,7 +12,8 @@ permissions:
 
 concurrency:
   group: regression-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  # Do not cancel a main run while it may be publishing. PRs remain cancellable.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   regression:
@@ -21,11 +22,16 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
           cache: npm
       - run: npm ci
+      - name: Deployment gate contract tests
+        run: npm run test:ci
       - name: Node unit tests
         run: npm run test:unit
       - name: Install Chromium
@@ -70,3 +76,57 @@ jobs:
             test-results/
           if-no-files-found: ignore
           retention-days: 7
+
+  deploy:
+    name: Publish tested website
+    needs: regression
+    if: >-
+      ${{ needs.regression.result == 'success' &&
+          github.ref == 'refs/heads/main' &&
+          (github.event_name == 'push' || github.event_name == 'workflow_dispatch') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    # Serialize publication, including reruns; never interrupt an active deployment.
+    concurrency:
+      group: pages
+      cancel-in-progress: false
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      # Check after acquiring the publication lock, not before waiting for it.
+      - name: Skip superseded commits
+        id: current
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const {data} = await github.rest.git.getRef({
+              ...context.repo,
+              ref: 'heads/main',
+            });
+            const current = data.object.sha === context.sha;
+            core.setOutput('publish', String(current));
+            if (!current) core.notice(`Skip ${context.sha}: main is now ${data.object.sha}`);
+      - uses: actions/checkout@v6
+        if: steps.current.outputs.publish == 'true'
+        with:
+          # Use the tested event SHA, never a moving main branch.
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/configure-pages@v5
+        if: steps.current.outputs.publish == 'true'
+      - uses: actions/upload-pages-artifact@v4
+        if: steps.current.outputs.publish == 'true'
+        with:
+          name: github-pages-${{ github.run_id }}-${{ github.run_attempt }}
+          path: dist
+      - name: Publish
+        id: deployment
+        if: steps.current.outputs.publish == 'true'
+        uses: actions/deploy-pages@v4
+        with:
+          artifact_name: github-pages-${{ github.run_id }}-${{ github.run_attempt }}

@@ -108,14 +108,50 @@ PDF.js 在辨識前確認兩頁都完全沒有文字，避免誤走原生文字�
 
 ## CI 與部署
 
-`.github/workflows/tests.yml` 在所有指向 main 的 PR、main push 及手動執行時測試。
-只有讀取原始碼權限，不需要 secrets。測試失敗會讓 `Node and Chromium regression` 檢查失敗。
+`.github/workflows/tests.yml` 在所有指向 main 的 PR、每次 main push 及手動執行時測試。
+`Node and Chromium regression` 保留原名稱、Node.js 22、完整 Node／Chromium 測試與診斷 artifacts。
+測試 job 只有 `contents: read`，不需要 secrets；任一安裝或測試步驟失敗都不能部署。
 
-既有 `.github/workflows/pages.yml` 保持原樣：仍由 main 的 dist 變更觸發 Pages 發布。
-測試與發布是獨立流程，**此變更本身不會阻擋失敗的 main commit 部署**。
+Pages 已整合到同一 workflow 的 `Publish tested website` job，以 `needs: regression` 等待成功；
+另明確要求 regression 結果為 success、ref 為 `refs/heads/main`，且事件為 push 或 workflow_dispatch。
+PR（包括 fork）和手動選取其他分支只測試，不會發布。原本獨立的 `pages.yml` 已刪除，避免旁路。
+所有 main 更新都測試並在成功後發布，包含純測試／相依套件／文件變更；刻意不保留 dist 路徑過濾，
+減少兩份觸發条件需要同步維護的風險。
+
+測試與發布均 checkout 相同 `${{ github.sha }}`，PR 測的是 GitHub merge ref 的 SHA，
+main 發布測的是 main 事件 SHA。部署在全新 workspace 取同一提交的 dist，不使用測試產物或移動中的 main。
+Pages artifact 名稱包含 run ID 與 attempt，避免重跑時誤取舊 artifact；只有部署 job 有
+`pages: write`／`id-token: write`，沿用 `github-pages` environment。
+
+發布使用 `pages` concurrency lock 且不取消進行中的部署；main workflow 不會因後續 push 而中途取消，
+PR 仍取消舊執行。取得發布鎖後才查 main HEAD，若事件 SHA 已過期則略過 checkout、上傳與發布，
+避免慢速舊執行或舊提交重跑覆蓋新站。GitHub 不保證 concurrency 排序，不能只依賴排隊次序。
+查詢 main 失敗會直接失敗，不會放行。檢查後若 main 又前進，正在發布的仍是通過測試的 SHA；
+新提交必須自己通過測試，並取得同一發布鎖後才能取代它。新提交測試失敗時維持先前成功發布的版本。
+
+### 手動發布與重跑
+
+在 Actions → **Regression tests** → **Run workflow** 選 **main**。
+這會先重跑完整測試，再發布當次 SHA，沒有跳過測試的選項。請勿再使用已移除的 Publish website workflow。
+若只重跑失敗的部署 job，GitHub 沿用同一 run、同一 SHA 已成功的 regression 結果；
+過期 SHA 仍會被 main HEAD 檢查擋住。需要回復舊功能時請在 main 建立 revert 提交並重新測試。
+
+### 發布閘門驗證
+
+```sh
+npm run test:ci
+```
+
+`ci/deployment-gate.test.mjs` 解析正式 workflow YAML，用 GitHub 官方 `@actions/expressions`
+求值實際部署条件，包含 48 組事件／ref／測試結果情境，另驗證必跑測試、SHA、權限、artifact、
+發布鎖與 main HEAD 檢查。成功 main push／手動執行放行，失敗／取消／跳過均阻擋。
+HEAD 檢查直接執行 YAML 的 script，mock 僅限 GitHub API 回應，涵蓋 current、stale 與 API 錯誤。
+這是 workflow 契約測試，不會呼叫正式 Pages API，也不代表已實際部署網站。
+GitHub PR 執行另驗證完整回歸測試；正式部署整合須在此 PR 合併至 main 後才能執行。
+
 若要在合併前強制把關，可在 main 的 branch protection/ruleset 將
 `Node and Chromium regression` 設為 required status check，並要求透過 PR 合併。
-本 PR 不調整儲存庫的權限或分支保護規則。
+此變更不調整儲存庫設定或分支保護規則。
 
 ## 繁中準確率調查與選用實驗
 
