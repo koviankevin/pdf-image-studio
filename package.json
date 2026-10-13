@@ -3,18 +3,21 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "npm run test:unit && npm run test:browser",
+    "test": "npm run test:ci && npm run test:unit && npm run test:browser",
     "test:unit": "node --test tests/unit/*.test.mjs",
     "test:browser": "playwright test",
     "test:ocr": "playwright test scanned-ocr.spec.mjs",
     "test:browser:ui": "playwright test --ui",
     "test:ocr:compare": "playwright test --config playwright.ocr-experiment.config.mjs",
-    "test:ocr:conditions": "playwright test scan-conditions.spec.mjs"
+    "test:ocr:conditions": "playwright test scan-conditions.spec.mjs",
+    "test:ci": "node --test tests/ci/*.test.mjs"
   },
   "engines": {
     "node": ">=22"
   },
   "devDependencies": {
-    "@playwright/test": "1.58.2"
+    "@actions/expressions": "^0.3.61",
+    "@playwright/test": "1.58.2",
+    "yaml": "^2.9.1"
   }
 }
