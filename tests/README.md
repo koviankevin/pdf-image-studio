@@ -1,5 +1,12 @@
 # 多來源 PDF 與掃描 OCR 回歸測試
 
+## A4 拼版
+
+`unit/imposition.test.mjs` 驗證 A4 尺寸、格位順序、邊界與間距驗證、四種旋轉、跨來源及最後未滿一張、空白頁和來源不被修改。
+`browser/imposition.spec.mjs` 操作選頁與排序、2／4 頁和自訂格位、實際下載、預覽換頁、錯誤設定及手機視窗。
+另以偏移 MediaBox／CropBox 和四種旋轉逐像素比對獨立 PDF.js 參考畫面（容許少量邊緣反鋸齒差異），確認向量頁未變成圖片，
+並核對原始 JPEG 位元組不變、中文標記和 OCR 隱藏文字在拼版後仍可擷取。
+
 ## 執行
 
 需求：Node.js 22 以上。CI 固定使用 Node.js 22 與 Chromium。
