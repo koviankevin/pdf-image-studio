@@ -1,6 +1,7 @@
 import {PDFDocument,degrees} from './vendor/pdf-lib/pdf-lib.mjs';
 import {parsePages} from './utils.mjs';
 import {drawPageExtras,embedChineseFont} from './document-model.mjs';
+import {checkpoint} from './cancellation.mjs';
 
 export function parseSplitRanges(text,count){
   if(!text.trim())throw new Error('請輸入拆分範圍，例如 1-3; 4-8。');
@@ -31,18 +32,21 @@ export function movePages(pages,ids,position){
   return [...rest.slice(0,position-1),...moving,...rest.slice(position-1)];
 }
 
-export async function assemblePdf(pages,sources,title){
+export async function assemblePdf(pages,sources,title,{signal}={}){
+  signal?.throwIfAborted();
   if(!pages.length)throw new Error('請至少選取一頁。');
   const output=await PDFDocument.create(),groups=new Map(),copied=new Map();
   let font;const getFont=()=>font??=(embedChineseFont(output));
   for(const page of pages){if(!groups.has(page.sourceId))groups.set(page.sourceId,[]);groups.get(page.sourceId).push(page);}
   // Copy a source's pages together so fonts and other shared resources are reused.
   for(const [sourceId,group] of groups){
+    await checkpoint(signal);
     const source=sources.get(sourceId);if(!source)throw new Error('找不到來源 PDF，請重新加入檔案。');
     const newPages=await output.copyPages(source.doc,group.map(page=>page.index));
     group.forEach((page,index)=>copied.set(page.id,newPages[index]));
   }
-  for(const page of pages){
+  for(const [index,page] of pages.entries()){
+    if(index%16===0)await checkpoint(signal);
     const copy=copied.get(page.id);
     await drawPageExtras(output,copy,page,getFont);
     copy.setRotation(degrees(((copy.getRotation().angle+(page.rotation||0))%360+360)%360));
@@ -50,5 +54,6 @@ export async function assemblePdf(pages,sources,title){
     output.addPage(copy);
   }
   output.setTitle(title);output.setProducer('清晰 PDF');output.setCreator('清晰 PDF');
-  return output.save();
+  await checkpoint(signal);
+  const bytes=await output.save();signal?.throwIfAborted();return bytes;
 }

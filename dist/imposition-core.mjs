@@ -1,5 +1,6 @@
 import {PDFDocument, degrees, pushGraphicsState, popGraphicsState} from './vendor/pdf-lib/pdf-lib.mjs';
-import {assemblePdf} from './editor-core.mjs';
+import {assemblePdf} from './editor-core.mjs?v=20261016-fixes';
+import {checkpoint} from './cancellation.mjs';
 
 const MM = 72 / 25.4;
 
@@ -36,26 +37,38 @@ export function fitPage(box, rotation, cell) {
   return {x, y, width: box.width * scale, height: box.height * scale, rotate: degrees(-angle)};
 }
 
-export async function imposePdf(records, sources, settings, title = 'A4 拼版') {
+export async function imposePdf(records, sources, settings, title = 'A4 拼版', {signal} = {}) {
+  signal?.throwIfAborted();
   const layout = sheetLayout(settings);
   // Reuse the normal export path so edits, flattened forms and OCR text layers
   // are included. Embedding Form XObjects keeps text/vectors and original images.
-  const prepared = await PDFDocument.load(await assemblePdf(records, sources, title));
+  const prepared = await PDFDocument.load(await assemblePdf(records, sources, title, {signal}));
+  await checkpoint(signal);
   const output = await PDFDocument.create();
-  let sheet;
-  for (const [i, page] of prepared.getPages().entries()) {
-    if (i % layout.cells.length === 0) sheet = output.addPage([layout.width, layout.height]);
+  const pages = prepared.getPages(), boxes = [], placements = [];
+  for (const [i, page] of pages.entries()) {
+    if (i % 16 === 0) await checkpoint(signal);
     const crop = page.getCropBox(), media = page.getMediaBox();
     const left = Math.max(crop.x, media.x), bottom = Math.max(crop.y, media.y);
     const right = Math.min(crop.x + crop.width, media.x + media.width);
     const top = Math.min(crop.y + crop.height, media.y + media.height);
     const box = {width: right - left, height: top - bottom};
-    const placement = fitPage(box, page.getRotation().angle, layout.cells[i % layout.cells.length]);
+    placements.push(fitPage(box, page.getRotation().angle, layout.cells[i % layout.cells.length]));
+    boxes.push({left, bottom, right, top});
     // Also handles completely blank source pages without a /Contents stream.
     page.pushOperators(pushGraphicsState(), popGraphicsState());
-    const embedded = await output.embedPage(page, {left, bottom, right, top});
-    sheet.drawPage(embedded, placement);
+  }
+  await checkpoint(signal);
+  // One call shares pdf-lib's resource copier across all pages. Calling
+  // embedPage separately duplicates shared scanned images and fonts per page.
+  const embedded = await output.embedPages(pages, boxes);
+  let sheet;
+  for (let i = 0; i < embedded.length; i++) {
+    if (i % 16 === 0) await checkpoint(signal);
+    if (i % layout.cells.length === 0) sheet = output.addPage([layout.width, layout.height]);
+    sheet.drawPage(embedded[i], placements[i]);
   }
   output.setTitle(title); output.setProducer('清晰 PDF'); output.setCreator('清晰 PDF');
-  return output.save();
+  await checkpoint(signal);
+  const bytes = await output.save(); signal?.throwIfAborted(); return bytes;
 }

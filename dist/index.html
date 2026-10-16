@@ -2,6 +2,7 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self' blob:; connect-src 'self' blob:; img-src 'self' blob: data:; font-src 'self' blob:; style-src 'self' 'unsafe-inline'; object-src 'none'; base-uri 'none'; form-action 'none'">
   <title>清晰 PDF｜標記、圖片轉 PDF 與中文 OCR</title>
   <meta name="description" content="在瀏覽器內合併與整理 PDF，加入文字、螢光筆、箭頭及方框，將圖片轉成 PDF，辨識繁體中文並輸出可搜尋 PDF 或高解析度圖片。檔案不上傳。">
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%232955df'/%3E%3Cpath d='M9 7h10l5 5v13H9z' fill='white'/%3E%3Cpath d='m12 22 4-5 3 3 2-2 2 4' fill='%232955df'/%3E%3C/svg%3E">
@@ -51,16 +52,5 @@
   <dialog id="preview-dialog" class="preview-dialog"><div class="preview-header"><strong id="preview-title">圖片預覽</strong><button id="preview-close" class="secondary">關閉</button></div><p>可在圖片上按右鍵，或長按圖片，選擇複製或儲存。</p><img id="preview-image" alt="轉換後的完整圖片"></dialog>
   <dialog id="crop-dialog" class="crop-dialog" aria-labelledby="crop-title"><div class="preview-header"><h2 id="crop-title">框選與裁切</h2><button id="crop-close" class="secondary">關閉</button></div><p class="crop-intro">在圖片上拖曳框選，或輸入範圍百分比。複製／下載局部不會更動頁面。</p><div class="crop-layout"><div class="crop-scroll"><div id="crop-stage" class="crop-stage"><img id="crop-image" alt="拖曳框選要保留的區域" draggable="false"><div id="crop-selection" class="crop-selection" hidden></div></div></div><fieldset id="crop-controls"><legend class="sr-only">框選控制</legend><div class="crop-rotations"><button id="crop-rotate-left" class="secondary">左轉 90°</button><button id="crop-rotate-right" class="secondary">右轉 90°</button></div><div class="crop-coordinates"><label>左側 %<input id="crop-x" type="number" min="0" max="99.9" step="0.1" value="0"></label><label>上方 %<input id="crop-y" type="number" min="0" max="99.9" step="0.1" value="0"></label><label>寬度 %<input id="crop-width" type="number" min="0.1" max="100" step="0.1" value="100"></label><label>高度 %<input id="crop-height" type="number" min="0.1" max="100" step="0.1" value="100"></label></div><button id="crop-full" class="secondary full">選取完整頁面</button><button id="crop-copy" class="copy full">複製框選區域</button><button id="crop-download" class="secondary full">下載框選圖片</button><p class="field-hint" id="crop-output-settings"></p><button id="crop-apply" class="primary full">套用旋轉與裁切</button><p class="field-hint">套用後會影響 PDF 與圖片，也可用「復原操作」還原。PDF 裁切只改變可見範圍，不會永久刪除範圍外內容。</p></fieldset></div><p id="crop-status" class="status" role="status" aria-live="polite">正在載入頁面…</p></dialog>
   <div id="toast" class="toast" role="status" hidden></div>
-  <script>
-    // Install before loading modules so dropped files never navigate this page.
-    window.addEventListener('dragover',function(event){event.preventDefault();});
-    window.addEventListener('drop',function(event){event.preventDefault();});
-  </script>
-  <script type="module">
-    import('./workspace.mjs?v=20261013-a4').catch(function(){
-      const status=document.getElementById('status');
-      status.hidden=false;status.classList.add('error');
-      status.textContent='轉換程式未能載入，請重新整理頁面，或使用新版 Chrome／Edge 開啟此網址。';
-    });
-  </script>
+  <script src="./bootstrap.mjs?v=20261016-fixes"></script>
 </body></html>
