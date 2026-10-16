@@ -5,7 +5,7 @@ import {parsePages,withDensity,dimensions} from './utils.mjs';
 import {movePages,assemblePdf,viewportCrop} from './editor-core.mjs?v=20261016-fixes';
 import {installPageTools} from './page-tools.mjs?v=20261016-fixes';
 import {installAnnotations} from './annotation-tools.mjs';
-import {installOcr} from './ocr-tools.mjs?v=20261011-ocr-two-column';
+import {installOcr} from './ocr-tools.mjs?v=20261016-lifecycle';
 import {imageToPdf} from './document-model.mjs';
 import {installImposition} from './imposition-tools.mjs?v=20261016-fixes';
 
@@ -15,6 +15,7 @@ let pages=[],sources=new Map(),selected=new Set(),history=[],results=[],busy=fal
 const thumbnailUrls=new Set();
 let pageTools,annotationTools,ocrTools,impositionTools;
 let annotationCache=new Map();const annotationTasks=new Set();
+const sourceDisposals=new Set();
 const MAX_INPUT=150*1024*1024,MAX_PAGES=500,MAX_IMAGES=256*1024*1024;
 const bytes=n=>n>=1048576?`${(n/1048576).toFixed(1)} MB`:`${Math.max(1,Math.round(n/1024))} KB`;
 const chosen=()=>pages.filter(page=>selected.has(page.id));
@@ -34,12 +35,18 @@ function updateControls(){
 }
 function clearResults(){for(const result of results){URL.revokeObjectURL(result.url);URL.revokeObjectURL(result.thumbnail);}results=[];$('gallery').replaceChildren();$('image-results').hidden=true;$('result-count').textContent='0';pageTools?.invalidateEstimate();}
 function snapshot(){history.push({pages:[...pages],selected:new Set(selected)});if(history.length>30)history.shift();}
-function collectThumbnails(){
-  const live=new Set(pages.map(page=>page.thumbnail));
-  for(const state of history)for(const page of state.pages)live.add(page.thumbnail);
+function collectWorkspaceResources(){
+  const live=new Set(),liveSources=new Set();
+  for(const records of [pages,...history.map(state=>state.pages)])for(const page of records){live.add(page.thumbnail);liveSources.add(page.sourceId);}
   for(const url of thumbnailUrls)if(!live.has(url)){URL.revokeObjectURL(url);thumbnailUrls.delete(url);}
+  // A removed page remains restorable until its last undo snapshot expires.
+  // Drop unreachable documents from the quota and terminate their PDF workers.
+  for(const [id,source] of sources)if(!liveSources.has(id)){
+    sources.delete(id);const disposal=source.task.destroy().catch(()=>{});
+    sourceDisposals.add(disposal);void disposal.finally(()=>sourceDisposals.delete(disposal));
+  }
 }
-function changed(){clearResults();$('pages').value='';drawPages();collectThumbnails();}
+function changed(){clearResults();$('pages').value='';collectWorkspaceResources();drawSources();drawPages();}
 function button(text,label,handler,className='secondary'){const b=document.createElement('button');b.type='button';b.textContent=text;b.className=className;b.setAttribute('aria-label',label);b.addEventListener('click',handler);return b;}
 function drawSources(){
   $('source-list').replaceChildren();for(const source of sources.values()){const row=document.createElement('div');row.className='source-row';const mark=document.createElement('span');mark.className='source-mark';mark.style.setProperty('--source-color',source.color);mark.textContent=String(source.ordinal);const name=document.createElement('span');name.textContent=source.name;name.title=source.name;const count=document.createElement('small');count.textContent=`${source.count} 頁`;row.append(mark,name,count);$('source-list').append(row);}
@@ -113,7 +120,7 @@ async function addFiles(files){
       const form=doc.getForm();if(form.getFields().length)form.flatten({updateFieldAppearances:false});
       const ordinal=++serial;source={id:`s${ordinal}`,ordinal,name:file.name,size:Math.max(file.size,original.length),count:pdf.numPages,doc,pdf,task,color:['#2955df','#0b887c','#a04cab','#bd6b15'][((ordinal-1)%4)]};
       const newPages=[];for(let index=0;index<pdf.numPages;index++){status(`正在建立 ${file.name} 的縮圖（${index+1} / ${pdf.numPages}）…`);const {blob}=await renderBlob(source,index,72,'jpeg',true);const thumbnail=URL.createObjectURL(blob);thumbnails.push(thumbnail);thumbnailUrls.add(thumbnail);newPages.push({id:`${source.id}-p${index}`,sourceId:source.id,index,thumbnail});}
-      sources.set(source.id,source);pages.push(...newPages);for(const page of newPages)selected.add(page.id);history=[];committed=true;added++;drawSources();drawPages();collectThumbnails();
+      sources.set(source.id,source);pages.push(...newPages);for(const page of newPages)selected.add(page.id);history=[];committed=true;added++;collectWorkspaceResources();drawSources();drawPages();
     }catch(error){errors.push(`${file.name}：${cancelled?'已取消加入':error.message||'無法讀取這份文件'}`);}
     finally{password='';if(!committed){for(const url of thumbnails){URL.revokeObjectURL(url);thumbnailUrls.delete(url);}await task?.destroy().catch(()=>{});}}
   }
@@ -130,7 +137,7 @@ $('apply-range').onclick=()=>{try{const indices=parsePages($('pages').value,page
 $('move-selected').onclick=()=>{try{const next=movePages(pages,selected,Number($('move-position').value));snapshot();pages=next;changed();status(`已移動 ${selected.size} 頁，兩種輸出都會使用新順序。`);}catch(error){status(error.message,true);}};
 $('delete-selected').onclick=()=>removePages(selected);
 $('undo').onclick=()=>{if(busy||!history.length)return;const previous=history.pop();pages=previous.pages;selected=previous.selected;changed();status('已復原上一次頁面操作。');};
-$('reset').onclick=async()=>{if(busy)return;setBusy(true);clearResults();for(const url of thumbnailUrls)URL.revokeObjectURL(url);thumbnailUrls.clear();await Promise.all([...sources.values()].map(s=>s.task.destroy().catch(()=>{})));await Promise.all([...annotationTasks].map(t=>t.destroy().catch(()=>{})));annotationTasks.clear();annotationCache=new Map();pages=[];selected.clear();sources.clear();history=[];serial=0;$('pages').value='';drawSources();drawPages();status('已清空工作區。');setBusy(false);};
+$('reset').onclick=async()=>{if(busy)return;setBusy(true);clearResults();for(const url of thumbnailUrls)URL.revokeObjectURL(url);thumbnailUrls.clear();await Promise.all([...sourceDisposals,...[...sources.values()].map(s=>s.task.destroy().catch(()=>{}))]);await Promise.all([...annotationTasks].map(t=>t.destroy().catch(()=>{})));annotationTasks.clear();annotationCache=new Map();pages=[];selected.clear();sources.clear();history=[];serial=0;$('pages').value='';drawSources();drawPages();status('已清空工作區。');setBusy(false);};
 function download(blob,name){const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);}
 $('export-pdf').onclick=async()=>{if(busy||!chosen().length)return;setBusy(true);status('正在合併選取的頁面…');try{await new Promise(resolve=>setTimeout(resolve,30));const data=await assemblePdf(chosen(),sources,filename());download(new Blob([data],{type:'application/pdf'}),`${filename()}.pdf`);status(`已輸出 ${chosen().length} 頁的新 PDF，請查看瀏覽器的下載項目。`);}catch(error){status(`PDF 輸出失敗：${error.message}。工作區已保留，可重試。`,true);}finally{setBusy(false);}};
 

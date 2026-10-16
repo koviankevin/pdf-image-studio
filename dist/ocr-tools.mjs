@@ -28,10 +28,14 @@ export function installOcr(api){
     const race=p=>Promise.race([p,abort]);
     try{
       for(let i=0;i<items.length;i++){
-        if(stopped)break;const page=items[i],source=api.getSources().get(page.sourceId),viewport=await api.pageViewport(source,page);jobLabel=`文字辨識 ${i+1} / ${items.length}`;api.status(`${jobLabel}：檢查原始文字…`);
+        if(stopped)break;const page=items[i],source=api.getSources().get(page.sourceId),viewport=await race(api.pageViewport(source,page));jobLabel=`文字辨識 ${i+1} / ${items.length}`;api.status(`${jobLabel}：檢查原始文字…`);
         let lines=await race(nativeText(source,page,viewport)),mode='native';
         if(!lines.length){
-          mode='ocr';if(!worker){api.status('首次使用正在載入辨識引擎與語言資料，文件不會上傳…');const {createWorker}=(await import('./vendor/ocr/tesseract.mjs')).default;
+          mode='ocr';if(!worker){api.status('首次使用正在載入辨識引擎與語言資料，文件不會上傳…');
+            // Dynamic imports cannot be aborted, but the job must stop waiting
+            // and must not start a worker when a cancelled import later resolves.
+            const {createWorker}=(await race(import('./vendor/ocr/tesseract.mjs'))).default;
+            if(stopped)throw new Error('已停止辨識');
             const pending=createWorker($('ocr-language').value,1,{workerPath:new URL('./vendor/ocr/worker.min.js',import.meta.url).href,corePath:new URL('./vendor/ocr/core/',import.meta.url).href,langPath:new URL('./vendor/ocr/lang',import.meta.url).href,gzip:false,cacheMethod:'none',workerBlobURL:false,logger:m=>{if(!stopped)api.status(m.status==='recognizing text'?`${jobLabel}：辨識中 ${Math.round((m.progress||0)*100)}%`:`${jobLabel}：正在準備辨識引擎…`);}});
             pending.then(w=>{if(stopped)void w.terminate();}).catch(()=>{});worker=await race(pending);await race(worker.setParameters({tessedit_pageseg_mode:pageSegMode,preserve_interword_spaces:'1'}));
           }
