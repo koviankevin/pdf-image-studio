@@ -1,4 +1,4 @@
-import {parseSplitRanges,assemblePdf,viewportCrop,selectionToCrop} from './editor-core.mjs';
+import {parseSplitRanges,assemblePdf,viewportCrop,selectionToCrop} from './editor-core.mjs?v=20261016-fixes';
 import {zipSync} from './vendor/fflate/fflate.mjs';
 
 export function installPageTools(api){
@@ -39,7 +39,7 @@ export function installPageTools(api){
   function cropToSelection(){const rect=viewportCrop(editor.viewport,editor.crop);return{x:Math.max(0,rect.x/editor.viewport.width),y:Math.max(0,rect.y/editor.viewport.height),width:Math.min(1,rect.width/editor.viewport.width),height:Math.min(1,rect.height/editor.viewport.height)};}
   async function loadEditorImage(){
     setWorking(true);editorStatus('正在載入頁面…');selectionBox.hidden=true;
-    try{const source=api.getSources().get(editor.page.sourceId),pdfPage=await source.pdf.getPage(editor.page.index+1);editor.viewport=pdfPage.getViewport({scale:1,rotation:(pdfPage.rotate+editor.rotation)%360});const rendered=await api.renderBlob(source,editor.page.index,150,'jpeg',false,{...editor.page,rotation:editor.rotation,crop:null},{quality:.85,maxEdge:1400});
+    try{const source=api.getSources().get(editor.page.sourceId),pdfPage=await api.getSourcePage(source,editor.page.index);editor.viewport=pdfPage.getViewport({scale:1,rotation:(pdfPage.rotate+editor.rotation)%360});const rendered=await api.renderBlob(source,editor.page.index,150,'jpeg',false,{...editor.page,rotation:editor.rotation,crop:null},{quality:.85,maxEdge:1400});
       if(editorUrl)URL.revokeObjectURL(editorUrl);editorUrl=URL.createObjectURL(rendered.blob);$('crop-image').src=editorUrl;await $('crop-image').decode();writeFields(cropToSelection());editorStatus('拖曳可重新框選。套用前，工作區的頁面不會改變。');
     }catch(error){editorStatus(`無法載入預覽：${error.message}`,true);}finally{setWorking(false);}
   }

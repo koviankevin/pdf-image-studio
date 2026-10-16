@@ -12,12 +12,13 @@
 縮小排版會讓紙上文字變小；原稿已模糊的圖片不會恢復細節。
 裁切屬可見範圍限制，不是永久刪除敏感資訊；連結等互動註解不會轉成可點擊的拼版連結。
 工作區本身不受拼版影響，關閉後可繼續編輯或一般合併輸出。
+同一來源頁面共用的圖片與字型在拼版中保留共用資源。變更設定或關閉視窗會取消舊預覽，新的預覽依序執行；取消會在處理階段之間生效，不能中斷程式庫正在執行的單次同步運算。
 
 [直接使用網站](https://koviankevin.github.io/pdf-image-studio/) · [原有網站](https://pdf-image-studio-kovia.koviankevin.chatgpt.site)
 
 ## GitHub Pages
 
-網站由 `.github/workflows/pages.yml` 自動發布 `dist/`。更新 main 分支內的 `dist/` 後會自動部署，也可在 Actions → Publish website → Run workflow 手動發布。不需設定密鑰；發布流程只有程式碼讀取及 Pages 發布權限。
+網站由 `.github/workflows/tests.yml` 在 main 回歸測試成功後發布同一個 commit 的 `dist/`。也可在 Actions → Regression tests → Run workflow 對 main 手動執行。PR 只執行測試，不部署；只有部署工作取得 Pages 寫入權限。
 
 純前端 PDF 合併、頁面標記、圖片轉 PDF、中文 OCR 與高解析度圖片工具。PDF 與密碼只在記憶體內處理，不上傳、不使用 localStorage，也沒有分析追蹤。網站程式庫隨網站提供，不使用外部 CDN。
 
@@ -73,6 +74,8 @@ PNG 為無損；JPG 品質預設為 95%，可調整。複製時以 PNG 寫入剪
 - 特殊或損毀 PDF、裝置記憶體不足時仍可能無法轉換。OCR 可能出錯，沒有 AI 補畫或完整表格還原功能。
 - 以 `document.modelContext` 存在時註冊可選的輸出設定工具，不依賴此 API。
 - 設定與原始檔不持久保存；重新整理會清除本次工作。
+- 縮圖保留目前頁面及最近 30 次復原所需的版本，超出範圍即釋放 Blob URL；清空工作區會全部釋放。
+- HTML 使用 meta CSP 限制網站文件的腳本、連線及資源來源；不允許行內 JavaScript，WebAssembly 及繪圖所需的行內樣式保留。這是防禦加強，不能取代輸入處理或程式庫更新；meta CSP 不提供 `frame-ancestors` 的防嵌入保護，也不替同源獨立 worker 設定回應標頭。
 
 PDF 渲染 API 參考：https://mozilla.github.io/pdf.js/examples/ 與 https://mozilla.github.io/pdf.js/api/。
 PDF 合併與解密參考：https://github.com/cantoo-scribe/pdf-lib。
@@ -106,4 +109,4 @@ PDF 合併與解密參考：https://github.com/cantoo-scribe/pdf-lib。
 ## 自動回歸測試
 
 以 Node.js 內建測試驗證排序與 PDF 組裝，另用 Playwright / Chromium 驗證不同來源 PDF 的頁面、文字與實際下載內容。
-執行方式與涵蓋範圍見 [測試說明](tests/README.md)。PR 與 main 更新會自動執行；既有 Pages 發布流程保持不變。
+執行方式與涵蓋範圍見 [測試說明](tests/README.md)。PR 與 main 更新會自動執行；main 通過後才發布 Pages。

@@ -1,5 +1,5 @@
 import * as pdfjs from './vendor/pdfjs/pdf.mjs';
-import {imposePdf, sheetLayout} from './imposition-core.mjs';
+import {imposePdf, sheetLayout} from './imposition-core.mjs?v=20261016-fixes';
 
 export function installImposition(api) {
   const {$} = api;
@@ -18,6 +18,9 @@ export function installImposition(api) {
   </dialog>`);
   const dialog = $('nup-dialog');
   let records = [], data = null, task = null, doc = null, render = null, current = 1, serial = 0, timer;
+  // Keep the chain across dialog close/reopen: obsolete builds must finish
+  // cancelling before another build can begin or dispose a newer preview.
+  let queue = Promise.resolve(), controller = null;
   const settings = () => ({rows: Number($('nup-rows').value), columns: Number($('nup-columns').value),
     orientation: $('nup-orientation').value, margin: $('nup-margin').value === '' ? NaN : Number($('nup-margin').value),
     gap: $('nup-gap').value === '' ? NaN : Number($('nup-gap').value)});
@@ -46,12 +49,13 @@ export function installImposition(api) {
     $('nup-page-label').textContent = `第 ${current} / ${doc.numPages} 張 A4`;
     say('預覽與下載使用同一份 PDF；預覽畫素不限制 PDF 畫質。'); navigation();
   }
-  async function generate(version) {
+  async function generate(version, signal) {
     try {
+      if (signal.aborted || version !== serial || !dialog.open) return;
       await dispose(); if (version !== serial || !dialog.open) return;
       const options = settings(), layout = sheetLayout(options);
       $('nup-summary').textContent = `${records.length} 頁 → ${Math.ceil(records.length / layout.cells.length)} 張 A4 · 每張 ${layout.cells.length} 頁`;
-      const bytes = await imposePdf(records, api.getSources(), options, `${api.filename()}_A4拼版`);
+      const bytes = await imposePdf(records, api.getSources(), options, `${api.filename()}_A4拼版`, {signal});
       if (version !== serial || !dialog.open) return;
       task = pdfjs.getDocument({data: bytes.slice(), isEvalSupported: false,
         cMapUrl: new URL('./vendor/pdfjs/cmaps/', import.meta.url).href, cMapPacked: true,
@@ -67,9 +71,10 @@ export function installImposition(api) {
   }
   function schedule() {
     const version = ++serial; clearTimeout(timer); render?.cancel(); data = null;
+    controller?.abort(); controller = new AbortController(); const {signal} = controller;
     navigation(true); $('nup-canvas').hidden = true; $('nup-summary').textContent = '';
     $('nup-page-label').textContent = '更新預覽'; say('正在產生 A4 拼版…');
-    timer = setTimeout(() => void generate(version), 200);
+    timer = setTimeout(() => { queue = queue.then(() => generate(version, signal)); }, 200);
   }
   $('nup-preset').onchange = () => {
     const preset = $('nup-preset').value; $('nup-custom').hidden = preset !== 'custom';
@@ -86,7 +91,7 @@ export function installImposition(api) {
   };
   $('nup-download').onclick = () => { if (data) { api.download(new Blob([data], {type: 'application/pdf'}), `${api.filename()}_A4拼版.pdf`); say('已下載 A4 拼版 PDF，請查看瀏覽器的下載項目。'); } };
   $('nup-close').onclick = () => dialog.close();
-  dialog.addEventListener('close', () => { ++serial; clearTimeout(timer); data = null; records = []; void dispose(); $('nup-canvas').width = $('nup-canvas').height = 0; api.setBusy(false); });
+  dialog.addEventListener('close', () => { ++serial; clearTimeout(timer); controller?.abort(); data = null; records = []; render?.cancel(); queue = queue.then(dispose); $('nup-canvas').width = $('nup-canvas').height = 0; api.setBusy(false); });
   $('impose-pdf').onclick = () => {
     if (api.isBusy() || !api.chosen().length) return;
     records = [...api.chosen()]; api.setBusy(true); dialog.showModal(); schedule();

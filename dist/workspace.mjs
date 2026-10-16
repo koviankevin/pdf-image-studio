@@ -2,12 +2,12 @@ import * as pdfjs from './vendor/pdfjs/pdf.mjs';
 import {PDFDocument} from './vendor/pdf-lib/pdf-lib.mjs';
 import {zipSync} from './vendor/fflate/fflate.mjs';
 import {parsePages,withDensity,dimensions} from './utils.mjs';
-import {movePages,assemblePdf,viewportCrop} from './editor-core.mjs';
-import {installPageTools} from './page-tools.mjs';
+import {movePages,assemblePdf,viewportCrop} from './editor-core.mjs?v=20261016-fixes';
+import {installPageTools} from './page-tools.mjs?v=20261016-fixes';
 import {installAnnotations} from './annotation-tools.mjs';
 import {installOcr} from './ocr-tools.mjs?v=20261011-ocr-two-column';
 import {imageToPdf} from './document-model.mjs';
-import {installImposition} from './imposition-tools.mjs';
+import {installImposition} from './imposition-tools.mjs?v=20261016-fixes';
 
 pdfjs.GlobalWorkerOptions.workerSrc=new URL('./vendor/pdfjs/pdf.worker.mjs',import.meta.url).href;
 const $=id=>document.getElementById(id);
@@ -34,7 +34,12 @@ function updateControls(){
 }
 function clearResults(){for(const result of results){URL.revokeObjectURL(result.url);URL.revokeObjectURL(result.thumbnail);}results=[];$('gallery').replaceChildren();$('image-results').hidden=true;$('result-count').textContent='0';pageTools?.invalidateEstimate();}
 function snapshot(){history.push({pages:[...pages],selected:new Set(selected)});if(history.length>30)history.shift();}
-function changed(){clearResults();$('pages').value='';drawPages();}
+function collectThumbnails(){
+  const live=new Set(pages.map(page=>page.thumbnail));
+  for(const state of history)for(const page of state.pages)live.add(page.thumbnail);
+  for(const url of thumbnailUrls)if(!live.has(url)){URL.revokeObjectURL(url);thumbnailUrls.delete(url);}
+}
+function changed(){clearResults();$('pages').value='';drawPages();collectThumbnails();}
 function button(text,label,handler,className='secondary'){const b=document.createElement('button');b.type='button';b.textContent=text;b.className=className;b.setAttribute('aria-label',label);b.addEventListener('click',handler);return b;}
 function drawSources(){
   $('source-list').replaceChildren();for(const source of sources.values()){const row=document.createElement('div');row.className='source-row';const mark=document.createElement('span');mark.className='source-mark';mark.style.setProperty('--source-color',source.color);mark.textContent=String(source.ordinal);const name=document.createElement('span');name.textContent=source.name;name.title=source.name;const count=document.createElement('small');count.textContent=`${source.count} 頁`;row.append(mark,name,count);$('source-list').append(row);}
@@ -108,7 +113,7 @@ async function addFiles(files){
       const form=doc.getForm();if(form.getFields().length)form.flatten({updateFieldAppearances:false});
       const ordinal=++serial;source={id:`s${ordinal}`,ordinal,name:file.name,size:Math.max(file.size,original.length),count:pdf.numPages,doc,pdf,task,color:['#2955df','#0b887c','#a04cab','#bd6b15'][((ordinal-1)%4)]};
       const newPages=[];for(let index=0;index<pdf.numPages;index++){status(`正在建立 ${file.name} 的縮圖（${index+1} / ${pdf.numPages}）…`);const {blob}=await renderBlob(source,index,72,'jpeg',true);const thumbnail=URL.createObjectURL(blob);thumbnails.push(thumbnail);thumbnailUrls.add(thumbnail);newPages.push({id:`${source.id}-p${index}`,sourceId:source.id,index,thumbnail});}
-      sources.set(source.id,source);pages.push(...newPages);for(const page of newPages)selected.add(page.id);history=[];committed=true;added++;drawSources();drawPages();
+      sources.set(source.id,source);pages.push(...newPages);for(const page of newPages)selected.add(page.id);history=[];committed=true;added++;drawSources();drawPages();collectThumbnails();
     }catch(error){errors.push(`${file.name}：${cancelled?'已取消加入':error.message||'無法讀取這份文件'}`);}
     finally{password='';if(!committed){for(const url of thumbnails){URL.revokeObjectURL(url);thumbnailUrls.delete(url);}await task?.destroy().catch(()=>{});}}
   }
@@ -150,5 +155,5 @@ if(document.modelContext?.registerTool){const lifecycle=new AbortController();wi
 const sharedApi={$,getPages:()=>pages,getSources:()=>sources,getSourcePage,chosen,isBusy:()=>busy,setBusy,status,toast,filename,bytes,renderBlob,pageViewport,commitEdits,updateRecords,download,showImage};
 annotationTools=installAnnotations(sharedApi);ocrTools=installOcr(sharedApi);
 impositionTools=installImposition(sharedApi);
-pageTools=installPageTools({$,getPages:()=>pages,getSources:()=>sources,chosen,isBusy:()=>busy,setBusy,status,toast,filename,bytes,renderBlob,commitEdits,download,showImage});
+pageTools=installPageTools(sharedApi);
 updateControls();
