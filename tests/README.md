@@ -120,8 +120,8 @@ PDF.js 在辨識前確認兩頁都完全沒有文字，避免誤走原生文字�
 `Node and Chromium regression` 保留原名稱、Node.js 22、完整 Node／Chromium 測試與診斷 artifacts。
 測試 job 只有 `contents: read`，不需要 secrets；任一安裝或測試步驟失敗都不能部署。
 
-Pages 已整合到同一 workflow 的 `Publish tested website` job，以 `needs: regression` 等待成功；
-另明確要求 regression 結果為 success、ref 為 `refs/heads/main`，且事件為 push 或 workflow_dispatch。
+Pages 已整合到同一 workflow 的 `Publish tested website` job，以 `needs: [regression, compatibility]` 等待成功；
+另明確要求 regression 與 compatibility 結果皆為 success、ref 為 `refs/heads/main`，且事件為 push 或 workflow_dispatch。
 PR（包括 fork）和手動選取其他分支只測試，不會發布。原本獨立的 `pages.yml` 已刪除，避免旁路。
 所有 main 更新都測試並在成功後發布，包含純測試／相依套件／文件變更；刻意不保留 dist 路徑過濾，
 減少兩份觸發条件需要同步維護的風險。
@@ -141,7 +141,7 @@ PR 仍取消舊執行。取得發布鎖後才查 main HEAD，若事件 SHA 已�
 
 在 Actions → **Regression tests** → **Run workflow** 選 **main**。
 這會先重跑完整測試，再發布當次 SHA，沒有跳過測試的選項。請勿再使用已移除的 Publish website workflow。
-若只重跑失敗的部署 job，GitHub 沿用同一 run、同一 SHA 已成功的 regression 結果；
+若只重跑失敗的部署 job，GitHub 沿用同一 run、同一 SHA 已成功的 regression 與 compatibility 結果；
 過期 SHA 仍會被 main HEAD 檢查擋住。需要回復舊功能時請在 main 建立 revert 提交並重新測試。
 
 ### 發布閘門驗證
@@ -158,7 +158,7 @@ HEAD 檢查直接執行 YAML 的 script，mock 僅限 GitHub API 回應，涵蓋
 GitHub PR 執行另驗證完整回歸測試；正式部署整合須在此 PR 合併至 main 後才能執行。
 
 若要在合併前強制把關，可在 main 的 branch protection/ruleset 將
-`Node and Chromium regression` 設為 required status check，並要求透過 PR 合併。
+`Node and Chromium regression`、`Compatibility (firefox)`、`Compatibility (webkit)` 設為 required status checks，並要求透過 PR 合併。
 此變更不調整儲存庫設定或分支保護規則。
 
 ## 繁中準確率調查與選用實驗
@@ -241,7 +241,7 @@ npm run test:compatibility -- --project=firefox
 npm run test:compatibility -- --project=webkit
 ```
 
-`playwright.compatibility.config.mjs` 沿用既有 fixtures、合成 PDF 與五個回歸案例，
+`playwright.compatibility.config.mjs` 以 `@compatibility` 標籤沿用既有 fixtures、合成 PDF 與五個回歸案例，
 另加一個 Worker 生命週期案例，每個引擎 6 項。使用獨立設定與測試目錄，
 `npm run test:browser` 的 Chromium 案例及 OCR 準確率矩陣保持原樣。
 

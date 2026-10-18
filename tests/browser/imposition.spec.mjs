@@ -2,7 +2,7 @@ import {test, expect} from './fixtures.mjs';
 import {createFixtures} from '../support/pdfs.mjs';
 import {downloadBytes, inspectPdf} from '../support/ocr-pdf.mjs';
 
-test('A4 UI exports selected workspace order, changes layout, previews every sheet and rejects invalid spacing', async ({page}, testInfo) => {
+test('A4 UI exports selected workspace order, changes layout, previews every sheet and rejects invalid spacing', {tag: '@compatibility'}, async ({page}, testInfo) => {
   const errors=[]; page.on('pageerror', e=>errors.push(e.message));
   const {sources} = await createFixtures();
   await page.goto('/');

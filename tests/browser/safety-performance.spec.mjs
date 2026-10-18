@@ -7,7 +7,7 @@ async function ready(page) {
   await expect(page.locator('#dropzone')).toHaveAttribute('aria-disabled','false');
 }
 
-test('crop preview and image download work on page 3 after importing a shorter PDF', async ({page}) => {
+test('crop preview and image download work on page 3 after importing a shorter PDF', {tag: '@compatibility'}, async ({page}) => {
   const {sources} = await createFixtures();
   await ready(page);
   await page.locator('#file-input').setInputFiles([upload(sources.get('B')),upload(sources.get('A'))]);
@@ -72,7 +72,7 @@ test('CSP blocks injected inline scripts and off-site script / fetch while retai
   expect(await page.evaluate(()=>({inline:!!window.inlineRan,remote:!!window.remoteRan,blocked:fetchBlocked}))).toEqual({inline:false,remote:false,blocked:true});
 });
 
-test('preview builds are serialized, obsolete settings cancel, and close/reopen cannot resurrect a build', async ({page}) => {
+test('preview builds are serialized, obsolete settings cancel, and close/reopen cannot resurrect a build', {tag: '@compatibility'}, async ({page}) => {
   const {sources} = await createFixtures();
   // Hold the real core at its entry point to exercise settings/close races
   // deterministically. The underlying PDF generation and rendering are real.

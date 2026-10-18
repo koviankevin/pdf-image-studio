@@ -5,7 +5,7 @@ import {inspectPdf} from '../support/ocr-pdf.mjs';
 // The first recognize message is held at the native Worker boundary. Engine,
 // WASM, language loading and all subsequent recognition are real and local.
 // This removes the race between the Cancel click and a fast one-page result.
-test('real OCR worker cancels at recognition dispatch and restarts for two scanned pages', async ({page}, testInfo) => {
+test('real OCR worker cancels at recognition dispatch and restarts for two scanned pages', {tag: '@compatibility'}, async ({page}, testInfo) => {
   await page.addInitScript(() => {
     const NativeWorker = window.Worker;
     window.ocrProbe = {created: 0, live: 0, held: false, dispatches: 0};
