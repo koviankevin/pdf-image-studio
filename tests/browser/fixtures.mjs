@@ -4,6 +4,28 @@ import {fileURLToPath} from 'node:url';
 import {test as base, expect} from '@playwright/test';
 
 export const test = base.extend({
+  // Enabled only by the small Firefox/WebKit suite. Observe the real page CSP;
+  // do not bypass it or change production assets for compatibility checks.
+  compatibilityDiagnostics: [async ({page, browser}, use, testInfo) => {
+    if (!testInfo.project.metadata.compatibilitySmoke) return use();
+    const errors = [];
+    page.on('pageerror', error => errors.push(error.message));
+    await page.addInitScript(() => {
+      window.compatibilityViolations = [];
+      document.addEventListener('securitypolicyviolation', event => {
+        compatibilityViolations.push({directive: event.effectiveDirective, uri: event.blockedURI});
+      });
+    });
+    await use();
+    const violations = await page.evaluate(() => window.compatibilityViolations ?? []);
+    await testInfo.attach('browser-diagnostics.json', {
+      body: Buffer.from(JSON.stringify({browser: testInfo.project.name,
+        version: browser.version(), platform: process.platform, errors, violations}, null, 2)),
+      contentType: 'application/json',
+    });
+    expect(errors, 'Unhandled application errors').toEqual([]);
+    expect(violations, 'Normal functionality must not violate the shipped CSP').toEqual([]);
+  }, {auto: true}],
   // Use the real development server on its automatically allocated free port.
   // No production server changes, fixed-port collisions or external website.
   serverURL: [async ({}, use) => {

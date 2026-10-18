@@ -17,7 +17,7 @@
 
 ## 執行
 
-需求：Node.js 22 以上。CI 固定使用 Node.js 22 與 Chromium。
+需求：Node.js 22 以上。完整回歸使用 Chromium；Firefox 與 Playwright WebKit 另執行小範圍相容性測試。CI 固定 Node.js 22。
 
 ```sh
 npm ci
@@ -112,7 +112,7 @@ PDF.js 在辨識前確認兩頁都完全沒有文字，避免誤走原生文字�
 功能回歸不注入辨識參數或結果，也不改既有原生文字測試「不可載入 Tesseract」的檢查。
 
 尚未涵蓋低品質照片、手寫、複雜表格、密碼 PDF、所有標記工具、
-大檔壓力、Safari 或 Firefox；這些可在有對應回歸風險時再加入。
+大檔壓力與真正 Safari 實機。Firefox／Playwright WebKit 僅涵蓋下方 smoke suite，不代表完整 Chromium 回歸已在三種引擎驗證。
 
 ## CI 與部署
 
@@ -228,3 +228,48 @@ npm run test:ocr:compare -- two-column-layout.spec.mjs
 原始階層檢查只在記憶體中的 served copy 加入結果記錄，不更動引擎輸出。
 日常端到端測試不攔截或改寫正式 OCR 模組。CI 保存 OCR JSON 與雙欄校對 PNG／
 PDF 七天。實測範圍與數據見 [雙欄報告](reports/ocr-two-column-20261011.md)。
+
+
+## Firefox / Playwright WebKit 相容性 smoke suite
+
+```bash
+npm ci
+npx playwright install --with-deps firefox webkit
+npm run test:compatibility
+# 可單獨重現某個引擎
+npm run test:compatibility -- --project=firefox
+npm run test:compatibility -- --project=webkit
+```
+
+`playwright.compatibility.config.mjs` 沿用既有 fixtures、合成 PDF 與五個回歸案例，
+另加一個 Worker 生命週期案例，每個引擎 6 項。使用獨立設定與測試目錄，
+`npm run test:browser` 的 Chromium 案例及 OCR 準確率矩陣保持原樣。
+
+| 案例 | 核對內容 |
+| --- | --- |
+| A4 UI | 兩份不同頁數 PDF、工作區順序、每張預覽、真實下載、A4 尺寸與文字順序、無效間距 |
+| 跨來源框選 | 先匯入長 PDF 再匯入短 PDF，仍可預覽及下載長 PDF 的第 3 頁 |
+| 來源回收 | 失敗匯入保留復原；反覆刪除／新增後只留目前來源與一個 PDF Worker；清空歸零 |
+| OCR 模組載入取消 | 暫停真實模組回應，停止立即解鎖；遲到回應不啟動舊 Worker；可再次辨識 |
+| 拼版取消 | 控制實際組裝入口的等待，驗證過時設定、關閉／重開取消與序列化，真正組裝／渲染照常執行 |
+| OCR Worker | 真實引擎、WASM、英文資料啟動；取消後關閉 Worker；重新啟動，同一 Worker 辨識兩個 image-only 合成頁面 |
+
+每個案例觀察頁面的 `securitypolicyviolation` 及未處理錯誤，正常流程出現任一項即失敗。
+保留正式 meta CSP，不用 `bypassCSP`。既有 Chromium 的惡意行內／外站 script 阻擋測試保留；
+這個 suite 聚焦正常功能可否運作，不重複整套 CSP 攻擊測試，也不宣稱 meta CSP 會套用到獨立 Worker 回應。
+
+OCR Worker 案例只在第一次 `recognize` 訊息送進原生 Worker 前設置確定性的等待點，
+避免快速辨識完成與點擊停止競速；不偽造 OCR 結果。取消後的兩頁辨識完整執行真實引擎，
+確認每頁有非空白可校對文字及預覽，並計數建立／終止與跨頁重用。
+此案例不是「WASM 正在計算途中」的任意時間取消測試，也不對 CER、行數或字型像素做跨引擎承諾。
+完整中英文準確率、雙欄與低品質掃描矩陣仍只在 Chromium 執行，實體掃描覆蓋率不因此增加。
+
+CI 用兩個平行 matrix jobs，各只安裝自己的引擎；每個 job 上限 10 分鐘，
+Playwright 每次執行上限 5 分鐘、單 worker、不重試、不允許失敗，避免把 OCR 回歸成本擴成三倍。
+每次保存 HTML、瀏覽器實際版本、CSP／錯誤診斷與合成 PDF；失敗另有 trace／截圖，保留七天。
+部署仍只從 main 的受測 SHA 發布，保留過時提交檢查，並要求原本 Node／Chromium 與兩個相容性 jobs 全部成功。
+
+**驗證邊界：** Firefox 是 Playwright 所帶的 Firefox；WebKit 是 Linux 上 Playwright 所帶的 WebKit。
+後者不是安裝於 macOS／iOS 的 Safari，不涵蓋所有 Safari 版本、Apple 裝置、剪貼簿與下載介面差異。
+真正 Safari 實機目前尚未驗證；後續手動檢查應記錄 OS、Safari 版本與裝置，使用同樣的合成 PDF 核對
+多檔預覽、A4 下載、OCR 啟動／停止／再執行與控制台錯誤。
