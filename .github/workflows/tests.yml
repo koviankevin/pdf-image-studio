@@ -77,11 +77,45 @@ jobs:
           if-no-files-found: ignore
           retention-days: 7
 
+  compatibility:
+    name: Compatibility (${{ matrix.browser }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [firefox, webkit]
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Install selected browser
+        run: npx playwright install --with-deps ${{ matrix.browser }}
+      - name: Targeted compatibility tests
+        run: npm run test:compatibility -- --project=${{ matrix.browser }}
+      - name: Upload compatibility evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: compatibility-${{ matrix.browser }}-${{ github.run_attempt }}
+          path: |
+            playwright-report/compatibility/
+            test-results/compatibility/
+          if-no-files-found: warn
+          retention-days: 7
+
   deploy:
     name: Publish tested website
-    needs: regression
+    needs: [regression, compatibility]
     if: >-
       ${{ needs.regression.result == 'success' &&
+          needs.compatibility.result == 'success' &&
           github.ref == 'refs/heads/main' &&
           (github.event_name == 'push' || github.event_name == 'workflow_dispatch') }}
     runs-on: ubuntu-latest

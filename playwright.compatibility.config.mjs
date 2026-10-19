@@ -1,0 +1,23 @@
+import {defineConfig} from '@playwright/test';
+import regression from './playwright.config.mjs';
+
+// Reuse targeted regression cases, not the full OCR accuracy/layout matrix.
+export default defineConfig(regression, {
+  testDir: './tests',
+  testMatch: [
+    'browser/imposition.spec.mjs',
+    'browser/resource-lifecycle.spec.mjs',
+    'browser/safety-performance.spec.mjs',
+    'compatibility/*.spec.mjs',
+  ],
+  grep: /@compatibility/,
+  timeout: 90_000,
+  globalTimeout: 300_000,
+  outputDir: 'test-results/compatibility',
+  reporter: [['list'], ['html', {open: 'never', outputFolder: 'playwright-report/compatibility'}]],
+  projects: ['firefox', 'webkit'].map(browserName => ({
+    name: browserName,
+    metadata: {compatibilitySmoke: true},
+    use: {browserName},
+  })),
+});

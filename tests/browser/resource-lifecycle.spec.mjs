@@ -22,7 +22,7 @@ async function ready(page) {
 const workers = page => page.evaluate(() => liveWorkerUrls.size);
 const sourceRows = page => page.locator('#source-list .source-row');
 
-test('successful import releases sources excluded from current pages and undo, while failed import retains undo', async ({page}) => {
+test('successful import releases sources excluded from current pages and undo, while failed import retains undo', {tag: '@compatibility'}, async ({page}) => {
   const {sources} = await createFixtures();await ready(page);
   await page.locator('#file-input').setInputFiles(upload(sources.get('A')));
   await expect(page.locator('#page-count')).toHaveText('2');
@@ -76,7 +76,7 @@ test('undo retains a removed source until its last snapshot expires, and remaini
   await page.locator('#page-grid img').evaluateAll(imgs => Promise.all(imgs.map(img => img.decode())));
 });
 
-test('stopping a pending OCR module import unlocks immediately, starts no stale worker, and allows retry', async ({page}) => {
+test('stopping a pending OCR module import unlocks immediately, starts no stale worker, and allows retry', {tag: '@compatibility'}, async ({page}) => {
   const doc=await PDFDocument.create();doc.addPage([200,250]);
   let release,requested;
   const gate=new Promise(resolve => release=resolve), loading=new Promise(resolve => requested=resolve);
