@@ -2,12 +2,12 @@ import * as pdfjs from './vendor/pdfjs/pdf.mjs';
 import {PDFDocument} from './vendor/pdf-lib/pdf-lib.mjs';
 import {zipSync} from './vendor/fflate/fflate.mjs';
 import {parsePages,withDensity,dimensions} from './utils.mjs';
-import {movePages,assemblePdf,viewportCrop} from './editor-core.mjs?v=20261016-fixes';
-import {installPageTools} from './page-tools.mjs?v=20261016-fixes';
+import {movePages,assemblePdf,viewportCrop} from './editor-core.mjs?v=20261021-shijian';
+import {installPageTools} from './page-tools.mjs?v=20261021-shijian';
 import {installAnnotations} from './annotation-tools.mjs';
 import {installOcr} from './ocr-tools.mjs?v=20261016-lifecycle';
 import {imageToPdf} from './document-model.mjs';
-import {installImposition} from './imposition-tools.mjs?v=20261016-fixes';
+import {installImposition} from './imposition-tools.mjs?v=20261021-shijian';
 
 pdfjs.GlobalWorkerOptions.workerSrc=new URL('./vendor/pdfjs/pdf.worker.mjs',import.meta.url).href;
 const $=id=>document.getElementById(id);

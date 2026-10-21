@@ -1,4 +1,6 @@
-# 清晰 PDF
+# 紙間
+
+整理每一頁，自由輸出。PDF 合併・圖片轉換・文字辨識。
 
 ## A4 拼版：多頁排成一張
 
@@ -14,7 +16,9 @@
 工作區本身不受拼版影響，關閉後可繼續編輯或一般合併輸出。
 同一來源頁面共用的圖片與字型在拼版中保留共用資源。變更設定或關閉視窗會取消舊預覽，新的預覽依序執行；取消會在處理階段之間生效，不能中斷程式庫正在執行的單次同步運算。
 
-[直接使用網站](https://koviankevin.github.io/pdf-image-studio/) · [原有網站](https://pdf-image-studio-kovia.koviankevin.chatgpt.site)
+[直接使用紙間](https://koviankevin.github.io/pdf-image-studio/)
+
+網站統一維護 GitHub Pages 版本。
 
 ## GitHub Pages
 

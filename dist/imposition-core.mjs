@@ -1,5 +1,5 @@
 import {PDFDocument, degrees, pushGraphicsState, popGraphicsState} from './vendor/pdf-lib/pdf-lib.mjs';
-import {assemblePdf} from './editor-core.mjs?v=20261016-fixes';
+import {assemblePdf} from './editor-core.mjs?v=20261021-shijian';
 import {checkpoint} from './cancellation.mjs';
 
 const MM = 72 / 25.4;
@@ -68,7 +68,7 @@ export async function imposePdf(records, sources, settings, title = 'A4 拼版',
     if (i % layout.cells.length === 0) sheet = output.addPage([layout.width, layout.height]);
     sheet.drawPage(embedded[i], placements[i]);
   }
-  output.setTitle(title); output.setProducer('清晰 PDF'); output.setCreator('清晰 PDF');
+  output.setTitle(title); output.setProducer('紙間'); output.setCreator('紙間');
   await checkpoint(signal);
   const bytes = await output.save(); signal?.throwIfAborted(); return bytes;
 }

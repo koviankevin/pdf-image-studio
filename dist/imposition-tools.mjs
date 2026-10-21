@@ -1,5 +1,5 @@
 import * as pdfjs from './vendor/pdfjs/pdf.mjs';
-import {imposePdf, sheetLayout} from './imposition-core.mjs?v=20261016-fixes';
+import {imposePdf, sheetLayout} from './imposition-core.mjs?v=20261021-shijian';
 
 export function installImposition(api) {
   const {$} = api;

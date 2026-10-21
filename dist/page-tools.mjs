@@ -1,4 +1,4 @@
-import {parseSplitRanges,assemblePdf,viewportCrop,selectionToCrop} from './editor-core.mjs?v=20261016-fixes';
+import {parseSplitRanges,assemblePdf,viewportCrop,selectionToCrop} from './editor-core.mjs?v=20261021-shijian';
 import {zipSync} from './vendor/fflate/fflate.mjs';
 
 export function installPageTools(api){

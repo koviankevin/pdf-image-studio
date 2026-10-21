@@ -53,7 +53,7 @@ export async function assemblePdf(pages,sources,title,{signal}={}){
     if(page.crop){const {x,y,width,height}=page.crop;if(![x,y,width,height].every(Number.isFinite)||width<=0||height<=0)throw new Error('無效的裁切範圍。');copy.setCropBox(x,y,width,height);}
     output.addPage(copy);
   }
-  output.setTitle(title);output.setProducer('清晰 PDF');output.setCreator('清晰 PDF');
+  output.setTitle(title);output.setProducer('紙間');output.setCreator('紙間');
   await checkpoint(signal);
   const bytes=await output.save();signal?.throwIfAborted();return bytes;
 }
