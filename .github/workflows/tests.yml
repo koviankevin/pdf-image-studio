@@ -164,3 +164,13 @@ jobs:
         uses: actions/deploy-pages@v4
         with:
           artifact_name: github-pages-${{ github.run_id }}-${{ github.run_attempt }}
+      - name: Use Node for published preview verification
+        if: steps.current.outputs.publish == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify published share metadata and PNG
+        if: steps.current.outputs.publish == 'true'
+        env:
+          PAGES_URL: ${{ steps.deployment.outputs.page_url }}
+        run: node scripts/check-social-preview.mjs --url "$PAGES_URL"

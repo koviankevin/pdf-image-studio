@@ -273,3 +273,31 @@ Playwright 每次執行上限 5 分鐘、單 worker、不重試、不允許失�
 後者不是安裝於 macOS／iOS 的 Safari，不涵蓋所有 Safari 版本、Apple 裝置、剪貼簿與下載介面差異。
 真正 Safari 實機目前尚未驗證；後續手動檢查應記錄 OS、Safari 版本與裝置，使用同樣的合成 PDF 核對
 多檔預覽、A4 下載、OCR 啟動／停止／再執行與控制台錯誤。
+
+## 紙間分享縮圖
+
+`dist/social-preview-20261022.png` 是 1200 × 630 PNG（約 44 KB），沿用既有紙頁圖示、
+品牌藍、米白與內附 Noto Sans CJK TC 字型。重要文字置於中央 630 × 630 範圍，
+已目視檢查原尺寸、600 × 315 縮小及中央正方形裁切；平台仍可能採用其他裁切方式。
+SVG 編輯來源為 `scripts/social-preview.svg`，不載入外站圖片或新增前端套件。
+
+```sh
+# 選用：修改 SVG 後，使用既有 Playwright 與內附字型重新輸出靜態 PNG
+node scripts/generate-social-preview.mjs
+# 亦可安裝內附字型後使用 Inkscape 匯出 SVG；本次 PNG 採此方式製作。
+# 本機檢查（也由 test:ci 強制執行）
+node scripts/check-social-preview.mjs
+# 合併發布後，與這份 checkout 的 PNG 雜湊比對
+node scripts/check-social-preview.mjs --url https://koviankevin.github.io/pdf-image-studio/
+```
+
+`ci/social-preview.test.mjs` 核對靜態 head 的 OG／Twitter 標籤、正式 HTTPS 專案路徑、
+PNG 簽章、實際／宣告尺寸、300 KB 上限及上傳目錄內的檔案；另確認缺檔、錯路徑及錯尺寸會失敗。
+`browser/social-preview.spec.mjs` 透過本機伺服器讀取圖片並真正解碼，驗證 HTTP MIME 與自然尺寸。
+現有發布閘門仍上傳完整 `dist`，且在 Pages 發布後核對正式首頁與圖片的 HTTP 200、MIME、
+中繼資料及 PNG SHA-256，短暫 CDN 延遲最多重試 6 次；讀取失敗會明確使工作失敗，
+但此時 Pages 已完成發布，該檢查不會自動回滾網站。
+
+**驗證邊界：** HTTP／中繼資料及本機裁切檢查不是 Facebook、LINE 或 X 的實際分享預覽。
+本次未取得這些平台的實際預覽或快取結果，不宣稱其快取已刷新。
+圖片使用版本化檔名；日後改圖請同步更新檔名與中繼資料，必要時透過平台官方工具重新擷取。
