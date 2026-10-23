@@ -6,18 +6,24 @@ import {test as base, expect} from '@playwright/test';
 export const test = base.extend({
   // Enabled only by the small Firefox/WebKit suite. Observe the real page CSP;
   // do not bypass it or change production assets for compatibility checks.
-  compatibilityDiagnostics: [async ({page, browser}, use, testInfo) => {
+  compatibilityDiagnostics: [async ({page, browser, context}, use, testInfo) => {
     if (!testInfo.project.metadata.compatibilitySmoke) return use();
-    const errors = [];
-    page.on('pageerror', error => errors.push(error.message));
-    await page.addInitScript(() => {
+    const errors = [], violations = [];
+    const observe = target => target.on('pageerror', error => errors.push(error.message));
+    for (const target of context.pages()) observe(target);
+    context.on('page', observe);
+    // Collect while each page is alive, including tabs intentionally closed by
+    // recovery tests. Evaluating only the original tab at teardown loses them.
+    await context.exposeBinding('recordCompatibilityViolation', (_source, violation) => violations.push(violation));
+    await context.addInitScript(() => {
       window.compatibilityViolations = [];
       document.addEventListener('securitypolicyviolation', event => {
-        compatibilityViolations.push({directive: event.effectiveDirective, uri: event.blockedURI});
+        const violation = {directive: event.effectiveDirective, uri: event.blockedURI};
+        compatibilityViolations.push(violation);
+        void window.recordCompatibilityViolation(violation);
       });
     });
     await use();
-    const violations = await page.evaluate(() => window.compatibilityViolations ?? []);
     await testInfo.attach('browser-diagnostics.json', {
       body: Buffer.from(JSON.stringify({browser: testInfo.project.name,
         version: browser.version(), platform: process.platform, errors, violations}, null, 2)),
