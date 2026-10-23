@@ -135,3 +135,14 @@ test('selecting an existing item and cancelling a drag preserve redo in both edi
   await page.locator('#free-layout').click();await expect(page.locator('#free-preview')).toBeEnabled();await page.locator('#free-add-title').click();await page.locator('#free-undo').click();await page.locator('#free-sheet [data-item]').first().click();await expect(page.locator('#free-redo')).toBeEnabled();
   box=await page.locator('#free-sheet [data-item]').first().boundingBox();await page.mouse.move(box.x+box.width/2,box.y+box.height/2);await page.mouse.down();await page.mouse.move(box.x+box.width/2+8,box.y+box.height/2+8);await page.locator('#free-sheet').dispatchEvent('pointercancel');await page.mouse.up();await expect(page.locator('#free-redo')).toBeEnabled();await page.locator('#free-redo').click();await expect(page.locator('#free-item option')).toHaveCount(4);
 });
+
+test('deleting a workspace warns another open tab while retaining its downloadable content',async({page,context,baseURL})=>{
+  await context.route('**/draft-store.mjs*',async route=>{const response=await route.fetch();const body=(await response.text()).replace('try { await completion; } catch (error) { if (conflict)',`try { await completion;if(window.holdNextDraftWrite){window.holdNextDraftWrite=false;window.draftWriteHeld=true;await new Promise(resolve=>window.releaseDraftWrite=resolve);window.heldWriteFinished=true;} } catch (error) { if (conflict)`);await route.fulfill({response,body});});
+  await ready(page);await load(page);await rename(page,'舊工作區');await saved(page);
+  const other=await context.newPage();await other.goto(baseURL);await expect(other.locator('#file-input')).toBeEnabled();await saved(other);
+  await panel(page);await page.locator('#project-new').click();await expect(page.locator('#page-count')).toHaveText('0');await expect(page.locator('#file-input')).toBeEnabled();await panel(page);
+  await other.evaluate(()=>window.holdNextDraftWrite=true);await other.locator('#output-name').fill('等待中的儲存');await expect.poll(()=>other.evaluate(()=>window.draftWriteHeld)).toBe(true);
+  await page.locator('#project-list').selectOption('legacy');page.once('dialog',dialog=>dialog.accept());await page.locator('#project-delete').click();await expect(page.locator('#project-status')).toContainText('已刪除');
+  await expect(other.locator('#autosave-status')).toContainText('其他分頁已刪除');await other.evaluate(()=>releaseDraftWrite());await expect.poll(()=>other.evaluate(()=>window.heldWriteFinished)).toBe(true);await expect(other.locator('#autosave-status')).toContainText('其他分頁已刪除');expect(await other.evaluate(()=>!dispatchEvent(new Event('beforeunload',{cancelable:true})))).toBe(true);
+  expect((await pdf(other)).map(item=>item.text.trim())).toEqual(['SOURCE_A_PAGE_1','SOURCE_A_PAGE_2']);await panel(other);expect((await downloadBytes(other,other.locator('#project-backup'))).byteLength).toBeGreaterThan(100);await other.close();
+});

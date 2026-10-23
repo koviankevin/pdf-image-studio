@@ -6,7 +6,7 @@ export class DraftConflict extends Error {
 
 // The revision check, document/thumbnail writes and old-resource collection share
 // one transaction: a failed/quota-limited write never damages the previous draft.
-export async function openDraftStore(factory = globalThis.indexedDB, name = DRAFT_DB) {
+export async function openDraftStore(factory = globalThis.indexedDB, name = DRAFT_DB, onUnavailable = () => {}) {
   if (!factory) throw new Error('此瀏覽器不支援本機草稿儲存。');
   const db = await new Promise((resolve, reject) => {
     let blocked = false;
@@ -16,7 +16,7 @@ export async function openDraftStore(factory = globalThis.indexedDB, name = DRAF
     request.onerror = () => reject(request.error);
     request.onblocked = () => { blocked = true; reject(new Error('其他分頁正在使用舊草稿資料庫，請先關閉它再重試。')); };
   });
-  db.onversionchange = () => db.close();
+  db.onversionchange = () => {db.close();onUnavailable();};
   const done = transaction => new Promise((resolve, reject) => {
     let failure;
     transaction.oncomplete = resolve;

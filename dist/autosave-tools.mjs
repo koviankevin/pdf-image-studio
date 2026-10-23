@@ -5,7 +5,8 @@ export function installAutosave(api) {
   $('source-list').insertAdjacentHTML('afterend', `<section class="autosave-panel" aria-label="本機自動儲存"><label class="remember-output"><input id="autosave-enabled" type="checkbox" checked>自動儲存工作區到這台裝置</label><p id="autosave-status" class="field-hint" role="status" aria-live="polite">正在檢查本機草稿…</p><div class="free-pair"><button id="autosave-now" class="secondary" disabled>立即儲存</button><button id="autosave-delete" class="secondary" disabled>刪除已存草稿</button></div><p class="field-hint">同一瀏覽器、同一裝置可接續編輯。已解鎖的文件內容也會保存在此裝置，密碼不會保存。刪除或關閉自動儲存會清除目前工作區共用的草稿；清除瀏覽器資料或無痕模式可能無法保留。</p></section>`);
   let enabled = true; try { enabled = localStorage.getItem(preference) !== 'false'; } catch { /* Optional preference only. */ }
   $('autosave-enabled').checked = enabled;
-  let store, revision = 0, initializing = true, saving = false, dirty = false, failed = false, conflict = false, timer, generation = 0, last = '', lastRaw = '', hasStored = false, pendingClear = false, paused = false;
+  let store, revision = 0, initializing = true, saving = false, dirty = false, failed = false, conflict = false, timer, generation = 0, last = '', lastRaw = '', hasStored = false, pendingClear = false, paused = false, unavailable = false;
+  const unavailableMessage='其他分頁已刪除或更新此工作區的儲存空間。請先下載這裡的 PDF 或專案備份，再重新整理。';
   let knownDocuments = new Set(), knownAssets = new Set();
   let documentSizes = new Map(), assetSizes = new Map();
   const documents = new WeakMap(), assetIds = new Map();
@@ -77,10 +78,11 @@ export function installAutosave(api) {
           say(dirty ? '變更尚在儲存中…' : `已儲存到這台裝置 · ${new Date().toLocaleTimeString('zh-TW', {hour: '2-digit', minute: '2-digit', second: '2-digit'})}`);
         }
       }
+      if(unavailable)throw Error(unavailableMessage);
       failed = false;
     } catch (error) {
-      failed = true; dirty = true; conflict = error instanceof DraftConflict;
-      say(conflict ? error.message : `尚未儲存：${error.name === 'QuotaExceededError' ? '瀏覽器儲存空間不足' : error.message}。請先下載文件；原有草稿已保留。`, true);
+      failed = true; dirty = true; conflict = unavailable || error instanceof DraftConflict;
+      say(unavailable ? unavailableMessage : conflict ? error.message : `尚未儲存：${error.name === 'QuotaExceededError' ? '瀏覽器儲存空間不足' : error.message}。請先下載文件；原有草稿已保留。`, true);
     } finally {
       saving = false; controls();
       if ((pendingClear || dirty) && !failed && !conflict) timer = setTimeout(flush, 350);
@@ -133,11 +135,11 @@ export function installAutosave(api) {
     },
     async init() {
       try {
-        store = await openDraftStore(globalThis.indexedDB, api.databaseName); const saved = await store.read(); revision = saved.revision; hasStored = !!saved.project;
-        if (!enabled) { if (hasStored) { revision = await store.write(revision, null); hasStored = false; } say('自動儲存已關閉。'); return; }
+        store = await openDraftStore(globalThis.indexedDB, api.databaseName,()=>{unavailable=true;generation++;failed=true;conflict=true;dirty=true;clearTimeout(timer);say(unavailableMessage,true);controls();}); const saved = await store.read(); if(unavailable)throw Error(unavailableMessage); revision = saved.revision; hasStored = !!saved.project;
+        if (!enabled) { if (hasStored) { revision = await store.write(revision, null); hasStored = false; } if(unavailable)throw Error(unavailableMessage); say('自動儲存已關閉。'); return; }
         if (saved.project) {
           validateDraft(saved.project, saved.documents, saved.assets);
-          await api.restore(saved.project, saved.documents, saved.assets);
+          await api.restore(saved.project, saved.documents, saved.assets);if(unavailable)throw Error(unavailableMessage);
           knownDocuments = new Set(saved.documents.keys()); knownAssets = new Set(saved.assets.keys());
           documentSizes = new Map([...saved.documents].map(([key,blob])=>[key,blob.size])); assetSizes = new Map([...saved.assets].map(([key,blob])=>[key,blob.size]));
           for (const [url, key] of api.restoredAssets()) assetIds.set(url, key);
@@ -147,7 +149,7 @@ export function installAutosave(api) {
         failed = true; dirty = true;
         // A failed restoration must never overwrite the only recoverable draft.
         if (store) { hasStored = true; conflict = true; }
-        say(`無法還原／儲存本機草稿：${error.message}。請先下載目前內容。`, true);
+        say(unavailable?unavailableMessage:`無法還原／儲存本機草稿：${error.message}。請先下載目前內容。`, true);
       } finally { initializing = false; controls(); }
     },
   };
