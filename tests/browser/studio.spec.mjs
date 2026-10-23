@@ -31,8 +31,17 @@ test('batch crop uses displayed proportions on even pages and restores every pag
 });
 
 test('cancelling a staged batch crop leaves original pages and controls usable',async({page})=>{
-  await page.route('**/workspace.mjs*',async route=>{const response=await route.fetch(),body=(await response.text()).replace('onProgress?.(index+1,edits.length);',"onProgress?.(index+1,edits.length);await new Promise(resolve=>setTimeout(resolve,300));");await route.fulfill({response,body});});
-  await ready(page);await load(page,['A','B']);const before=await output(page);await page.getByRole('button',{name:'框選第 1 頁',exact:true}).click();await expect(page.locator('#crop-controls')).toBeEnabled();await page.locator('#crop-width').fill('50');await page.locator('.batch-crop-settings summary').click();await page.locator('#crop-batch-apply').click();await expect(page.locator('#crop-status')).toContainText('2 / 5');await page.locator('#crop-batch-cancel').click();await expect(page.locator('#crop-status')).toContainText('原有頁面全部保留');await page.locator('#crop-close').click();await expect(page.locator('#file-input')).toBeEnabled();expect((await output(page)).map(item=>item.pixelHash)).toEqual(before.map(item=>item.pixelHash));
+  await page.route('**/workspace.mjs*',async route=>{
+    const response=await route.fetch(),original=await response.text();
+    // Hold the real staging loop after page one has rendered. A fixed delay
+    // can disappear between assertion polls on a busy runner.
+    const body=original.replace('onProgress?.(index+1,edits.length);',"onProgress?.(index+1,edits.length);if(index===1)await new Promise(resolve=>window.releaseBatchCropStage=resolve);");
+    expect(body).not.toBe(original);await route.fulfill({response,body});
+  });
+  await ready(page);await load(page,['A','B']);const before=await output(page);await page.getByRole('button',{name:'框選第 1 頁',exact:true}).click();await expect(page.locator('#crop-controls')).toBeEnabled();await page.locator('#crop-width').fill('50');await page.locator('.batch-crop-settings summary').click();await page.locator('#crop-batch-apply').click();
+  try{await expect(page.locator('#crop-status')).toContainText('2 / 5');await page.locator('#crop-batch-cancel').click();}
+  finally{await page.evaluate(()=>window.releaseBatchCropStage?.());}
+  await expect(page.locator('#crop-status')).toContainText('原有頁面全部保留');await page.locator('#crop-close').click();await expect(page.locator('#file-input')).toBeEnabled();expect((await output(page)).map(item=>item.pixelHash)).toEqual(before.map(item=>item.pixelHash));
 });
 
 async function mixedPdf(page){
