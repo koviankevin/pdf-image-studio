@@ -2,7 +2,7 @@
 :root {
   --blue: #3b5685;
   --ink: #302f2b;
-  --muted: #726e65;
+  --muted: #6d695f;
   --line: #ded8cc;
   --surface: #fffdf8;
   --bg: #f3f0e8;
@@ -104,7 +104,7 @@ h2 { font-weight: 600; letter-spacing: .015em; }
 .field-label { font-weight: 600; }
 .field-hint, .local-note { line-height: 1.85; }
 input, select, textarea { background: #fffefa; border-color: var(--line); color: var(--ink); }
-input::placeholder, textarea::placeholder { color: #847e72; }
+input::placeholder, textarea::placeholder { color: #7b7467; }
 input:focus, select:focus, textarea:focus { border-color: var(--blue); }
 input[type=checkbox], input[type=range], progress { accent-color: var(--blue); }
 .primary { background: var(--blue); border-color: var(--blue); }
