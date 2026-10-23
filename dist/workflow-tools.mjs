@@ -33,7 +33,7 @@ export function installWorkflow(api) {
   for (const id of fields) { $(id).addEventListener('input', savePreferences); $(id).addEventListener('change', savePreferences); }
   $('remember-output').onchange = savePreferences; updatePreset();
   const pending = () => receipts.pending(api.getPages()) || api.hasLayoutDraft() || api.hasEditorDraft();
-  window.addEventListener('beforeunload', event => { if (pending()) { event.preventDefault(); event.returnValue = ''; } });
+  window.addEventListener('beforeunload', event => { if (api.needsLeaveWarning?.(pending()) ?? pending()) { event.preventDefault(); event.returnValue = ''; } });
   function refresh() {
     const total = api.getPages().length, count = api.chosen().length, disabled = api.isBusy() || !count;
     $('quick-actions').hidden = !total; document.body.classList.toggle('has-quick-actions', total > 0);
@@ -51,6 +51,7 @@ export function installWorkflow(api) {
   }).observe($('quick-actions'));
   return {
     refresh, savePreferences, hasPending: pending,
+    captureReceipts:receipts.capture,restoreReceipts(value){receipts.restore(value);refresh();},
     markExported(records) { receipts.mark(records, api.getPages()); refresh(); },
     clear() { receipts.clear(); refresh(); },
   };

@@ -26,7 +26,7 @@ export function matchingPreset(settings) {
     .every(key => key === 'quality' && settings.format === 'png' || p[key] === settings[key]))?.[0] || 'custom';
 }
 
-// Export receipts stay in memory. A receipt for a subset never clears other pages.
+// A receipt for a subset never clears other pages. Snapshot hooks preserve these on recovery.
 export function createExportReceipts() {
   const receipts = new Map(), content = new WeakMap();
   const signature = (page, index, count) => {
@@ -42,6 +42,8 @@ export function createExportReceipts() {
       }
     },
     pending(current) { return current.some((page, index) => receipts.get(page.id) !== signature(page, index, current.length)); },
+    capture:()=>[...receipts],
+    restore(value) { receipts.clear();for(const [id,signature]of value||[])receipts.set(id,signature); },
     clear() { receipts.clear(); },
   };
 }

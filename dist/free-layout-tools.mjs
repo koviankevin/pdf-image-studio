@@ -19,7 +19,7 @@ export function installFreeLayout(api) {
       </fieldset>
       <div class="free-pair"><button id="free-undo" class="secondary">復原版面</button><button id="free-clear" class="secondary">清空版面</button></div>
       <button id="free-preview" class="primary full">預覽並下載 A4 PDF</button>
-      <p class="field-hint">可回到原稿「框選／裁切」，把局部加入這張 A4。版面保留加入當時的裁切與標記，最多 30 個項目；只保留在這次工作階段。裁切外內容未永久刪除。</p>
+      <p class="field-hint">可回到原稿「框選／裁切」，把局部加入這張 A4。版面保留加入當時的裁切與標記，最多 30 個項目；開啟自動儲存後可在這台裝置接續編輯。裁切外內容未永久刪除。</p>
     </fieldset><div class="free-preview"><p id="free-sheet-label" class="free-sheet-label"></p><div class="free-desk"><svg id="free-sheet" role="group" aria-label="可拖曳與縮放的 A4 排版紙面" tabindex="0"></svg></div><p id="free-status" class="status" role="status"></p></div></div>
   </dialog>`);
   const dialog = $('free-dialog'), stage = $('free-sheet'), previews = new Map();
@@ -199,6 +199,9 @@ export function installFreeLayout(api) {
   dialog.addEventListener('close', () => { drag = null; api.setBusy(false); });
   $('free-layout').onclick = () => { if (open() && !items.length) void addRecords(api.chosen()); };
   return {
+    capture() { return {...layout(), selected, exported:signature(layout())===saved, open:dialog.open, fieldChanges:current()?['x','y','width','height'].filter(key=>$('free-'+key).value!==round(current()[key])).map(key=>'free-'+key).concat(current().type==='text'?['free-text','free-font-size','free-color'].filter(id=>$(id).value!==String(id==='free-text'?current().text:id==='free-font-size'?current().fontSize:current().color)):[]):[], fields:dialog.open&&current()?Object.fromEntries(['free-x','free-y','free-width','free-height','free-text','free-font-size','free-color'].map(id=>[id,$(id).value])):null, items:structuredClone(items).map(item=>item.type==='page'?{...item,preview:previews.get(item.id)}:item)}; },
+    restore(value,record,asset) { items=value.items.map(item=>item.type==='page'?{...item,record:record(item.record)}:item);for(const item of value.items)if(item.type==='page')previews.set(item.id,asset(item.preview));orientation=value.orientation;selected=items.some(item=>item.id===value.selected)?value.selected:null;history=[];$('free-orientation').value=orientation;saved=value.exported?signature(layout()):'';render(); },
+    resume(value) { if(value.open&&open()&&value.fields){for(const id of value.fieldChanges||[])if(['free-x','free-y','free-width','free-height','free-text','free-font-size','free-color'].includes(id)){$(id).value=value.fields[id];$(id).dispatchEvent(new Event('change'));}history=[];} },
     refresh() { $('free-layout').disabled = api.isBusy() || !items.length && !api.chosen().length; },
     retainedRecords: () => [items, ...history.map(h => h.items)].flat().filter(i => i.type === 'page').map(i => i.record),
     hasPending: () => {

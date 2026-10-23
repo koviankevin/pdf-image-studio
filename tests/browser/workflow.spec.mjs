@@ -8,6 +8,7 @@ async function ready(page, ids = ['A']) {
   await page.locator('#file-input').setInputFiles(ids.map(id => ({name: sources.get(id).name, mimeType: 'application/pdf', buffer: Buffer.from(sources.get(id).bytes)})));
   await expect(page.locator('#file-input')).toBeEnabled();
 }
+test.beforeEach(async ({page})=>{await page.addInitScript(()=>localStorage.setItem('shijian.autosave.enabled','false'));});
 const pending = page => page.evaluate(() => !window.dispatchEvent(new Event('beforeunload', {cancelable: true})));
 
 test('output presets restore only safe settings and allow opting out', {tag: '@compatibility'}, async ({page}) => {

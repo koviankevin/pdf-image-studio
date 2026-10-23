@@ -75,3 +75,7 @@
   .proof-toolbar { font-size: .75rem; }
   .proof-toolbar button { padding: 9px; }
 }
+
+.autosave-panel { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--line); }
+.autosave-panel .field-hint { font-size: .75rem; line-height: 1.7; overflow-wrap: anywhere; }
+.autosave-panel .free-pair button { font-size: .75rem; }

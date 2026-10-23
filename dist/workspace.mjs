@@ -2,21 +2,23 @@ import * as pdfjs from './vendor/pdfjs/pdf.mjs';
 import {PDFDocument} from './vendor/pdf-lib/pdf-lib.mjs';
 import {zipSync} from './vendor/fflate/fflate.mjs';
 import {parsePages,withDensity,dimensions} from './utils.mjs';
-import {movePages,assemblePdf,viewportCrop} from './editor-core.mjs?v=20261023-workflow';
-import {installPageTools} from './page-tools.mjs?v=20261023-workflow';
-import {installAnnotations} from './annotation-tools.mjs?v=20261023-workflow';
-import {installOcr} from './ocr-tools.mjs?v=20261023-workflow';
+import {movePages,assemblePdf,viewportCrop} from './editor-core.mjs?v=20261023-autosave';
+import {installPageTools} from './page-tools.mjs?v=20261023-autosave';
+import {installAnnotations} from './annotation-tools.mjs?v=20261023-autosave';
+import {installOcr} from './ocr-tools.mjs?v=20261023-autosave';
 import {imageToPdf} from './document-model.mjs';
-import {installImposition} from './imposition-tools.mjs?v=20261023-workflow';
-import {installWorkflow} from './workflow-tools.mjs?v=20261023-workflow';
-import {installPdfProof} from './pdf-proof.mjs?v=20261023-workflow';
-import {installFreeLayout} from './free-layout-tools.mjs?v=20261023-workflow';
+import {installImposition} from './imposition-tools.mjs?v=20261023-autosave';
+import {installWorkflow} from './workflow-tools.mjs?v=20261023-autosave';
+import {installPdfProof} from './pdf-proof.mjs?v=20261023-autosave';
+import {installFreeLayout} from './free-layout-tools.mjs?v=20261023-autosave';
+import {installAutosave} from './autosave-tools.mjs?v=20261023-autosave';
+import {validateFreeLayout} from './free-layout-core.mjs';
 
 pdfjs.GlobalWorkerOptions.workerSrc=new URL('./vendor/pdfjs/pdf.worker.mjs',import.meta.url).href;
 const $=id=>document.getElementById(id);
 let pages=[],sources=new Map(),selected=new Set(),history=[],results=[],busy=false,stopping=false,renderTask=null,passwordResolve=null,dragId=null,serial=0,toastTimer;
 const thumbnailUrls=new Set();
-let pageTools,annotationTools,ocrTools,impositionTools,workflowTools,proofTools,freeLayoutTools;
+let pageTools,annotationTools,ocrTools,impositionTools,workflowTools,proofTools,freeLayoutTools,autosaveTools;
 let annotationCache=new Map();const annotationTasks=new Set();
 const sourceDisposals=new Set();
 const MAX_INPUT=150*1024*1024,MAX_PAGES=500,MAX_IMAGES=256*1024*1024;
@@ -34,7 +36,7 @@ function updateControls(){
   $('delete-selected').disabled=$('move-selected').disabled=busy||!chosen().length;
   $('page-count').textContent=String(pages.length);$('selection-summary').textContent=pages.length?`${sources.size} 份來源 · 共 ${pages.length} 頁 · 已選取 ${chosen().length} 頁`:'加入 PDF 後，可拖曳頁面調整順序。';
   $('move-position').max=String(Math.max(1,pages.length-chosen().length+1));$('empty').hidden=pages.length>0;$('editor-controls').hidden=!pages.length;
-  $('rotate-selected').disabled=busy||!chosen().length;$('image-import-fields').disabled=busy;pageTools?.refresh();ocrTools?.refresh();impositionTools?.refresh();workflowTools?.refresh();freeLayoutTools?.refresh();
+  $('rotate-selected').disabled=busy||!chosen().length;$('image-import-fields').disabled=busy;pageTools?.refresh();ocrTools?.refresh();impositionTools?.refresh();workflowTools?.refresh();freeLayoutTools?.refresh();autosaveTools?.changed();
 }
 function clearResults(){for(const result of results){URL.revokeObjectURL(result.url);URL.revokeObjectURL(result.thumbnail);}results=[];$('gallery').replaceChildren();$('image-results').hidden=true;$('result-count').textContent='0';pageTools?.invalidateEstimate();}
 function snapshot(){history.push({pages:[...pages],selected:new Set(selected)});if(history.length>30)history.shift();}
@@ -140,7 +142,7 @@ $('apply-range').onclick=()=>{try{const indices=parsePages($('pages').value,page
 $('move-selected').onclick=()=>{try{const next=movePages(pages,selected,Number($('move-position').value));snapshot();pages=next;changed();status(`已移動 ${selected.size} 頁，兩種輸出都會使用新順序。`);}catch(error){status(error.message,true);}};
 $('delete-selected').onclick=()=>removePages(selected);
 $('undo').onclick=()=>{if(busy||!history.length)return;const previous=history.pop();pages=previous.pages;selected=previous.selected;changed();status('已復原上一次頁面操作。');};
-$('reset').onclick=async()=>{if(busy)return;setBusy(true);freeLayoutTools?.clear();clearResults();for(const url of thumbnailUrls)URL.revokeObjectURL(url);thumbnailUrls.clear();await Promise.all([...sourceDisposals,...[...sources.values()].map(s=>s.task.destroy().catch(()=>{}))]);await Promise.all([...annotationTasks].map(t=>t.destroy().catch(()=>{})));annotationTasks.clear();annotationCache=new Map();pages=[];selected.clear();sources.clear();history=[];serial=0;$('pages').value='';drawSources();drawPages();workflowTools?.clear();status('已清空工作區。');setBusy(false);};
+$('reset').onclick=async()=>{if(busy)return;setBusy(true);freeLayoutTools?.clear();clearResults();for(const url of thumbnailUrls)URL.revokeObjectURL(url);thumbnailUrls.clear();await Promise.all([...sourceDisposals,...[...sources.values()].map(s=>s.task.destroy().catch(()=>{}))]);await Promise.all([...annotationTasks].map(t=>t.destroy().catch(()=>{})));annotationTasks.clear();annotationCache=new Map();pages=[];selected.clear();sources.clear();history=[];serial=0;$('pages').value='';drawSources();drawPages();workflowTools?.clear();await autosaveTools?.clear();status('已清空工作區與本機草稿。');setBusy(false);};
 function download(blob,name){const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);}
 $('export-pdf').onclick=async()=>{if(busy||!chosen().length)return;setBusy(true);status('正在合併選取的頁面…');try{await new Promise(resolve=>setTimeout(resolve,30));const records=[...chosen()],data=await assemblePdf(records,sources,filename());download(new Blob([data],{type:'application/pdf'}),`${filename()}.pdf`);workflowTools?.markExported(records);status(`已輸出 ${chosen().length} 頁的新 PDF，請查看瀏覽器的下載項目。`);}catch(error){status(`PDF 輸出失敗：${error.message}。工作區已保留，可重試。`,true);}finally{setBusy(false);}};
 
@@ -162,9 +164,59 @@ $('download-all').onclick=async()=>{if(busy||!results.length)return;setBusy(true
 
 // The optional browser tool shares selection and output settings with the UI.
 if(document.modelContext?.registerTool){const lifecycle=new AbortController();window.addEventListener('pagehide',()=>lifecycle.abort(),{once:true});try{Promise.resolve(document.modelContext.registerTool({name:'configure_pdf_image_output',title:'選取頁面與設定圖片輸出',description:'Select current workspace page numbers and configure image resolution and format. Does not start conversion or download.',inputSchema:{type:'object',properties:{dpi:{type:'integer',enum:[150,300,450,600]},format:{type:'string',enum:['png','jpeg']},pages:{type:'string'}},required:['dpi','format','pages'],additionalProperties:false},annotations:{readOnlyHint:false,untrustedContentHint:false},execute(input){if(busy)throw new Error('正在處理檔案。');if(!input||![150,300,450,600].includes(input.dpi)||!['png','jpeg'].includes(input.format)||typeof input.pages!=='string')throw new Error('無效設定。');const indices=parsePages(input.pages,pages.length);selected=new Set(indices.map(i=>pages[i-1].id));$('dpi').value=String(input.dpi);$('format').value=input.format;$('pages').value=input.pages;$('dpi').onchange();clearResults();drawPages();workflowTools?.savePreferences();return{dpi:input.dpi,format:input.format,selectedPages:indices};}},{signal:lifecycle.signal})).catch(()=>{});}catch{}}
-const sharedApi={$,getPages:()=>pages,getSources:()=>sources,getSourcePage,chosen,isBusy:()=>busy,setBusy,status,toast,filename,bytes,renderBlob,pageViewport,commitEdits,updateRecords,download,showImage,markExported:records=>workflowTools?.markExported(records),previewChosen:()=>proofTools.openChosen(),showProof:options=>proofTools.show(options),hasLayoutDraft:()=>freeLayoutTools?.hasPending()||false,hasEditorDraft:()=>!!(pageTools?.hasDraft?.()||annotationTools?.hasDraft?.()||ocrTools?.hasDraft?.()),addLayoutPiece:record=>freeLayoutTools.addPiece(record),openFreeLayout:()=>$('free-layout').click(),layoutChanged:()=>{collectWorkspaceResources();drawSources();updateControls();}};
+const sharedApi={$,getPages:()=>pages,getSources:()=>sources,getSourcePage,chosen,isBusy:()=>busy,setBusy,status,toast,filename,bytes,renderBlob,pageViewport,commitEdits,updateRecords,download,showImage,markExported:records=>workflowTools?.markExported(records),previewChosen:()=>proofTools.openChosen(),showProof:options=>proofTools.show(options),needsLeaveWarning:fallback=>autosaveTools?.needsWarning(fallback)??fallback,autosaveChanged:()=>autosaveTools?.changed(),hasLayoutDraft:()=>freeLayoutTools?.hasPending()||false,hasEditorDraft:()=>!!(pageTools?.hasDraft?.()||annotationTools?.hasDraft?.()||ocrTools?.hasDraft?.()),addLayoutPiece:record=>freeLayoutTools.addPiece(record),openFreeLayout:()=>$('free-layout').click(),layoutChanged:()=>{collectWorkspaceResources();drawSources();updateControls();}};
 annotationTools=installAnnotations(sharedApi);ocrTools=installOcr(sharedApi);
 impositionTools=installImposition(sharedApi);
 pageTools=installPageTools(sharedApi);
 proofTools=installPdfProof(sharedApi);freeLayoutTools=installFreeLayout(sharedApi);workflowTools=installWorkflow(sharedApi);
 updateControls();
+
+const restoredAssetUrls=new Map();
+function captureWorkspace(){
+  const layout=freeLayoutTools.capture(), ids=new Set([...pages,...layout.items.filter(i=>i.type==='page').map(i=>i.record)].map(p=>p.sourceId));
+  const retained=[...sources.values()].filter(s=>ids.has(s.id));for(const source of retained)source.storageKey??=crypto.randomUUID();
+  return {sources:retained,project:{version:1,pages:structuredClone(pages),selected:[...selected],name:$('output-name').value,
+    sources:retained.map(s=>({id:s.id,key:s.storageKey,name:s.name,size:s.size,count:s.count,ordinal:s.ordinal})),layout,
+    editor:annotationTools.captureDraft()||pageTools.captureDraft()||ocrTools.captureDraft(),receipts:workflowTools.captureReceipts()}};
+}
+async function serializeSource(source){
+  // Copy to a fresh PDF to persist unlocked content without any encryption
+  // dictionary or original password from the input wrapper.
+  const document=await PDFDocument.create();const copied=await document.copyPages(source.doc,Array.from({length:source.count},(_,i)=>i));
+  for(const page of copied)document.addPage(page);return new Blob([await document.save()],{type:'application/pdf'});
+}
+async function restoreWorkspace(project,documents,assets){
+  if(project.layout.items.length)validateFreeLayout(project.layout);
+  const loaded=new Map(),urls=new Map();let adopted=false;
+  const asset=key=>{if(!urls.has(key)){if(!assets.get(key))throw Error('草稿縮圖遺失。');const url=URL.createObjectURL(assets.get(key));urls.set(key,url);restoredAssetUrls.set(url,key);}return urls.get(key);};
+  const record=page=>{const thumbnail=asset(page.thumbnail);thumbnailUrls.add(thumbnail);return {...page,thumbnail};};
+  try{
+    for(const saved of project.sources){
+      const data=new Uint8Array(await documents.get(saved.key).arrayBuffer());
+      const task=pdfjs.getDocument({data:data.slice(),cMapUrl:new URL('./vendor/pdfjs/cmaps/',import.meta.url).href,cMapPacked:true,standardFontDataUrl:new URL('./vendor/pdfjs/standard_fonts/',import.meta.url).href,wasmUrl:new URL('./vendor/pdfjs/wasm/',import.meta.url).href,isEvalSupported:false});
+      // Saved sources are already unlocked. A corrupt/encrypted draft must fail,
+      // rather than opening a password prompt while startup controls are locked.
+      task.onPassword=()=>void task.destroy();
+      const source={...saved,storageKey:saved.key,task};loaded.set(saved.id,source);
+      source.pdf=await task.promise;source.doc=await PDFDocument.load(data,{updateMetadata:false});
+      if(source.pdf.numPages!==saved.count||source.doc.getPageCount()!==saved.count)throw Error('草稿文件頁數不一致。');
+      source.ordinal=Number.isInteger(saved.ordinal)&&saved.ordinal>0?saved.ordinal:loaded.size;
+      source.size=Math.max(saved.size||0,data.length);source.color=['#2955df','#0b887c','#a04cab','#bd6b15'][(source.ordinal-1)%4];
+    }
+    const restoredPages=project.pages.map(record);
+    sources=loaded;pages=restoredPages;selected=new Set(project.selected.filter(id=>pages.some(p=>p.id===id)));serial=Math.max(0,...[...sources.values()].map(s=>s.ordinal));history=[];
+    freeLayoutTools.restore(project.layout,record,asset);$('output-name').value=project.name;workflowTools.restoreReceipts(project.receipts);adopted=true;
+    drawSources();drawPages();setBusy(false);
+    if(project.editor?.kind==='marks')await annotationTools.restoreDraft(project.editor);
+    else if(project.editor?.kind==='crop')await pageTools.restoreDraft(project.editor);
+    else if(project.editor?.kind==='ocr')await ocrTools.restoreDraft(project.editor);
+    else freeLayoutTools.resume(project.layout);
+  }catch(error){if(!adopted){for(const source of loaded.values())await source.task.destroy().catch(()=>{});for(const url of urls.values()){URL.revokeObjectURL(url);thumbnailUrls.delete(url);}restoredAssetUrls.clear();}throw error;}
+}
+function canCaptureWorkspace(){
+  if(!busy)return true;
+  for(const [dialog,control]of [['mark-dialog','mark-fields'],['crop-dialog','crop-controls'],['free-dialog','free-controls'],['ocr-dialog','ocr-save']])if($(dialog)?.open)return !$(control).disabled;
+  return false;
+}
+autosaveTools=installAutosave({$,capture:captureWorkspace,canCapture:canCaptureWorkspace,serializeSource,restore:restoreWorkspace,restoredAssets:()=>restoredAssetUrls});
+setBusy(true);await autosaveTools.init();if(!document.querySelector('dialog[open]'))setBusy(false);
