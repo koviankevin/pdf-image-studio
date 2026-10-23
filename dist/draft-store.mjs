@@ -57,6 +57,18 @@ export async function openDraftStore(factory = globalThis.indexedDB) {
       try { await completion; } catch (error) { if (conflict) throw new DraftConflict(); throw failure || error; }
       return expectedRevision + 1;
     },
+    async clear() {
+      // An explicit user deletion applies to the browser's shared latest draft,
+      // even after a conflict. Advancing its revision still blocks stale writers.
+      const transaction = db.transaction(['state','documents','assets'],'readwrite'), completion = done(transaction);
+      let revision, failure; const request = transaction.objectStore('state').get('current');
+      request.onsuccess = () => { try {
+        revision = (Number.isSafeInteger(request.result?.revision) ? request.result.revision : 0) + 1;
+        transaction.objectStore('documents').clear(); transaction.objectStore('assets').clear();
+        transaction.objectStore('state').put({revision,project:null,updatedAt:Date.now()},'current');
+      } catch (error) { failure = error; transaction.abort(); } };
+      try { await completion; } catch (error) { throw failure || error; } return revision;
+    },
     close() { db.close(); },
   };
 }
@@ -80,6 +92,7 @@ export function validateDraft(project, documents, assets) {
     if (!source || typeof record.id !== 'string' || !Number.isInteger(record.index) || record.index < 0 || record.index >= source.count || !assets.has(record.thumbnail)) throw new Error('草稿頁面不完整。');
   }
   if (new Set(project.pages.map(page => page.id)).size !== project.pages.length) throw new Error('草稿頁面重複。');
+  if (!Array.isArray(project.receipts) || project.receipts.length > 1000 || project.receipts.some(entry=>!Array.isArray(entry)||entry.length!==2||entry.some(value=>typeof value!=='string'))) throw new Error('草稿輸出記錄格式不正確。');
   for (const item of project.layout.items) if (item.type === 'page' && !assets.has(item.preview)) throw new Error('A4 草稿預覽遺失。');
   return project;
 }

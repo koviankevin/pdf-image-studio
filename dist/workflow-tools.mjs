@@ -1,4 +1,4 @@
-import {outputPresets, validSettings, matchingPreset, readPreferences, createExportReceipts} from './workflow-core.mjs';
+import {outputPresets, validSettings, matchingPreset, readPreferences, createExportReceipts} from './workflow-core.mjs?v=20261023-autosave';
 
 export function installWorkflow(api) {
   const {$} = api, key = 'shijian.output.v1', receipts = createExportReceipts();
@@ -51,7 +51,7 @@ export function installWorkflow(api) {
   }).observe($('quick-actions'));
   return {
     refresh, savePreferences, hasPending: pending,
-    captureReceipts:receipts.capture,restoreReceipts(value){receipts.restore(value);refresh();},
+    captureReceipts:()=>{const live=new Set(api.getPages().map(page=>page.id));return receipts.capture().filter(([id])=>live.has(id));},restoreReceipts(value){receipts.restore(value);refresh();},
     markExported(records) { receipts.mark(records, api.getPages()); refresh(); },
     clear() { receipts.clear(); refresh(); },
   };

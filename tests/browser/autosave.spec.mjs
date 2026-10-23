@@ -84,8 +84,10 @@ test('another tab cannot silently overwrite a newer draft', async ({page,context
   await load(page); await saved(page); const other=await context.newPage(); await other.goto(baseURL); await expect(other.locator('#page-count')).toHaveText('2'); await expect(other.locator('#file-input')).toBeEnabled(); await saved(other);
   await page.getByRole('button',{name:'旋轉第 1 頁',exact:true}).click(); await saved(page);
   await other.getByRole('button',{name:'旋轉第 2 頁',exact:true}).click(); await expect(other.locator('#autosave-status')).toContainText('其他分頁已更新');
-  expect(await warns(other)).toBe(true); await other.close(); await page.reload(); await expect(page.locator('#file-input')).toBeEnabled();
+  expect(await warns(other)).toBe(true); await page.reload(); await expect(page.locator('#page-count')).toHaveText('2'); await expect(page.locator('#file-input')).toBeEnabled();
   await expect(page.locator('.page-card').first()).toContainText('已旋轉 90°'); await expect(page.locator('.page-card').nth(1)).not.toContainText('已旋轉');
+  await other.locator('#autosave-enabled').uncheck(); await expect(other.locator('#autosave-status')).toContainText('已移除');
+  await other.close(); await page.reload(); await expect(page.locator('#dropzone')).toHaveAttribute('aria-disabled','false'); await expect(page.locator('#page-count')).toHaveText('0');
 });
 
 test('an unlocked password PDF resumes without storing or asking for its password', async ({page})=>{
@@ -133,4 +135,23 @@ test('storage being unavailable or a saved thumbnail being corrupt cannot disabl
   await page.getByRole('button',{name:'旋轉第 1 頁',exact:true}).click(); await expect(page.locator('#file-input')).toBeEnabled();
   await expect(page.locator('#autosave-status')).toContainText('無法還原'); expect(await warns(page)).toBe(true);
   expect(await downloadBytes(page,page.locator('#export-pdf'))).not.toHaveLength(0);
+});
+
+test('switching A4 direction rejects an oversized title before it can damage recovery', async ({page})=>{
+  await load(page); await page.locator('#free-layout').click(); await expect(page.locator('#free-preview')).toBeEnabled();
+  await page.locator('#free-orientation').selectOption('landscape'); await page.locator('#free-add-title').click(); await expect(page.locator('#free-text')).toBeVisible();
+  await page.locator('#free-text').fill('排版'.repeat(5)); await page.locator('#free-text').blur(); await page.locator('#free-font-size').fill('72'); await page.locator('#free-font-size').blur();
+  expect(Number(await page.locator('#free-width').inputValue())).toBeGreaterThan(210);
+  await page.locator('#free-orientation').selectOption('portrait'); await expect(page.locator('#free-orientation')).toHaveValue('landscape');
+  await saved(page); await page.reload(); await expect(page.locator('#free-dialog')).toBeVisible(); await expect(page.locator('#free-orientation')).toHaveValue('landscape');
+  await expect(page.locator('#page-count')).toHaveText('2');
+});
+
+test('clearing while a source is being serialized cannot resurrect the deleted draft', async ({page})=>{
+  await page.goto('/'); await expect(page.locator('#dropzone')).toHaveAttribute('aria-disabled','false');
+  await page.evaluate(async()=>{const {PDFDocument}=await import('/vendor/pdf-lib/pdf-lib.mjs');const save=PDFDocument.prototype.save;let held=false;PDFDocument.prototype.save=async function(...args){if(!held){held=true;window.sourceSaveHeld=true;await new Promise(resolve=>window.releaseSourceSave=resolve);}return save.apply(this,args);};});
+  const {sources}=await createFixtures(),source=sources.get('A'); await page.locator('#file-input').setInputFiles({name:source.name,mimeType:'application/pdf',buffer:Buffer.from(source.bytes)});
+  await page.waitForFunction(()=>window.sourceSaveHeld); await page.locator('#reset').click(); await page.evaluate(()=>window.releaseSourceSave());
+  await expect(page.locator('#file-input')).toBeEnabled(); await page.reload(); await expect(page.locator('#dropzone')).toHaveAttribute('aria-disabled','false');
+  await expect(page.locator('#page-count')).toHaveText('0');
 });

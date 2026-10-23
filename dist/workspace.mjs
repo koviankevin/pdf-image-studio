@@ -12,7 +12,7 @@ import {installWorkflow} from './workflow-tools.mjs?v=20261023-autosave';
 import {installPdfProof} from './pdf-proof.mjs?v=20261023-autosave';
 import {installFreeLayout} from './free-layout-tools.mjs?v=20261023-autosave';
 import {installAutosave} from './autosave-tools.mjs?v=20261023-autosave';
-import {validateFreeLayout} from './free-layout-core.mjs';
+import {validateFreeLayout} from './free-layout-core.mjs?v=20261023-autosave';
 
 pdfjs.GlobalWorkerOptions.workerSrc=new URL('./vendor/pdfjs/pdf.worker.mjs',import.meta.url).href;
 const $=id=>document.getElementById(id);
@@ -142,7 +142,7 @@ $('apply-range').onclick=()=>{try{const indices=parsePages($('pages').value,page
 $('move-selected').onclick=()=>{try{const next=movePages(pages,selected,Number($('move-position').value));snapshot();pages=next;changed();status(`已移動 ${selected.size} 頁，兩種輸出都會使用新順序。`);}catch(error){status(error.message,true);}};
 $('delete-selected').onclick=()=>removePages(selected);
 $('undo').onclick=()=>{if(busy||!history.length)return;const previous=history.pop();pages=previous.pages;selected=previous.selected;changed();status('已復原上一次頁面操作。');};
-$('reset').onclick=async()=>{if(busy)return;setBusy(true);freeLayoutTools?.clear();clearResults();for(const url of thumbnailUrls)URL.revokeObjectURL(url);thumbnailUrls.clear();await Promise.all([...sourceDisposals,...[...sources.values()].map(s=>s.task.destroy().catch(()=>{}))]);await Promise.all([...annotationTasks].map(t=>t.destroy().catch(()=>{})));annotationTasks.clear();annotationCache=new Map();pages=[];selected.clear();sources.clear();history=[];serial=0;$('pages').value='';drawSources();drawPages();workflowTools?.clear();await autosaveTools?.clear();status('已清空工作區與本機草稿。');setBusy(false);};
+$('reset').onclick=async()=>{if(busy)return;setBusy(true);freeLayoutTools?.clear();clearResults();for(const url of thumbnailUrls)URL.revokeObjectURL(url);thumbnailUrls.clear();await Promise.all([...sourceDisposals,...[...sources.values()].map(s=>s.task.destroy().catch(()=>{}))]);await Promise.all([...annotationTasks].map(t=>t.destroy().catch(()=>{})));annotationTasks.clear();annotationCache=new Map();pages=[];selected.clear();sources.clear();history=[];serial=0;$('pages').value='';drawSources();drawPages();workflowTools?.clear();const cleared=await autosaveTools?.clear();status(cleared===false?'已清空畫面，但本機草稿尚未刪除，請在自動儲存區重試。':'已清空工作區與本機草稿。',cleared===false);setBusy(false);};
 function download(blob,name){const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);}
 $('export-pdf').onclick=async()=>{if(busy||!chosen().length)return;setBusy(true);status('正在合併選取的頁面…');try{await new Promise(resolve=>setTimeout(resolve,30));const records=[...chosen()],data=await assemblePdf(records,sources,filename());download(new Blob([data],{type:'application/pdf'}),`${filename()}.pdf`);workflowTools?.markExported(records);status(`已輸出 ${chosen().length} 頁的新 PDF，請查看瀏覽器的下載項目。`);}catch(error){status(`PDF 輸出失敗：${error.message}。工作區已保留，可重試。`,true);}finally{setBusy(false);}};
 
@@ -187,6 +187,7 @@ async function serializeSource(source){
 }
 async function restoreWorkspace(project,documents,assets){
   if(project.layout.items.length)validateFreeLayout(project.layout);
+  const previous={pages,sources,selected,history,serial};
   const loaded=new Map(),urls=new Map();let adopted=false;
   const asset=key=>{if(!urls.has(key)){if(!assets.get(key))throw Error('草稿縮圖遺失。');const url=URL.createObjectURL(assets.get(key));urls.set(key,url);restoredAssetUrls.set(url,key);}return urls.get(key);};
   const record=page=>{const thumbnail=asset(page.thumbnail);thumbnailUrls.add(thumbnail);return {...page,thumbnail};};
@@ -211,7 +212,7 @@ async function restoreWorkspace(project,documents,assets){
     else if(project.editor?.kind==='crop')await pageTools.restoreDraft(project.editor);
     else if(project.editor?.kind==='ocr')await ocrTools.restoreDraft(project.editor);
     else freeLayoutTools.resume(project.layout);
-  }catch(error){if(!adopted){for(const source of loaded.values())await source.task.destroy().catch(()=>{});for(const url of urls.values()){URL.revokeObjectURL(url);thumbnailUrls.delete(url);}restoredAssetUrls.clear();}throw error;}
+  }catch(error){if(!adopted){freeLayoutTools.clear();({pages,sources,selected,history,serial}=previous);workflowTools.clear();drawSources();drawPages();for(const source of loaded.values())await source.task.destroy().catch(()=>{});for(const url of urls.values()){URL.revokeObjectURL(url);thumbnailUrls.delete(url);}restoredAssetUrls.clear();}throw error;}
 }
 function canCaptureWorkspace(){
   if(!busy)return true;

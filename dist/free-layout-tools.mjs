@@ -1,4 +1,4 @@
-import {sheetSize, arrangeItems, composeFreePdf, MM} from './free-layout-core.mjs';
+import {sheetSize, arrangeItems, composeFreePdf, MM} from './free-layout-core.mjs?v=20261023-autosave';
 
 export function installFreeLayout(api) {
   const {$} = api, NS = 'http://www.w3.org/2000/svg';

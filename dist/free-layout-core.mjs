@@ -41,7 +41,9 @@ export function arrangeItems(items, orientation) {
         y: start + Math.floor(i / columns) * (ch + 5) + (ch - height) / 2, width, height});
     });
   }
-  return items.map(item => placements.get(item.id));
+  const arranged = items.map(item => placements.get(item.id));
+  if (arranged.length) validateFreeLayout({items:arranged,orientation});
+  return arranged;
 }
 
 export async function composeFreePdf(layout, sources, title = 'A4 自由排版', {signal} = {}) {
