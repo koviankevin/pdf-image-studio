@@ -1,11 +1,12 @@
-import {textItemBounds} from './text-geometry.mjs?v=20261023-projects2';
+import {mergeRegionLines} from './ocr-region.mjs?v=20261023-studio1';
+import {textItemBounds} from './text-geometry.mjs?v=20261023-studio1';
 import {inverse,multiply,transformPoint} from './document-model.mjs';
 import {recognizeTwoColumns} from './ocr-columns.mjs';
 
 export function installOcr(api){
   document.body.insertAdjacentHTML('beforeend',`<dialog id="ocr-dialog" class="work-dialog" aria-labelledby="ocr-title"><div class="preview-header"><h2 id="ocr-title">文字辨識與校對</h2><button id="ocr-close" class="secondary">關閉</button></div><div class="ocr-toolbar"><label for="ocr-page">校對頁面</label><select id="ocr-page"></select><button id="ocr-copy" class="copy">複製此頁文字</button><button id="ocr-text-download" class="secondary">下載全部文字 TXT</button><button id="ocr-save" class="primary">儲存校對</button></div><p class="field-hint">掃描頁可逐行修改；儲存後的 OCR 文字會加入 PDF 的隱藏文字層，原稿外觀不變。原本已有文字的頁面直接擷取，僅供複製。</p><div class="document-layout ocr-layout"><div class="document-scroll"><div id="ocr-stage" class="document-stage"><img id="ocr-image" alt="對照辨識文字的原稿"><svg id="ocr-overlay" aria-hidden="true"></svg></div></div><div><p id="ocr-page-info" class="status"></p><div id="ocr-lines" class="ocr-lines"></div></div></div><p id="ocr-review-status" class="status" role="status"></p></dialog>`);
   const {$}=api,dialog=$('ocr-dialog');let cancelJob=null,review=[],active=0,reviewUrl=null,loading=false,loadSerial=0;
-  function refresh(){const items=api.chosen();$('ocr-start').disabled=api.isBusy()||!items.length;$('ocr-review').disabled=api.isBusy()||!api.getPages().some(p=>p.ocr);$('ocr-language').disabled=api.isBusy();$('ocr-layout').disabled=api.isBusy();}
+  function refresh(){const items=api.chosen();$('ocr-start').disabled=api.isBusy()||!items.length;$('ocr-review').disabled=api.isBusy()||!api.getPages().some(p=>p.ocr);$('ocr-language').disabled=api.isBusy();$('ocr-layout').disabled=$('ocr-mode').disabled=api.isBusy();}
   async function nativeText(source,page,viewport){
     const pdfPage=await api.getSourcePage(source,page.index),content=await pdfPage.getTextContent();
     const lines=[];
@@ -15,11 +16,11 @@ export function installOcr(api){
     }
     return lines;
   }
-  $('ocr-start').onclick=async()=>{
-    const items=api.chosen();if(api.isBusy()||!items.length)return;if(items.length>100){api.status('OCR 一次最多 100 頁，請分批勾選。',true);return;}
+  async function recognize(items,{region}={}){
+    if(api.isBusy()||!items.length)return;if(items.length>100){api.status('OCR 一次最多 100 頁，請分批勾選。',true);return;}
     // Keep automatic segmentation for general layouts. A known single column
     // can avoid CJK/Latin misclassification; it is not safe to assume globally.
-    const layout=$('ocr-layout').value;
+    const layout=$('ocr-layout').value,force=!!region||$('ocr-mode').value==='force';
     const pageSegMode=layout==='single-column'||layout==='two-column'?'4':'3';
     api.setBusy(true);$('ocr-cancel').hidden=false;$('ocr-cancel').disabled=false;$('progress').hidden=false;$('progress').max=items.length;$('progress').value=0;
     let worker=null,stopped=false,completed=[],rejectCancel,jobLabel='';const abort=new Promise((_,reject)=>rejectCancel=reject);abort.catch(()=>{});
@@ -27,8 +28,8 @@ export function installOcr(api){
     const race=p=>Promise.race([p,abort]);
     try{
       for(let i=0;i<items.length;i++){
-        if(stopped)break;const page=items[i],source=api.getSources().get(page.sourceId),viewport=await race(api.pageViewport(source,page));jobLabel=`文字辨識 ${i+1} / ${items.length}`;api.status(`${jobLabel}：檢查原始文字…`);
-        let lines=await race(nativeText(source,page,viewport)),mode='native';
+        if(stopped)break;const page=items[i],source=api.getSources().get(page.sourceId),renderRecord=region?{...page,...region}:page,viewport=await race(api.pageViewport(source,renderRecord));jobLabel=`文字辨識 ${i+1} / ${items.length}`;api.status(`${jobLabel}：檢查原始文字…`);
+        let lines=force?[]:await race(nativeText(source,page,viewport)),mode='native';
         if(!lines.length){
           mode='ocr';if(!worker){api.status('首次使用正在載入辨識引擎與語言資料，文件不會上傳…');
             // Dynamic imports cannot be aborted, but the job must stop waiting
@@ -38,7 +39,7 @@ export function installOcr(api){
             const pending=createWorker($('ocr-language').value,1,{workerPath:new URL('./vendor/ocr/worker.min.js',import.meta.url).href,corePath:new URL('./vendor/ocr/core/',import.meta.url).href,langPath:new URL('./vendor/ocr/lang',import.meta.url).href,gzip:false,cacheMethod:'none',workerBlobURL:false,logger:m=>{if(!stopped)api.status(m.status==='recognizing text'?`${jobLabel}：辨識中 ${Math.round((m.progress||0)*100)}%`:`${jobLabel}：正在準備辨識引擎…`);}});
             pending.then(w=>{if(stopped)void w.terminate();}).catch(()=>{});worker=await race(pending);await race(worker.setParameters({tessedit_pageseg_mode:pageSegMode,preserve_interword_spaces:'1'}));
           }
-          const rendered=await race(api.renderBlob(source,page.index,300,'png',false,{...page,annotations:[]},{maxEdge:3500}));
+          const rendered=await race(api.renderBlob(source,page.index,300,'png',false,{...renderRecord,annotations:[]},{maxEdge:3500}));
           if(layout==='two-column'){
             lines=await recognizeTwoColumns(worker,rendered,viewport,race,column=>{jobLabel=`文字辨識 ${i+1} / ${items.length} · ${column?'右':'左'}欄`;api.status(`${jobLabel}：準備分欄影像…`);});
           }else{
@@ -48,12 +49,14 @@ export function installOcr(api){
           if(!lines.length&&data.text.trim())lines=[{text:data.text.trim(),x:0,y:0,width:viewport.width,height:viewport.height,confidence:0}];
           }
         }
+        if(region)lines=mergeRegionLines(page.ocr,lines,viewport);
         completed.push({...page,ocr:{mode,frame:inverse(viewport.transform),lines}});$('progress').value=i+1;
       }
       api.status(`已完成 ${completed.length} 頁文字處理。請校對姓名、數字及標示需確認的內容。`);
     }catch(e){api.status(stopped?`已停止，保留 ${completed.length} 頁已完成的辨識結果。`:`辨識中斷：${e.message}。已完成 ${completed.length} 頁，仍可校對。`,!stopped);}
     finally{cancelJob=null;await worker?.terminate().catch(()=>{});if(completed.length)api.updateRecords(completed);$('progress').hidden=true;$('ocr-cancel').hidden=true;api.setBusy(false);if(completed.length)await openReview(completed.map(p=>p.id));}
   };
+  $('ocr-start').onclick=()=>void recognize(api.chosen());
   $('ocr-cancel').onclick=()=>cancelJob?.();
   const textOf=p=>p.ocr.lines.map(l=>l.text).join('\n');
   const say=(text,error=false)=>{$('ocr-review-status').textContent=text;$('ocr-review-status').classList.toggle('error',error);};
@@ -73,7 +76,7 @@ export function installOcr(api){
   $('ocr-text-download').onclick=()=>api.download(new Blob(['\ufeff'+review.map(p=>`第 ${api.getPages().findIndex(v=>v.id===p.id)+1} 頁\n${textOf(p)}`).join('\n\n')],{type:'text/plain;charset=utf-8'}),`${api.filename()}_文字.txt`);
   $('ocr-save').onclick=()=>{if(loading)return;api.updateRecords(review.map(({reviewViewport,...p})=>({...p,ocr:structuredClone(p.ocr)})));say('已儲存校對。關閉後按「下載新 PDF」，即可取得含 OCR 文字層的文件。');};
   $('ocr-close').onclick=()=>dialog.close();dialog.addEventListener('close',()=>{++loadSerial;if(reviewUrl)URL.revokeObjectURL(reviewUrl);reviewUrl=null;review=[];$('ocr-image').removeAttribute('src');$('ocr-lines').replaceChildren();api.setBusy(false);});
-  return{refresh,openReview,
+  return{refresh,openReview,recognizeRegion:(record,region)=>recognize([record],{region}),
     captureDraft:()=>dialog.open?{kind:'ocr',records:review.map(item=>({id:item.id,ocr:structuredClone(item.ocr)})),active}:null,
     async restoreDraft(draft){await openReview(draft.records.map(item=>item.id));for(const saved of draft.records){const item=review.find(item=>item.id===saved.id);if(item)item.ocr=structuredClone(saved.ocr);}active=Math.max(0,Math.min(review.length-1,draft.active||0));$('ocr-page').value=String(active);if(review.length)await showPage();},
     hasDraft:()=>dialog.open&&review.some(item=>JSON.stringify(item.ocr)!==JSON.stringify(api.getPages().find(page=>page.id===item.id)?.ocr))};

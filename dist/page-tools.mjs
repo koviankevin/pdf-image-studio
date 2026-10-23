@@ -1,8 +1,9 @@
+import {cropTargets,batchCropEdits} from './batch-crop.mjs?v=20261023-studio1';
 import {parseSplitRanges,assemblePdf,viewportCrop,selectionToCrop} from './editor-core.mjs?v=20261023-workflow';
 import {zipSync} from './vendor/fflate/fflate.mjs';
 
 export function installPageTools(api){
-  const {$}=api;let editor=null,editorUrl=null,working=false,pointer=null;
+  const {$}=api;let editor=null,editorUrl=null,working=false,pointer=null,batchController=null;
   function imageOptions(){const quality=Number($('jpeg-quality').value)/100,maxEdge=Number($('max-edge').value);if(!Number.isFinite(quality)||quality<.3||quality>1)throw new Error('JPG 品質須介於 30% 至 100%。');if(!Number.isInteger(maxEdge)||maxEdge<0||maxEdge>16384||(maxEdge>0&&maxEdge<64))throw new Error('長邊上限請輸入 0（不限），或 64 至 16,384 px。');return{quality,maxEdge};}
   const invalidateEstimate=()=>$('estimate-result').textContent='依頁面內容、格式與尺寸估算。';
   function splitGroups(){const pages=api.getPages();return $('split-mode').value==='each'?api.chosen().map(page=>[page]):parseSplitRanges($('split-ranges').value,pages.length).map(group=>group.map(index=>pages[index-1]));}
@@ -68,6 +69,17 @@ export function installPageTools(api){
   };
   $('crop-download').onclick=async()=>{if(working||!editor?.viewport)return;setWorking(true);try{const type=$('format').value,result=await regionRequest(type);api.download(result.blob,`${api.filename()}_p${String(editor.position).padStart(3,'0')}_region.${type==='png'?'png':'jpg'}`);editorStatus(`已下載框選圖片：${result.width} × ${result.height} px，${api.bytes(result.blob.size)}。`);}catch(error){editorStatus(error.message,true);}finally{setWorking(false);}};
   $('crop-add-layout').onclick=()=>{if(working||!editor?.viewport)return;try{const record={...editor.page,rotation:editor.rotation,crop:currentCrop()};dialog.addEventListener('close',()=>api.addLayoutPiece(record),{once:true});dialog.close();}catch(error){editorStatus(error.message,true);}};
+  $('crop-ocr').onclick=()=>{if(working||!editor?.viewport)return;try{const record=editor.page,region={rotation:editor.rotation,crop:currentCrop()};dialog.addEventListener('close',()=>void api.recognizeRegion(record,region),{once:true});dialog.close();}catch(error){editorStatus(error.message,true);}};
+  $('crop-batch-cancel').onclick=()=>{batchController?.abort();api.cancelRendering();};
+  $('crop-batch-apply').onclick=async()=>{
+    if(working||!editor?.viewport)return;const controller=new AbortController();batchController=controller;setWorking(true);$('crop-batch-cancel').hidden=false;
+    try{
+      const records=cropTargets(api.getPages(),api.chosen(),$('crop-batch-scope').value),selection=readFields(),delta=(editor.rotation-(editor.page.rotation||0)+360)%360;
+      const edits=await batchCropEdits(records,selection,delta,record=>api.pageViewport(api.getSources().get(record.sourceId),record),{signal:controller.signal});
+      await api.commitEdits(edits,{signal:controller.signal,onProgress:(index,count)=>editorStatus(`正在套用裁切 ${index} / ${count} 頁…`)});setWorking(false);dialog.close();api.status(`已批次裁切 ${edits.length} 頁，可整批復原。`);
+    }catch(error){api.setBusy(true);editorStatus(controller.signal.aborted?'已停止批次裁切，原有頁面全部保留。':`批次裁切失敗：${error.message}`,!controller.signal.aborted);}
+    finally{batchController=null;$('crop-batch-cancel').hidden=true;setWorking(false);}
+  };
   $('crop-apply').onclick=async()=>{if(working||!editor?.viewport)return;let crop;try{crop=currentCrop();}catch(error){editorStatus(error.message,true);return;}setWorking(true);try{await api.commitEdits([{...editor.page,rotation:editor.rotation,crop}]);setWorking(false);dialog.close();}catch(error){api.setBusy(true);setWorking(false);editorStatus(`套用失敗：${error.message}`,true);}};
   return{refresh,imageOptions,invalidateEstimate,openEditor,
     captureDraft:()=>dialog.open&&editor?.viewport?{kind:'crop',pageId:editor.page.id,rotation:editor.rotation,crop:editor.crop,fields:Object.fromEntries(['crop-x','crop-y','crop-width','crop-height'].map(id=>[id,$(id).value]))}:null,

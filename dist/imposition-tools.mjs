@@ -70,6 +70,7 @@ export function installImposition(api) {
     }
   }
   function schedule() {
+    if(!dialog.open)return;
     const version = ++serial; clearTimeout(timer); render?.cancel(); data = null;
     controller?.abort(); controller = new AbortController(); const {signal} = controller;
     navigation(true); $('nup-canvas').hidden = true; $('nup-summary').textContent = '';

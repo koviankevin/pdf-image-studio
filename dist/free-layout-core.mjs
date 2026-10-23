@@ -9,11 +9,16 @@ export const sheetSize = orientation => {
   if (!['portrait', 'landscape'].includes(orientation)) throw new Error('請選擇 A4 方向。');
   return orientation === 'landscape' ? {width: 297, height: 210} : {width: 210, height: 297};
 };
-export function validateFreeLayout(layout) {
+export const MAX_SHEETS=20, MAX_LAYOUT_ITEMS=300;
+export function validateFreeLayout(layout,{allowEmpty=false}={}) {
   const size = sheetSize(layout.orientation);
-  if (!Array.isArray(layout.items) || !layout.items.length || layout.items.length > 30) throw new Error('每張 A4 請放入 1 至 30 個項目。');
+  const count=layout.sheetCount??1;
+  if(!Number.isInteger(count)||count<1||count>MAX_SHEETS||layout.activeSheet!==undefined&&(!Number.isInteger(layout.activeSheet)||layout.activeSheet<0||layout.activeSheet>=count))throw Error('A4 紙張數須為 1 至 20 張。');
+  if (!Array.isArray(layout.items) || !allowEmpty&&!layout.items.length || layout.items.length > MAX_LAYOUT_ITEMS) throw new Error('版面最多 300 個項目，且至少需要一個項目。');
+  const counts=Array(count).fill(0);
   const ids = new Set();
   for (const item of layout.items) {
+    const sheet=item.sheet??0;if(!Number.isInteger(sheet)||sheet<0||sheet>=count||++counts[sheet]>30)throw Error('每張 A4 最多 30 個項目，項目須位於現有紙張。');
     if (!item.id || ids.has(item.id)) throw new Error('排版項目重複。'); ids.add(item.id);
     if (!['page', 'text'].includes(item.type)) throw new Error('不支援的排版項目。');
     if (![item.x, item.y, item.width, item.height].every(Number.isFinite) || item.x < 0 || item.y < 0 || item.width < 1 || item.height < 1
@@ -42,13 +47,13 @@ export function arrangeItems(items, orientation) {
     });
   }
   const arranged = items.map(item => placements.get(item.id));
-  if (arranged.length) validateFreeLayout({items:arranged,orientation});
+  if (arranged.length) validateFreeLayout({items:arranged.map(item=>({...item,sheet:0})),orientation});
   return arranged;
 }
 
 export async function composeFreePdf(layout, sources, title = 'A4 自由排版', {signal} = {}) {
   signal?.throwIfAborted(); const size = validateFreeLayout(layout);
-  const output = await PDFDocument.create(), sheet = output.addPage([size.width * MM, size.height * MM]);
+  const output = await PDFDocument.create(), sheets = Array.from({length:layout.sheetCount??1},()=>output.addPage([size.width * MM, size.height * MM]));
   const pieces = layout.items.filter(i => i.type === 'page'), embeddedById = new Map();
   if (pieces.length) {
     const records = pieces.map(item => ({...item.record, id: `free-${item.id}`}));
@@ -66,7 +71,7 @@ export async function composeFreePdf(layout, sources, title = 'A4 自由排版',
   }
   let font;
   for (const item of layout.items) {
-    await checkpoint(signal);
+    await checkpoint(signal);const sheet=sheets[item.sheet??0];
     if (item.type === 'page') {
       const source = embeddedById.get(item.id), box = {width: source.box.right - source.box.left, height: source.box.top - source.box.bottom};
       sheet.drawPage(source.page, fitPage(box, source.rotation, {x: item.x * MM, y: (size.height - item.y - item.height) * MM, width: item.width * MM, height: item.height * MM}));

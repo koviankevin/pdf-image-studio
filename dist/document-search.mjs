@@ -1,4 +1,5 @@
-import {textItemBounds} from './text-geometry.mjs?v=20261023-projects2';
+import {ocrLineVisible} from './ocr-region.mjs?v=20261023-studio1';
+import {textItemBounds} from './text-geometry.mjs?v=20261023-studio1';
 const normalize=text=>text.normalize('NFKC').toLocaleLowerCase().replace(/\s+/g,'');
 export function installDocumentSearch(api){
   const {$}=api;
@@ -8,13 +9,13 @@ export function installDocumentSearch(api){
     if(cache.has(record))return cache.get(record);
     const promise=(async()=>{
       const added=(record.annotations||[]).filter(mark=>mark.type==='text').map(mark=>mark.text);
-      if(record.ocr?.mode==='ocr')return [...record.ocr.lines.map(line=>line.text),...added].join(' ');
+      const recognized=record.ocr?.mode==='ocr'?record.ocr.lines.filter(line=>ocrLineVisible(line,record.ocr.frame,record.crop)).map(line=>line.text):[];
       const source=api.getSources().get(record.sourceId);if(!source)return '';
       const page=await api.getSourcePage(source,record.index),content=await page.getTextContent();
       return [...content.items.filter(item=>{
         if(!item.str)return false;if(!record.crop)return true;const {x,y,width,height}=record.crop,bounds=textItemBounds(item);
         return bounds&&bounds.right>=x&&bounds.left<=x+width&&bounds.bottom>=y&&bounds.top<=y+height;
-      }).map(item=>item.str),...added].join(' ');
+      }).map(item=>item.str),...recognized,...added].join(' ');
     })();cache.set(record,promise);try{return await promise;}catch(error){cache.delete(record);throw error;}
   }
   async function search(){

@@ -10,14 +10,14 @@ function fixture(){
 }
 test('saved draft validates local document and thumbnail references, including free-layout-only sources',()=>{
   const {project,documents,assets}=fixture(); assert.equal(validateDraft(project,documents,assets),project);
-  project.layout.items=[{type:'page',record:project.pages[0],preview:'thumb'}];project.pages=[];
+  project.layout.items=[{id:'layout-item',x:10,y:10,width:50,height:60,type:'page',record:project.pages[0],preview:'thumb'}];project.pages=[];
   assert.equal(validateDraft(project,documents,assets),project);
 });
 test('missing documents, thumbnails, wrong versions and out-of-bounds source pages reject recovery',()=>{
   for(const change of [v=>v.project.version=2,v=>v.documents.clear(),v=>v.assets.clear(),v=>v.project.pages[0].index=2,v=>v.project.layout=null,v=>v.project.sources[0].size=NaN,v=>v.project.receipts={}]){
     const value=fixture();change(value);assert.throws(()=>validateDraft(value.project,value.documents,value.assets));
   }
-  const value=fixture();value.project.layout.items=[{type:'page',record:value.project.pages[0],preview:'missing'}];assert.throws(()=>validateDraft(value.project,value.documents,value.assets),/預覽/);
+  const value=fixture();value.project.layout.items=[{id:'layout-item',x:10,y:10,width:50,height:60,type:'page',record:value.project.pages[0],preview:'missing'}];assert.throws(()=>validateDraft(value.project,value.documents,value.assets),/預覽/);
 });
 test('a browser without IndexedDB reports a recoverable error',async()=>{
   await assert.rejects(openDraftStore(null),/不支援/);

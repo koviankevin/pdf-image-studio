@@ -1,6 +1,6 @@
 import {zipSync, unzipSync, strToU8, strFromU8} from './vendor/fflate/fflate.mjs';
-import {validateDraft} from './draft-store.mjs?v=20261023-projects2';
-import {validateFreeLayout} from './free-layout-core.mjs';
+import {validateDraft} from './draft-store.mjs?v=20261023-studio1';
+import {validateFreeLayout} from './free-layout-core.mjs?v=20261023-studio1';
 
 const LIMIT = 250 * 1024 * 1024, MANIFEST_LIMIT = 20 * 1024 * 1024;
 const safeKey = key => typeof key === 'string' && /^[a-zA-Z0-9_-]{1,100}$/.test(key);
@@ -28,12 +28,12 @@ export async function unpackProject(file) {
   const entries=unzipSync(new Uint8Array(await file.arrayBuffer()),{filter(entry){
     if (paths.has(entry.name) || !(entry.name==='project.json' || /^(documents|assets)\/[a-zA-Z0-9_-]{1,100}$/.test(entry.name))) throw Error('專案包含重複或不支援的資源。');
     paths.add(entry.name);total+=entry.originalSize;
-    if (!Number.isSafeInteger(entry.originalSize) || entry.originalSize<0 || !Number.isSafeInteger(entry.size) || entry.size<0 || entry.size>file.size || entry.compression!==0 || entry.compression===0&&entry.size!==entry.originalSize || total>LIMIT || paths.size>1591 || entry.name==='project.json'&&entry.originalSize>MANIFEST_LIMIT) throw Error('專案過大或格式不正確，請使用紙間下載的原始專案備份。');
+    if (!Number.isSafeInteger(entry.originalSize) || entry.originalSize<0 || !Number.isSafeInteger(entry.size) || entry.size<0 || entry.size>file.size || entry.compression!==0 || entry.compression===0&&entry.size!==entry.originalSize || total>LIMIT || paths.size>1901 || entry.name==='project.json'&&entry.originalSize>MANIFEST_LIMIT) throw Error('專案過大或格式不正確，請使用紙間下載的原始專案備份。');
     return true;
   }});
   if (!entries['project.json']) throw Error('找不到紙間專案資料。');
   const value=JSON.parse(strFromU8(entries['project.json']));
-  if(value.format!=='shijian-project'||value.version!==1||typeof value.name!=='string'||!Array.isArray(value.resources)||value.resources.length>1590) throw Error('不是支援的紙間專案檔。');
+  if(value.format!=='shijian-project'||value.version!==1||typeof value.name!=='string'||!Array.isArray(value.resources)||value.resources.length>1900) throw Error('不是支援的紙間專案檔。');
   const documents=new Map(),assets=new Map(),used=new Set(['project.json']);
   for(const item of value.resources){
     if(!item||!safeKey(item.key)||!['application/pdf','image/jpeg','image/png'].includes(item.type)||typeof item.path!=='string'||used.has(item.path)||!entries[item.path]) throw Error('專案資源不完整。');

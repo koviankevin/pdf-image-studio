@@ -1,4 +1,5 @@
-import {validateRecord,validateEditor} from './draft-validation.mjs';
+import {validateFreeLayout} from './free-layout-core.mjs?v=20261023-studio1';
+import {validateRecord,validateEditor} from './draft-validation.mjs?v=20261023-studio1';
 export const DRAFT_DB = 'shijian.workspace.v1';
 export class DraftConflict extends Error {
   constructor() { super('其他分頁已更新草稿，這個分頁已暫停自動儲存，避免覆蓋。請先下載這裡的內容，或重新整理接續最新草稿。'); this.name = 'DraftConflict'; }
@@ -85,9 +86,10 @@ export async function openDraftStore(factory = globalThis.indexedDB, name = DRAF
 // unbounded number of records from browser storage.
 export function validateDraftMetadata(project) {
   if (!project || project.version !== 1 || !Array.isArray(project.pages) || project.pages.length > 500
-    || !Array.isArray(project.sources) || project.sources.length > 530 || !Array.isArray(project.assetKeys) || project.assetKeys.length > 1060
+    || !Array.isArray(project.sources) || project.sources.length > 800 || !Array.isArray(project.assetKeys) || project.assetKeys.length > 1100
     || !Array.isArray(project.selected) || project.selected.length > 500 || typeof project.name !== 'string' || project.name.length > 200
-    || !project.layout || !Array.isArray(project.layout.items) || project.layout.items.length > 30 || !['portrait','landscape'].includes(project.layout.orientation)) throw new Error('草稿格式不正確，原有草稿已保留。');
+    || !project.layout || !Array.isArray(project.layout.items) || project.layout.items.length > 300 || !['portrait','landscape'].includes(project.layout.orientation)) throw new Error('草稿格式不正確，原有草稿已保留。');
+  validateFreeLayout(project.layout,{allowEmpty:true});
   if(project.layout.fieldChanges!==undefined&&(!Array.isArray(project.layout.fieldChanges)||project.layout.fieldChanges.length>7||project.layout.fieldChanges.some(id=>!['free-x','free-y','free-width','free-height','free-text','free-font-size','free-color'].includes(id)))
     ||project.layout.fields&&Object.values(project.layout.fields).some(value=>typeof value!=='string'||value.length>2000))throw Error('A4 編輯欄位格式不正確。');
   if(project.pageOptions&&(typeof project.pageOptions!=='object'||Array.isArray(project.pageOptions)||Object.keys(project.pageOptions).length>8||Object.values(project.pageOptions).some(value=>typeof value!=='string'||value.length>120)))throw Error('頁面設定格式不正確。');
@@ -113,6 +115,8 @@ export function validateDraft(project,documents,assets){
   for(const key of project.assetKeys)if(!assets.has(key))throw Error('草稿縮圖遺失。');
   let total = 0; for (const blob of documents.values()) total += blob.size;
   for (const blob of assets.values()) { if (!(blob instanceof Blob) || !['image/jpeg','image/png'].includes(blob.type)) throw new Error('草稿縮圖損壞。'); total += blob.size; }
+  const previewKeys=new Set(project.layout.items.filter(item=>item.type==='page').map(item=>item.preview));
+  if([...previewKeys].reduce((sum,key)=>sum+assets.get(key).size,0)>32*1024*1024)throw Error('A4 排版預覽超過 32 MB，請減少項目。');
   if (total > 250 * 1024 * 1024) throw new Error('草稿超過 250 MB，請改為分批處理。');
   return project;
 }
