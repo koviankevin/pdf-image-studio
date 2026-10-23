@@ -11,7 +11,8 @@
 .quick-summary { display: flex; gap: 12px; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: .75rem; line-height: 1.6; }
 .quick-summary strong { font-weight: 600; }
 #unsaved-note { color: var(--muted); text-align: right; }
-.quick-buttons { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 9px; }
+.quick-buttons { display: flex; gap: 9px; }
+.quick-buttons button { flex: 1; min-width: 0; }
 .quick-buttons button { min-height: 44px; padding: 10px 8px; white-space: nowrap; }
 .has-quick-actions .toast { bottom: calc(var(--quick-actions-height, 108px) + 40px + env(safe-area-inset-bottom, 0px)); z-index: 20; }
 .dialog-header-actions { display: flex; gap: 8px; flex-shrink: 0; }

@@ -15,7 +15,7 @@ export function installShortcuts(api){
       target[redo?'redo':'undo']();return;
     }
     if(dialog)return;
-    if(modified&&key==='f'){event.preventDefault();api.search.focus();}
+    if(modified&&key==='f'){event.preventDefault();api.showAllTools();api.search.focus();}
     else if(!modified&&(key==='delete'||key==='backspace')&&!api.isBusy()&&api.chosen().length){event.preventDefault();$('delete-selected').click();}
   });
 }

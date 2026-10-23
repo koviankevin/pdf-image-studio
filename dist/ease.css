@@ -1,0 +1,20 @@
+.task-hidden { display: none !important; }
+.task-panel { margin: 0 0 28px; padding: 20px 24px; background: var(--surface, #fffefa); border: 1px solid var(--line, #ded8cc); border-radius: 10px; }
+.task-heading { display: flex; align-items: baseline; flex-wrap: wrap; gap: 8px 20px; margin-bottom: 14px; }
+.task-heading h2 { font-size: 1rem; margin: 0; }
+.task-heading span { font-size: .75rem; color: var(--muted, #706b61); }
+.task-options { display: flex; flex-wrap: wrap; gap: 8px; }
+.task-options button { flex: 1 1 110px; min-height: 44px; }
+.task-options button[aria-pressed="true"], .task-options button[aria-pressed="true"]:hover:not(:disabled) { background: #3b5685; color: #fff; border-color: #3b5685; }
+.task-panel .field-hint { margin-bottom: 0; }
+#task-start { margin-top: 14px; }
+.free-selection-options { padding: 10px 0 0; }
+.free-selection-options .remember-output { margin: 9px 0; }
+#free-selection-count { color: #3b5685; font-weight: 600; }
+#free-sheet [data-snap-guide], #free-sheet [data-marquee] { pointer-events: none; }
+#free-controls button { white-space: normal; }
+@media (max-width: 480px) {
+  .task-panel { padding: 16px; margin-bottom: 18px; }
+  .task-options button { flex-basis: calc(50% - 8px); padding: 10px 6px; }
+  #task-start { width: 100%; }
+}

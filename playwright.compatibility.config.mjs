@@ -13,6 +13,7 @@ export default defineConfig(regression, {
     'browser/productivity.spec.mjs',
     'browser/productivity-regression.spec.mjs',
     'browser/studio.spec.mjs',
+    'browser/ease.spec.mjs',
     'compatibility/*.spec.mjs',
   ],
   grep: /@compatibility/,

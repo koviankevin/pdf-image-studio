@@ -1,7 +1,7 @@
 import {PDFDocument, rgb, pushGraphicsState, popGraphicsState} from './vendor/pdf-lib/pdf-lib.mjs';
-import {assemblePdf} from './editor-core.mjs?v=20261024-studio1';
-import {fitPage} from './imposition-core.mjs?v=20261024-studio1';
-import {embedChineseFont} from './document-model.mjs?v=20261024-studio1';
+import {assemblePdf} from './editor-core.mjs?v=20261024-ease1';
+import {fitPage} from './imposition-core.mjs?v=20261024-ease1';
+import {embedChineseFont} from './document-model.mjs?v=20261024-ease1';
 import {checkpoint} from './cancellation.mjs';
 
 export const MM = 72 / 25.4;
@@ -27,6 +27,10 @@ export function validateFreeLayout(layout,{allowEmpty=false}={}) {
     if (item.type === 'page' && (!item.record?.sourceId || !Number.isInteger(item.record.index) || item.record.index < 0)) throw new Error('找不到排版項目的來源頁面。');
     if (item.type === 'text' && (typeof item.text !== 'string' || !item.text.trim() || item.text.length > 200 || item.text.split('\n').length > 4
       || !Number.isFinite(item.fontSize) || item.fontSize < 6 || item.fontSize > 72 || !/^#[\da-f]{6}$/i.test(item.color))) throw new Error('標題最多 200 字、4 行，字級須為 6 至 72 pt。');
+  }
+  if (layout.selection !== undefined) {
+    if (!Array.isArray(layout.selection) || layout.selection.length > 30 || new Set(layout.selection).size !== layout.selection.length
+      || layout.selection.some(id => typeof id !== 'string' || !layout.items.some(item => item.id === id && (item.sheet ?? 0) === (layout.activeSheet ?? 0)))) throw Error('排版多選資料格式不正確。');
   }
   return size;
 }

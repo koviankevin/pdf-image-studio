@@ -1,4 +1,4 @@
-import {outputPresets, validSettings, matchingPreset, readPreferences, createExportReceipts} from './workflow-core.mjs?v=20261024-studio1';
+import {outputPresets, validSettings, matchingPreset, readPreferences, createExportReceipts} from './workflow-core.mjs?v=20261024-ease1';
 
 export function installWorkflow(api) {
   const {$} = api, key = 'shijian.output.v1', receipts = createExportReceipts();

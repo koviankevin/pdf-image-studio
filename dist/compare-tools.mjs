@@ -1,8 +1,8 @@
-import {COMPARE_EDGE} from './compare-core.mjs?v=20261024-studio1';
+import {COMPARE_EDGE} from './compare-core.mjs?v=20261024-ease1';
 
 export function installCompare(api){
   const {$}=api;
-  $('free-layout').insertAdjacentHTML('afterend','<button id="compare-open" class="secondary full">比對兩份 PDF</button>');
+  $('a4-output').insertAdjacentHTML('afterend','<button id="compare-open" class="secondary full">比對兩份 PDF</button>');
   document.body.insertAdjacentHTML('beforeend',`<dialog id="compare-dialog" class="work-dialog compare-dialog" aria-labelledby="compare-title">
     <div class="preview-header"><div><h2 id="compare-title">兩份 PDF 差異比對</h2><p>選擇已加入的兩份來源，依原始頁序比對畫面；不套用工作區的裁切與標記。</p></div><button id="compare-close" class="secondary">關閉</button></div>
     <div class="compare-options"><label>原稿 A<select id="compare-a"></select></label><label>新版 B<select id="compare-b"></select></label><label>差異容差<select id="compare-threshold"><option value="12">敏感（12）</option><option value="28" selected>一般（28）</option><option value="60">忽略較小色差（60）</option></select></label></div>
@@ -17,7 +17,7 @@ export function installCompare(api){
   function controls(){for(const id of ['compare-a','compare-b','compare-threshold','compare-page','compare-scan'])$(id).disabled=loading;$('compare-prev').disabled=loading||current<=0;$('compare-next').disabled=loading||current>=count()-1;$('compare-cancel').hidden=!loading;$('compare-download').disabled=loading||!difference;$('compare-page').max=String(count());$('compare-page').value=String(current+1);$('compare-count').textContent=`/ ${count()} 頁`;}
   function clearImages(){for(const url of urls)URL.revokeObjectURL(url);urls=[];difference=null;for(const name of ['a','b','diff'])$('compare-image-'+name).removeAttribute('src');}
   function results(){const fragment=document.createDocumentFragment();for(const [index,result]of [...stats].sort((a,b)=>a[0]-b[0])){const button=document.createElement('button');button.className='secondary';button.textContent=`第 ${index+1} 頁：${result.missing?'其中一份缺頁':result.changed?`畫面差異 ${(result.changed/result.total*100).toFixed(2)}%`:'未發現畫面差異'}`;button.onclick=()=>{if(!loading){current=index;void show();}};fragment.append(button);}$('compare-results').replaceChildren(fragment);}
-  function workerDiff(a,b,width,height,signal){return new Promise((resolve,reject)=>{const worker=new Worker(new URL('./compare-worker.mjs?v=20261024-studio1',import.meta.url),{type:'module'});const finish=(error,value)=>{signal.removeEventListener('abort',abort);worker.terminate();error?reject(error):resolve(value);};const abort=()=>finish(signal.reason);signal.addEventListener('abort',abort,{once:true});worker.onmessage=({data})=>finish(data.error?Error(data.error):null,data);worker.onerror=()=>finish(Error('影像比對未能完成，請重試。'));if(signal.aborted){abort();return;}worker.postMessage({a:a.buffer,b:b.buffer,width,height,threshold:Number($('compare-threshold').value)},[a.buffer,b.buffer]);});}
+  function workerDiff(a,b,width,height,signal){return new Promise((resolve,reject)=>{const worker=new Worker(new URL('./compare-worker.mjs?v=20261024-ease1',import.meta.url),{type:'module'});const finish=(error,value)=>{signal.removeEventListener('abort',abort);worker.terminate();error?reject(error):resolve(value);};const abort=()=>finish(signal.reason);signal.addEventListener('abort',abort,{once:true});worker.onmessage=({data})=>finish(data.error?Error(data.error):null,data);worker.onerror=()=>finish(Error('影像比對未能完成，請重試。'));if(signal.aborted){abort();return;}worker.postMessage({a:a.buffer,b:b.buffer,width,height,threshold:Number($('compare-threshold').value)},[a.buffer,b.buffer]);});}
   const blob=canvas=>new Promise((resolve,reject)=>canvas.toBlob(value=>value?resolve(value):reject(Error('無法建立差異圖。')),'image/png'));
   async function compare(index,signal,visual){
     const documents=pair(),bitmaps=[],canvases=[];

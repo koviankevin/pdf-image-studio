@@ -1,4 +1,4 @@
-import {inverse,multiply,transformPoint} from './document-model.mjs?v=20261024-studio1';
+import {inverse,multiply,transformPoint} from './document-model.mjs?v=20261024-ease1';
 const NS='http://www.w3.org/2000/svg';
 const node=(name,attrs={})=>{const el=document.createElementNS(NS,name);for(const [k,v]of Object.entries(attrs))el.setAttribute(k,v);return el;};
 export function installAnnotations(api){

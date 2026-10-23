@@ -1,4 +1,4 @@
-import {openDraftStore, validateDraft, validateDraftMetadata, DraftConflict} from './draft-store.mjs?v=20261024-studio1';
+import {openDraftStore, validateDraft, validateDraftMetadata, DraftConflict} from './draft-store.mjs?v=20261024-ease1';
 
 export function installAutosave(api) {
   const {$} = api, preference = 'shijian.autosave.enabled';

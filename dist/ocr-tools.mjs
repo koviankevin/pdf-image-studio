@@ -1,6 +1,6 @@
-import {mergeRegionLines} from './ocr-region.mjs?v=20261024-studio1';
-import {textItemBounds} from './text-geometry.mjs?v=20261024-studio1';
-import {inverse,multiply,transformPoint} from './document-model.mjs?v=20261024-studio1';
+import {mergeRegionLines} from './ocr-region.mjs?v=20261024-ease1';
+import {textItemBounds} from './text-geometry.mjs?v=20261024-ease1';
+import {inverse,multiply,transformPoint} from './document-model.mjs?v=20261024-ease1';
 import {recognizeTwoColumns} from './ocr-columns.mjs';
 
 export function installOcr(api){
