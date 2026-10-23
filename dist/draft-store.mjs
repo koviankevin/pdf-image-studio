@@ -83,7 +83,7 @@ export async function openDraftStore(factory = globalThis.indexedDB, name = DRAF
 
 // Treat persisted data as input. Never restore URLs, HTML, credentials or an
 // unbounded number of records from browser storage.
-export function validateDraft(project, documents, assets) {
+export function validateDraftMetadata(project) {
   if (!project || project.version !== 1 || !Array.isArray(project.pages) || project.pages.length > 500
     || !Array.isArray(project.sources) || project.sources.length > 530 || !Array.isArray(project.assetKeys) || project.assetKeys.length > 1060
     || !Array.isArray(project.selected) || project.selected.length > 500 || typeof project.name !== 'string' || project.name.length > 200
@@ -93,19 +93,26 @@ export function validateDraft(project, documents, assets) {
   if(project.pageOptions&&(typeof project.pageOptions!=='object'||Array.isArray(project.pageOptions)||Object.keys(project.pageOptions).length>8||Object.values(project.pageOptions).some(value=>typeof value!=='string'||value.length>120)))throw Error('頁面設定格式不正確。');
   const sources = new Map(project.sources.map(source => [source.id, source]));
   if (sources.size !== project.sources.length || project.sources.some(source => typeof source.id !== 'string' || typeof source.key !== 'string'
-    || typeof source.name !== 'string' || !Number.isFinite(source.size) || source.size < 0 || !Number.isInteger(source.count) || source.count < 1 || source.count > 500 || !(documents.get(source.key) instanceof Blob))) throw new Error('草稿來源文件不完整，原有草稿已保留。');
-  let total = 0; for (const blob of documents.values()) total += blob.size;
-  for (const blob of assets.values()) { if (!(blob instanceof Blob) || !['image/jpeg','image/png'].includes(blob.type)) throw new Error('草稿縮圖損壞。'); total += blob.size; }
-  if (total > 250 * 1024 * 1024) throw new Error('草稿超過 250 MB，請改為分批處理。');
+    || typeof source.name !== 'string' || !Number.isFinite(source.size) || source.size < 0 || !Number.isInteger(source.count) || source.count < 1 || source.count > 500)) throw new Error('草稿來源文件不完整，原有草稿已保留。');
   const records = [...project.pages, ...(project.layout?.items || []).filter(item => item.type === 'page').map(item => item.record)];
   for (const record of records) {
     validateRecord(record);
     const source = sources.get(record?.sourceId);
-    if (!source || typeof record.id !== 'string' || !Number.isInteger(record.index) || record.index < 0 || record.index >= source.count || !assets.has(record.thumbnail)) throw new Error('草稿頁面不完整。');
+    if (!source || typeof record.id !== 'string' || !Number.isInteger(record.index) || record.index < 0 || record.index >= source.count || !project.assetKeys.includes(record.thumbnail)) throw new Error('草稿頁面不完整。');
   }
   if (new Set(project.pages.map(page => page.id)).size !== project.pages.length) throw new Error('草稿頁面重複。');
   if (!Array.isArray(project.receipts) || project.receipts.length > 1000 || project.receipts.some(entry=>!Array.isArray(entry)||entry.length!==2||entry.some(value=>typeof value!=='string'))) throw new Error('草稿輸出記錄格式不正確。');
-  for (const item of project.layout.items) if (item.type === 'page' && !assets.has(item.preview)) throw new Error('A4 草稿預覽遺失。');
+  for (const item of project.layout.items) if (item.type === 'page' && !project.assetKeys.includes(item.preview)) throw new Error('A4 草稿預覽遺失。');
   validateEditor(project.editor,new Set(project.pages.map(page=>page.id)));
+  return project;
+}
+
+export function validateDraft(project,documents,assets){
+  validateDraftMetadata(project);
+  for(const source of project.sources)if(!(documents.get(source.key) instanceof Blob))throw Error('草稿來源文件不完整。');
+  for(const key of project.assetKeys)if(!assets.has(key))throw Error('草稿縮圖遺失。');
+  let total = 0; for (const blob of documents.values()) total += blob.size;
+  for (const blob of assets.values()) { if (!(blob instanceof Blob) || !['image/jpeg','image/png'].includes(blob.type)) throw new Error('草稿縮圖損壞。'); total += blob.size; }
+  if (total > 250 * 1024 * 1024) throw new Error('草稿超過 250 MB，請改為分批處理。');
   return project;
 }

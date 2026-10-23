@@ -1,4 +1,4 @@
-import {openDraftStore, validateDraft, DraftConflict} from './draft-store.mjs?v=20261023-projects1';
+import {openDraftStore, validateDraft, validateDraftMetadata, DraftConflict} from './draft-store.mjs?v=20261023-projects1';
 
 export function installAutosave(api) {
   const {$} = api, preference = 'shijian.autosave.enabled';
@@ -41,6 +41,7 @@ export function installAutosave(api) {
     const size = snapshot.sources.reduce((sum, source) => sum + (newDocuments.get(source.storageKey)?.size ?? documentSizes.get(source.storageKey) ?? source.size), 0)
       + [...liveAssets].reduce((sum,key)=>sum+(resolved.get(key)?.size ?? assetSizes.get(key) ?? 0),0);
     if (size > 250 * 1024 * 1024) throw new Error('草稿過大，請分批處理或下載 PDF。');
+    validateDraftMetadata(project);if(new TextEncoder().encode(JSON.stringify(project)).length>20*1024*1024)throw Error('編輯資料超過 20 MB，請分批處理或下載 PDF。');
     return {project, newDocuments, newAssets: new Map(resolvedAssets)};
   }
   async function flush(force = false) {

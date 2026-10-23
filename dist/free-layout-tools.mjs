@@ -168,8 +168,8 @@ export function installFreeLayout(api) {
   };
   const point = event => { const rect = stage.getBoundingClientRect(), size = sheetSize(orientation); return {x: (event.clientX - rect.left) / rect.width * size.width, y: (event.clientY - rect.top) / rect.height * size.height}; };
   stage.addEventListener('pointerdown', event => {
-    if (working || event.button !== 0) return; const target = event.target.closest('[data-item]'); selected = target?.dataset.item || null;
-    if (!selected) { render(); return; } event.preventDefault(); remember(); drag = {start: point(event), original: {...current()}, resize: event.target.hasAttribute('data-resize'), previous: history.at(-1)}; stage.setPointerCapture(event.pointerId); render(); stage.focus();
+    if (working || drag || event.button !== 0) return; const target = event.target.closest('[data-item]'); selected = target?.dataset.item || null;
+    if (!selected) { render(); return; } event.preventDefault();const historyBefore=[...history],futureBefore=[...future]; remember(); drag = {start: point(event), original: {...current()}, resize: event.target.hasAttribute('data-resize'), previous: history.at(-1),historyBefore,futureBefore}; stage.setPointerCapture(event.pointerId); render(); stage.focus();
   });
   stage.addEventListener('pointermove', event => {
     if (!drag) return; const p = point(event), original = drag.original, size = sheetSize(orientation), next = {...original};
@@ -179,10 +179,10 @@ export function installFreeLayout(api) {
     } else { next.x = clamp(original.x + p.x - drag.start.x, 0, size.width - original.width); next.y = clamp(original.y + p.y - drag.start.y, 0, size.height - original.height); }
     items = items.map(i => i.id === next.id ? next : i); render(false);
   });
-  stage.addEventListener('pointerup', () => { if (drag) { drag = null; commit(); } });
-  stage.addEventListener('pointercancel', () => { if (drag) { const previous = history.pop(); items = previous.items; drag = null; commit(); } });
+  stage.addEventListener('pointerup', () => { if (drag) {if(JSON.stringify(items)===JSON.stringify(drag.previous.items)){history=drag.historyBefore;future=drag.futureBefore;} drag = null; commit(); } });
+  stage.addEventListener('pointercancel', () => { if (drag) {items=drag.previous.items;history=drag.historyBefore;future=drag.futureBefore; drag = null; commit(); } });
   stage.addEventListener('keydown', event => {
-    if (working) return;
+    if (working || drag) return;
     const item = event.target.closest('[data-item]'); if (item) selected = item.dataset.item;
     if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); render(); stage.focus(); }
     if (event.key === 'Delete' || event.key === 'Backspace') { event.preventDefault(); remove(); }

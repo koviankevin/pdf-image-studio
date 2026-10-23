@@ -28,7 +28,7 @@ export async function unpackProject(file) {
   const entries=unzipSync(new Uint8Array(await file.arrayBuffer()),{filter(entry){
     if (paths.has(entry.name) || !(entry.name==='project.json' || /^(documents|assets)\/[a-zA-Z0-9_-]{1,100}$/.test(entry.name))) throw Error('專案包含重複或不支援的資源。');
     paths.add(entry.name);total+=entry.originalSize;
-    if (!Number.isSafeInteger(entry.originalSize) || entry.originalSize<0 || !Number.isSafeInteger(entry.size) || entry.size<0 || entry.size>file.size || ![0,8].includes(entry.compression) || entry.compression===0&&entry.size!==entry.originalSize || total>LIMIT || paths.size>1591 || entry.name==='project.json'&&entry.originalSize>MANIFEST_LIMIT) throw Error('專案解壓縮後過大或格式不正確。');
+    if (!Number.isSafeInteger(entry.originalSize) || entry.originalSize<0 || !Number.isSafeInteger(entry.size) || entry.size<0 || entry.size>file.size || entry.compression!==0 || entry.compression===0&&entry.size!==entry.originalSize || total>LIMIT || paths.size>1591 || entry.name==='project.json'&&entry.originalSize>MANIFEST_LIMIT) throw Error('專案過大或格式不正確，請使用紙間下載的原始專案備份。');
     return true;
   }});
   if (!entries['project.json']) throw Error('找不到紙間專案資料。');

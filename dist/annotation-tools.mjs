@@ -35,10 +35,18 @@ export function installAnnotations(api){
     return{id:crypto.randomUUID(),type:tool,frame:inverse(state.viewport.transform),x:tool==='arrow'?p.x:Math.min(p.x,q.x),y:tool==='arrow'?p.y:Math.min(p.y,q.y),width:tool==='arrow'?q.x-p.x:Math.abs(q.x-p.x),height:tool==='arrow'?q.y-p.y:Math.abs(q.y-p.y),fontSize,thickness,color:$('mark-color').value,text:$('mark-text').value};
   }
   const position=e=>{const rect=svg.getBoundingClientRect();return{x:Math.max(0,Math.min(state.viewport.width,(e.clientX-rect.left)/rect.width*state.viewport.width)),y:Math.max(0,Math.min(state.viewport.height,(e.clientY-rect.top)/rect.height*state.viewport.height))};};
-  svg.addEventListener('pointerdown',e=>{if(working||!state||e.button!==0)return;e.preventDefault();svg.setPointerCapture(e.pointerId);const p=position(e);if(tool==='select'){const id=e.target.closest('[data-mark]')?.getAttribute('data-mark');selected=id||null;if(id){saveUndo();drag={id:e.pointerId,start:p,original:structuredClone(current()),move:true};}render();return;}try{saveUndo();const m=makeMark(p,p);state.marks.push(m);selected=m.id;drag={id:e.pointerId,start:p,move:false};render();}catch(error){history.pop();say(error.message,true);}});
+  svg.addEventListener('pointerdown',e=>{
+    if(working||drag||!state||e.button!==0)return;e.preventDefault();svg.setPointerCapture(e.pointerId);const p=position(e);
+    const previous={marks:structuredClone(state.marks),history:[...history],future:[...future]};
+    if(tool==='select'){const id=e.target.closest('[data-mark]')?.getAttribute('data-mark');selected=id||null;if(id){saveUndo();drag={id:e.pointerId,start:p,original:structuredClone(current()),move:true,previous};}render();return;}
+    try{const m=makeMark(p,p);saveUndo();state.marks.push(m);selected=m.id;drag={id:e.pointerId,start:p,move:false,previous};render();}
+    catch(error){history=previous.history;future=previous.future;say(error.message,true);}
+  });
   svg.addEventListener('pointermove',e=>{if(!drag||drag.id!==e.pointerId)return;const p=position(e),m=current();if(drag.move){const inv=inverse(multiply(state.viewport.transform,m.frame)),a=transformPoint(inv,drag.start.x,drag.start.y),b=transformPoint(inv,p.x,p.y);m.x=drag.original.x+b[0]-a[0];m.y=drag.original.y+b[1]-a[1];}else{const fresh=makeMark(drag.start,p);Object.assign(m,{x:fresh.x,y:fresh.y,width:fresh.width,height:fresh.height});}render();});
-  svg.addEventListener('pointerup',e=>{if(!drag||drag.id!==e.pointerId)return;const m=current();if(!drag.move&&m.type!=='text'&&Math.hypot(m.width,m.height)<3){state.marks=history.pop();selected=null;}drag=null;render();say('可選取標記並拖動位置，完成後按「儲存此頁標記」。');});
-  svg.addEventListener('pointercancel',()=>{if(drag){state.marks=history.pop();drag=null;selected=null;render();}});
+  svg.addEventListener('pointerup',e=>{if(!drag||drag.id!==e.pointerId)return;const m=current(),tiny=!drag.move&&m.type!=='text'&&Math.hypot(m.width,m.height)<3,unchanged=drag.move&&JSON.stringify(state.marks)===JSON.stringify(drag.previous.marks);
+    if(tiny||unchanged){state.marks=drag.previous.marks;history=drag.previous.history;future=drag.previous.future;if(tiny)selected=null;}
+    drag=null;render();say('可選取標記並拖動位置，完成後按「儲存此頁標記」。');});
+  svg.addEventListener('pointercancel',()=>{if(drag){state.marks=drag.previous.marks;history=drag.previous.history;future=drag.previous.future;drag=null;selected=null;render();}});
   $('mark-center').onclick=()=>{if(tool==='select'){say('請先選擇文字、螢光筆、箭頭或方框。',true);return;}try{const x=state.viewport.width*.25,y=state.viewport.height*.35;const mark=makeMark({x,y},{x:x+state.viewport.width*.35,y:y+(tool==='highlight'?20:60)});saveUndo();state.marks.push(mark);selected=mark.id;render();}catch(e){say(e.message,true);}};
   for(const id of ['mark-text','mark-color','mark-size','mark-stroke'])$(id).addEventListener('change',()=>{const m=current();if(!m)return;saveUndo();if(id==='mark-text'&&m.type==='text')m.text=$(id).value;else if(id==='mark-color')m.color=$(id).value;else if(id==='mark-size')m.fontSize=Math.max(6,Math.min(120,Number($(id).value)||20));else if(id==='mark-stroke')m.thickness=Math.max(1,Math.min(16,Number($(id).value)||2));render();});
   $('mark-delete').onclick=()=>{if(!current())return;saveUndo();state.marks=state.marks.filter(m=>m.id!==selected);selected=null;render();};

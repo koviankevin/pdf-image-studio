@@ -123,7 +123,7 @@ async function addFiles(files,{replaceId,insertAt}={}){
       if(total+Math.max(file.size,original.length)>MAX_INPUT)throw new Error('圖片轉換後超過工作區 150 MB 上限，請縮小圖片或分批處理');
       task=pdfjs.getDocument({data:original.slice(),cMapUrl:new URL('./vendor/pdfjs/cmaps/',import.meta.url).href,cMapPacked:true,standardFontDataUrl:new URL('./vendor/pdfjs/standard_fonts/',import.meta.url).href,wasmUrl:new URL('./vendor/pdfjs/wasm/',import.meta.url).href,isEvalSupported:false});
       task.onPassword=(callback,reason)=>{askPassword(file.name,reason===pdfjs.PasswordResponses.INCORRECT_PASSWORD).then(value=>{if(value===null){cancelled=true;void task.destroy();}else{password=value;callback(value);}});};
-      pdf=await task.promise;if(pages.length+(replaceId?0:pdf.numPages)>MAX_PAGES)throw new Error('工作區最多 500 頁，請分批處理');
+      pdf=await task.promise;if(pdf.numPages>MAX_PAGES)throw Error('單份來源 PDF 最多 500 頁，請先拆分文件。');if(pages.length+(replaceId?0:pdf.numPages)>MAX_PAGES)throw new Error('工作區最多 500 頁，請分批處理');
       const doc=await PDFDocument.load(original,{password,updateMetadata:false});password='';
       if(doc.getPageCount()!==pdf.numPages)throw new Error('文件頁數解析不一致，請先重新儲存這份 PDF');
       const form=doc.getForm();if(form.getFields().length)form.flatten({updateFieldAppearances:false});

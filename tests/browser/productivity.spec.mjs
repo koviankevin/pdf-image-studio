@@ -4,6 +4,7 @@ import {downloadBytes,inspectPdf} from '../support/ocr-pdf.mjs';
 import {zipSync,strToU8} from '../../dist/vendor/fflate/fflate.mjs';
 import {unpackProject} from '../../dist/project-files.mjs';
 import {createScanPdf,scanCases} from '../support/scans.mjs';
+import {PDFDocument,StandardFonts} from '../../dist/vendor/pdf-lib/pdf-lib.mjs';
 
 async function ready(page){await page.goto('/');await expect(page.locator('#dropzone')).toHaveAttribute('aria-disabled','false');}
 async function load(page,ids=['A']){const {sources}=await createFixtures();await page.locator('#file-input').setInputFiles(ids.map(id=>({name:sources.get(id).name,mimeType:'application/pdf',buffer:Buffer.from(sources.get(id).bytes)})));await expect(page.locator('#file-input')).toBeEnabled();await expect(page.locator('#page-count')).toHaveText(String(ids.reduce((n,id)=>n+(id==='A'?2:3),0)));}
@@ -111,4 +112,26 @@ test('cancelled replacement retains redo and deleting an inactive workspace leav
   await page.locator('#replace-file').setInputFiles({name:source.name,mimeType:'application/pdf',buffer:Buffer.from(source.bytes)});await expect(page.locator('#replacement-dialog')).toBeVisible();await page.locator('#replacement-cancel').click();await expect(page.locator('#file-input')).toBeEnabled();await expect(page.locator('#source-list .source-row')).toHaveCount(1);await expect(page.locator('#redo')).toBeEnabled();
   await panel(page);await page.locator('#project-new').click();await expect(page.locator('#page-count')).toHaveText('0');await expect(page.locator('#file-input')).toBeEnabled();await rename(page,'可刪工作區');await load(page,['B']);await switchProject(page,'保留文件');
   await panel(page);const id=await page.locator('#project-list option').filter({hasText:'可刪工作區'}).getAttribute('value');await page.locator('#project-list').selectOption(id);page.once('dialog',dialog=>dialog.accept());await page.locator('#project-delete').click();await expect(page.locator('#project-status')).toContainText('已刪除');await expect(page.locator('#project-list option')).toHaveCount(1);await expect(page.locator('#page-count')).toHaveText('2');
+});
+
+test('an oversized replacement source is rejected before it can make autosave unrecoverable',async({page})=>{
+  await ready(page);await load(page);await page.getByRole('checkbox',{name:'選取第 2 頁',exact:true}).uncheck();
+  const source=await PDFDocument.create();for(let i=0;i<501;i++)source.addPage([100,120]);
+  await page.locator('#replace-file').setInputFiles({name:'501-pages.pdf',mimeType:'application/pdf',buffer:Buffer.from(await source.save())});
+  await expect(page.locator('#file-input')).toBeEnabled();await expect(page.locator('#status')).toContainText('單份來源 PDF 最多 500 頁');await expect(page.locator('#source-list .source-row')).toHaveCount(1);await saved(page);await page.reload();await expect(page.locator('#page-count')).toHaveText('2');await expect(page.locator('#file-input')).toBeEnabled();
+});
+
+test('reviewing OCR from more than one 100-page batch remains recoverable',async({page})=>{
+  test.setTimeout(180000);const source=await PDFDocument.create(),font=await source.embedFont(StandardFonts.Helvetica);for(let i=0;i<101;i++){const item=source.addPage([100,120]);item.drawText(`PAGE_${i+1}`,{x:5,y:80,size:10,font});}
+  await ready(page);await page.locator('#file-input').setInputFiles({name:'101-pages.pdf',mimeType:'application/pdf',buffer:Buffer.from(await source.save())});await expect(page.locator('#page-count')).toHaveText('101');await expect(page.locator('#file-input')).toBeEnabled();
+  for(const range of ['1-100','101']){await page.locator('#pages').fill(range);await page.locator('#apply-range').click();await page.locator('#ocr-start').click();await expect(page.locator('#ocr-dialog')).toBeVisible({timeout:120000});await expect(page.locator('#ocr-save')).toBeEnabled();await page.locator('#ocr-close').click();}
+  await page.locator('#ocr-review').click();await expect(page.locator('#ocr-page option')).toHaveCount(101);await expect(page.locator('#ocr-save')).toBeEnabled();await saved(page);await page.reload();await expect(page.locator('#ocr-dialog')).toBeVisible();await expect(page.locator('#ocr-page option')).toHaveCount(101);await expect(page.locator('#ocr-save')).toBeEnabled();
+});
+
+test('selecting an existing item and cancelling a drag preserve redo in both editors',async({page})=>{
+  await ready(page);await load(page);await page.getByRole('button',{name:'標記第 1 頁',exact:true}).click();await expect(page.locator('#mark-fields')).toBeEnabled();await page.locator('[data-tool="text"]').click();await page.locator('#mark-center').click();await page.locator('#mark-center').click();await page.locator('#mark-undo').click();await page.locator('[data-tool="select"]').click();
+  await page.locator('#mark-overlay [data-mark] text').click();await expect(page.locator('#mark-redo')).toBeEnabled();
+  let box=await page.locator('#mark-overlay [data-mark] text').boundingBox();await page.mouse.move(box.x+box.width/2,box.y+box.height/2);await page.mouse.down();await page.mouse.move(box.x+box.width/2+8,box.y+box.height/2+8);await page.locator('#mark-overlay').dispatchEvent('pointercancel');await page.mouse.up();await expect(page.locator('#mark-redo')).toBeEnabled();await page.locator('#mark-redo').click();await expect(page.locator('#mark-overlay [data-mark]')).toHaveCount(2);await page.locator('#mark-close').click();
+  await page.locator('#free-layout').click();await expect(page.locator('#free-preview')).toBeEnabled();await page.locator('#free-add-title').click();await page.locator('#free-undo').click();await page.locator('#free-sheet [data-item]').first().click();await expect(page.locator('#free-redo')).toBeEnabled();
+  box=await page.locator('#free-sheet [data-item]').first().boundingBox();await page.mouse.move(box.x+box.width/2,box.y+box.height/2);await page.mouse.down();await page.mouse.move(box.x+box.width/2+8,box.y+box.height/2+8);await page.locator('#free-sheet').dispatchEvent('pointercancel');await page.mouse.up();await expect(page.locator('#free-redo')).toBeEnabled();await page.locator('#free-redo').click();await expect(page.locator('#free-item option')).toHaveCount(4);
 });

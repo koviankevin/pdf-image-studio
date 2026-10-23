@@ -11,13 +11,18 @@ test('portable projects round-trip binary files and editable records without pas
 });
 test('project archives reject unsupported formats, missing references and unsafe paths',async()=>{
   for(const entries of [{'../bad':new Uint8Array(1)},{'project.json':strToU8('{broken')},{'project.json':strToU8(JSON.stringify({format:'unknown',version:1,resources:[]}))},{'project.json':strToU8(JSON.stringify({format:'shijian-project',version:1,name:'missing',resources:[],project:fixture().project}))}]){
-    await assert.rejects(unpackProject(new Blob([zipSync(entries)])));
+    await assert.rejects(unpackProject(new Blob([zipSync(entries,{level:0})])));
   }
 });
 test('ZIP expanded sizes are bounded before decompression allocates their output',async()=>{
   const data=zipSync({'project.json':strToU8('{}')},{level:0}),view=new DataView(data.buffer);
   for(let i=0;i<data.length-28;i++)if(view.getUint32(i,true)===0x02014b50){view.setUint32(i+24,251*1024*1024,true);break;}
   await assert.rejects(unpackProject(new Blob([data])),/過大|格式/);
+});
+test('DEFLATE streams are rejected even when their declared expanded size is forged',async()=>{
+  const data=zipSync({'project.json':new Uint8Array(1024*1024)},{level:6}),view=new DataView(data.buffer);
+  for(let i=0;i<data.length-28;i++)if(view.getUint32(i,true)===0x02014b50){view.setUint32(i+24,1,true);break;}
+  await assert.rejects(unpackProject(new Blob([data])),/原始專案備份/);
 });
 test('imported editable records reject unsafe geometry, invalid marks, OCR and editor references',()=>{
   const changes=[v=>v.project.pages[0].rotation=NaN,v=>v.project.pages[0].crop={x:0,y:0,width:-2,height:10},v=>v.project.pages[0].annotations=[{id:'bad'}],v=>v.project.pages[0].ocr={mode:'ocr',frame:[1,0,0,1,0,0],lines:[{text:'a',x:0,y:0,width:1,height:Infinity,confidence:100}]},v=>v.project.layout.fieldChanges={},v=>v.project.editor={kind:'crop',pageId:'missing',fields:{},rotation:0}];
