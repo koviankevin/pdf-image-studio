@@ -224,7 +224,7 @@ export function installFreeLayout(api) {
   };
   $('free-close').onclick = () => dialog.close(); dialog.addEventListener('cancel', event => { if (working) event.preventDefault(); });
   dialog.addEventListener('close', () => { drag = null; api.setBusy(false); });
-  $('free-layout').onclick = () => { if (open() && !items.length) void addRecords(api.chosen()); };
+  $('free-layout').onclick = () => { const initialize=!created;if(open()&&initialize)void addRecords(api.chosen()); };
   return {
     undo,redo,
     template:()=>({...layout(),items:items.map(({record,preview,id,...item})=>item)}),

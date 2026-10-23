@@ -1,6 +1,6 @@
 import {PDFDocument, rgb, pushGraphicsState, popGraphicsState} from './vendor/pdf-lib/pdf-lib.mjs';
-import {assemblePdf} from './editor-core.mjs?v=20261023-workflow';
-import {fitPage} from './imposition-core.mjs?v=20261023-workflow';
+import {assemblePdf} from './editor-core.mjs?v=20261024-studio1';
+import {fitPage} from './imposition-core.mjs?v=20261024-studio1';
 import {embedChineseFont} from './document-model.mjs?v=20261024-studio1';
 import {checkpoint} from './cancellation.mjs';
 
