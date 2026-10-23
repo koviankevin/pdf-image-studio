@@ -74,5 +74,5 @@ export function installOcr(api){
   $('ocr-text-download').onclick=()=>api.download(new Blob(['\ufeff'+review.map(p=>`第 ${api.getPages().findIndex(v=>v.id===p.id)+1} 頁\n${textOf(p)}`).join('\n\n')],{type:'text/plain;charset=utf-8'}),`${api.filename()}_文字.txt`);
   $('ocr-save').onclick=()=>{if(loading)return;api.updateRecords(review.map(({reviewViewport,...p})=>({...p,ocr:structuredClone(p.ocr)})));say('已儲存校對。關閉後按「下載新 PDF」，即可取得含 OCR 文字層的文件。');};
   $('ocr-close').onclick=()=>dialog.close();dialog.addEventListener('close',()=>{++loadSerial;if(reviewUrl)URL.revokeObjectURL(reviewUrl);reviewUrl=null;review=[];$('ocr-image').removeAttribute('src');$('ocr-lines').replaceChildren();api.setBusy(false);});
-  return{refresh,openReview};
+  return{refresh,openReview,hasDraft:()=>review.some(item=>JSON.stringify(item.ocr)!==JSON.stringify(api.getPages().find(page=>page.id===item.id)?.ocr))};
 }

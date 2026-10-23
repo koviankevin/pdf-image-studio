@@ -81,16 +81,26 @@ export function installFreeLayout(api) {
   async function addRecords(records) {
     if (!records.length) return;
     if (items.length + records.length > 30) { say('每張 A4 最多 30 個項目，請減少勾選頁面。', true); return; }
-    remember(); setWorking(true);
+    const initiallyEmpty = !items.length; remember(); setWorking(true);
     try {
       for (const record of records) {
         say(`正在加入版面（${items.length + 1} 個項目）…`);
         const source = api.getSources().get(record.sourceId), viewport = await api.pageViewport(source, record);
         const rendered = await api.renderBlob(source, record.index, 96, 'jpeg', false, record, {maxEdge: 1000, quality: .9});
-        const id = crypto.randomUUID(), width = Math.min(80, 100 * viewport.width / viewport.height);
-        previews.set(id, URL.createObjectURL(rendered.blob)); items.push({id, type: 'page', record: structuredClone(record), x: 10, y: 10, width, height: width * viewport.height / viewport.width}); selected = id;
+        const id = crypto.randomUUID(), width = Math.min(80, 100 * viewport.width / viewport.height), height = width * viewport.height / viewport.width;
+        if (Math.min(width, height) < 1) throw new Error('頁面比例過長，請先框選需要的範圍。');
+        const item = {id, type: 'page', record: structuredClone(record), x: 10, y: 10, width, height};
+        if (!initiallyEmpty) {
+          const size = sheetSize(orientation), xs = [...new Set([10, ...items.map(i => i.x + i.width + 5)])].sort((a,b) => a-b), ys = [...new Set([10, ...items.map(i => i.y + i.height + 5)])].sort((a,b) => a-b);
+          let placed = false;
+          for (const y of ys) { for (const x of xs) {
+            if (x + width <= size.width - 5 && y + height <= size.height - 5 && items.every(i => x + width + 3 <= i.x || i.x + i.width + 3 <= x || y + height + 3 <= i.y || i.y + i.height + 3 <= y)) { item.x = x; item.y = y; placed = true; break; }
+          } if (placed) break; }
+          if (!placed) { item.x = Math.min(size.width - width, 10 + items.length * 5); item.y = Math.min(size.height - height, 10 + items.length * 5); }
+        }
+        previews.set(id, URL.createObjectURL(rendered.blob)); items.push(item); selected = id;
       }
-      items = arrangeItems(items, orientation); say('已加入。可自由調整；「預覽並下載」會顯示實際 PDF。');
+      if (initiallyEmpty) items = arrangeItems(items, orientation); say('已加入並保留既有位置。可自由調整；「預覽並下載」會顯示實際 PDF。');
     } catch (error) { say(`無法加入：${error.message}`, true); }
     finally { setWorking(false); sourceChoices(); commit(); }
   }
@@ -173,7 +183,7 @@ export function installFreeLayout(api) {
   stage.addEventListener('keydown', event => {
     if (working) return;
     const item = event.target.closest('[data-item]'); if (item) selected = item.dataset.item;
-    if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); render(); }
+    if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); render(); stage.focus(); }
     if (event.key === 'Delete' || event.key === 'Backspace') { event.preventDefault(); remove(); }
     if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'z') { event.preventDefault(); undo(); }
     const step = event.shiftKey ? 5 : 1, delta = {ArrowLeft: [-step, 0], ArrowRight: [step, 0], ArrowUp: [0, -step], ArrowDown: [0, step]}[event.key];
@@ -191,7 +201,11 @@ export function installFreeLayout(api) {
   return {
     refresh() { $('free-layout').disabled = api.isBusy() || !items.length && !api.chosen().length; },
     retainedRecords: () => [items, ...history.map(h => h.items)].flat().filter(i => i.type === 'page').map(i => i.record),
-    hasPending: () => items.length > 0 && signature(layout()) !== saved,
+    hasPending: () => {
+      if (items.length > 0 && signature(layout()) !== saved) return true;
+      const item = current(); if (!dialog.open || !item) return false;
+      return ['x','y','width','height'].some(key => $('free-'+key).value !== round(item[key])) || item.type === 'text' && ($('free-text').value !== item.text || Number($('free-font-size').value) !== item.fontSize || $('free-color').value !== item.color);
+    },
     addPiece(record) { if (open()) void addRecords([record]); },
     clear() { items = []; history = []; selected = null; orientation = 'portrait'; saved = ''; for (const url of previews.values()) URL.revokeObjectURL(url); previews.clear(); $('free-orientation').value = orientation; render(); },
   };

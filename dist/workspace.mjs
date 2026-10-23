@@ -4,8 +4,8 @@ import {zipSync} from './vendor/fflate/fflate.mjs';
 import {parsePages,withDensity,dimensions} from './utils.mjs';
 import {movePages,assemblePdf,viewportCrop} from './editor-core.mjs?v=20261023-workflow';
 import {installPageTools} from './page-tools.mjs?v=20261023-workflow';
-import {installAnnotations} from './annotation-tools.mjs';
-import {installOcr} from './ocr-tools.mjs?v=20261016-lifecycle';
+import {installAnnotations} from './annotation-tools.mjs?v=20261023-workflow';
+import {installOcr} from './ocr-tools.mjs?v=20261023-workflow';
 import {imageToPdf} from './document-model.mjs';
 import {installImposition} from './imposition-tools.mjs?v=20261023-workflow';
 import {installWorkflow} from './workflow-tools.mjs?v=20261023-workflow';
@@ -162,7 +162,7 @@ $('download-all').onclick=async()=>{if(busy||!results.length)return;setBusy(true
 
 // The optional browser tool shares selection and output settings with the UI.
 if(document.modelContext?.registerTool){const lifecycle=new AbortController();window.addEventListener('pagehide',()=>lifecycle.abort(),{once:true});try{Promise.resolve(document.modelContext.registerTool({name:'configure_pdf_image_output',title:'選取頁面與設定圖片輸出',description:'Select current workspace page numbers and configure image resolution and format. Does not start conversion or download.',inputSchema:{type:'object',properties:{dpi:{type:'integer',enum:[150,300,450,600]},format:{type:'string',enum:['png','jpeg']},pages:{type:'string'}},required:['dpi','format','pages'],additionalProperties:false},annotations:{readOnlyHint:false,untrustedContentHint:false},execute(input){if(busy)throw new Error('正在處理檔案。');if(!input||![150,300,450,600].includes(input.dpi)||!['png','jpeg'].includes(input.format)||typeof input.pages!=='string')throw new Error('無效設定。');const indices=parsePages(input.pages,pages.length);selected=new Set(indices.map(i=>pages[i-1].id));$('dpi').value=String(input.dpi);$('format').value=input.format;$('pages').value=input.pages;$('dpi').onchange();clearResults();drawPages();workflowTools?.savePreferences();return{dpi:input.dpi,format:input.format,selectedPages:indices};}},{signal:lifecycle.signal})).catch(()=>{});}catch{}}
-const sharedApi={$,getPages:()=>pages,getSources:()=>sources,getSourcePage,chosen,isBusy:()=>busy,setBusy,status,toast,filename,bytes,renderBlob,pageViewport,commitEdits,updateRecords,download,showImage,markExported:records=>workflowTools?.markExported(records),previewChosen:()=>proofTools.openChosen(),showProof:options=>proofTools.show(options),hasLayoutDraft:()=>freeLayoutTools?.hasPending()||false,addLayoutPiece:record=>freeLayoutTools.addPiece(record),openFreeLayout:()=>$('free-layout').click(),layoutChanged:()=>{collectWorkspaceResources();drawSources();updateControls();}};
+const sharedApi={$,getPages:()=>pages,getSources:()=>sources,getSourcePage,chosen,isBusy:()=>busy,setBusy,status,toast,filename,bytes,renderBlob,pageViewport,commitEdits,updateRecords,download,showImage,markExported:records=>workflowTools?.markExported(records),previewChosen:()=>proofTools.openChosen(),showProof:options=>proofTools.show(options),hasLayoutDraft:()=>freeLayoutTools?.hasPending()||false,hasEditorDraft:()=>!!(pageTools?.hasDraft?.()||annotationTools?.hasDraft?.()||ocrTools?.hasDraft?.()),addLayoutPiece:record=>freeLayoutTools.addPiece(record),openFreeLayout:()=>$('free-layout').click(),layoutChanged:()=>{collectWorkspaceResources();drawSources();updateControls();}};
 annotationTools=installAnnotations(sharedApi);ocrTools=installOcr(sharedApi);
 impositionTools=installImposition(sharedApi);
 pageTools=installPageTools(sharedApi);

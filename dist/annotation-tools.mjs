@@ -50,5 +50,5 @@ export function installAnnotations(api){
     try{await document.fonts.load('20px PDFChinese');const source=api.getSources().get(page.sourceId),viewport=await api.pageViewport(source,page);state={page,marks:structuredClone(page.annotations||[]),viewport};const result=await api.renderBlob(source,page.index,120,'jpeg',false,{...page,annotations:[]},{maxEdge:1800,quality:.9});url=URL.createObjectURL(result.blob);$('mark-image').src=url;svg.setAttribute('viewBox',`0 0 ${viewport.width} ${viewport.height}`);$('mark-title').textContent=`第 ${index+1} 頁 · 文字與標記`;render();say('選擇工具後在頁面拖曳，也可以使用「在頁面中央加入」。');}
     catch(e){say(e.message,true);}finally{setWorking(false);$('mark-fields').disabled=!state;$('mark-save').disabled=!state;}
   }
-  return{open};
+  return{open,hasDraft:()=>{if(!state)return false;if(JSON.stringify(state.marks)!==JSON.stringify(state.page.annotations||[]))return true;const m=current();return !!m&&((m.type==='text'&&$('mark-text').value!==m.text)||$('mark-color').value!==m.color||Number($('mark-size').value)!==(m.fontSize||20)||Number($('mark-stroke').value)!==(m.thickness||2));}};
 }

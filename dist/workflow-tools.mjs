@@ -32,7 +32,7 @@ export function installWorkflow(api) {
   $('output-preset').onchange = () => { const preset = outputPresets[$('output-preset').value]; if (preset) { apply(preset); savePreferences(); api.toast(`已套用「${preset.label}」。`); } };
   for (const id of fields) { $(id).addEventListener('input', savePreferences); $(id).addEventListener('change', savePreferences); }
   $('remember-output').onchange = savePreferences; updatePreset();
-  const pending = () => receipts.pending(api.getPages()) || api.hasLayoutDraft();
+  const pending = () => receipts.pending(api.getPages()) || api.hasLayoutDraft() || api.hasEditorDraft();
   window.addEventListener('beforeunload', event => { if (pending()) { event.preventDefault(); event.returnValue = ''; } });
   function refresh() {
     const total = api.getPages().length, count = api.chosen().length, disabled = api.isBusy() || !count;
