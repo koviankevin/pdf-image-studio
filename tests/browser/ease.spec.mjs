@@ -63,3 +63,15 @@ test('task cards and touch selection controls fit a 320px viewport',{tag:'@compa
   await page.setViewportSize({width:320,height:740});await ready(page);for(const task of ['capture','organize','layout','text','all']){await mode(page,task);expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);}
   await load(page);await mode(page,'layout');await page.locator('#task-start').click();await expect(page.locator('#free-preview')).toBeEnabled();await page.locator('#free-select-all').click();await expect(page.locator('#free-selection-count')).toContainText('已選 2');expect(await page.locator('#free-dialog').evaluate(el=>el.scrollWidth<=el.clientWidth)).toBe(true);
 });
+
+for(const task of ['capture','all'])test(`regional OCR from ${task} keeps cancellation visible while the real engine loads`,async({page})=>{
+  let release,requested;const gate=new Promise(resolve=>release=resolve),loading=new Promise(resolve=>requested=resolve);
+  await page.route('**/vendor/ocr/tesseract.mjs',async route=>{const response=await route.fetch();requested();await gate;await route.fulfill({response});});
+  await ready(page);await load(page);await mode(page,task);
+  if(task==='all'){await page.locator('.ocr-settings summary').click();await page.getByRole('button',{name:'框選第 1 頁',exact:true}).click();}else await page.locator('#task-start').click();
+  await expect(page.locator('#crop-controls')).toBeEnabled();await page.locator('#crop-ocr').click();await loading;
+  try{
+    await expect(page.locator(`[data-task="${task==='all'?'all':'text'}"]`)).toHaveAttribute('aria-pressed','true');await expect(page.locator('#ocr-cancel')).toBeVisible();await page.locator('#ocr-cancel').click();await expect(page.locator('#file-input')).toBeEnabled({timeout:2000});await expect(page.locator('#status')).toContainText('已停止');
+  }finally{release();}
+  await page.evaluate(async()=>{await import('/vendor/ocr/tesseract.mjs');});await mode(page,'capture');await expect(page.locator('#image-output')).toBeVisible();await expect(page.locator('#page-count')).toHaveText('2');
+});

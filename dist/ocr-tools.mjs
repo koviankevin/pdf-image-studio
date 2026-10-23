@@ -18,6 +18,7 @@ export function installOcr(api){
   }
   async function recognize(items,{region}={}){
     if(api.isBusy()||!items.length)return;if(items.length>100){api.status('OCR 一次最多 100 頁，請分批勾選。',true);return;}
+    api.showTextTools();
     // Keep automatic segmentation for general layouts. A known single column
     // can avoid CJK/Latin misclassification; it is not safe to assume globally.
     const layout=$('ocr-layout').value,force=!!region||$('ocr-mode').value==='force';
