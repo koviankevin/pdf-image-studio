@@ -1,36 +1,36 @@
-import {openDraftStore, validateDraft, DraftConflict} from './draft-store.mjs';
+import {openDraftStore, validateDraft, DraftConflict} from './draft-store.mjs?v=20261023-projects1';
 
 export function installAutosave(api) {
   const {$} = api, preference = 'shijian.autosave.enabled';
-  $('source-list').insertAdjacentHTML('afterend', `<section class="autosave-panel" aria-label="本機自動儲存"><label class="remember-output"><input id="autosave-enabled" type="checkbox" checked>自動儲存工作區到這台裝置</label><p id="autosave-status" class="field-hint" role="status" aria-live="polite">正在檢查本機草稿…</p><div class="free-pair"><button id="autosave-now" class="secondary" disabled>立即儲存</button><button id="autosave-delete" class="secondary" disabled>刪除已存草稿</button></div><p class="field-hint">同一瀏覽器、同一裝置可接續編輯。已解鎖的文件內容也會保存在此裝置，密碼不會保存。刪除或關閉自動儲存會清除這個瀏覽器共用的草稿；清除瀏覽器資料或無痕模式可能無法保留。</p></section>`);
+  $('source-list').insertAdjacentHTML('afterend', `<section class="autosave-panel" aria-label="本機自動儲存"><label class="remember-output"><input id="autosave-enabled" type="checkbox" checked>自動儲存工作區到這台裝置</label><p id="autosave-status" class="field-hint" role="status" aria-live="polite">正在檢查本機草稿…</p><div class="free-pair"><button id="autosave-now" class="secondary" disabled>立即儲存</button><button id="autosave-delete" class="secondary" disabled>刪除已存草稿</button></div><p class="field-hint">同一瀏覽器、同一裝置可接續編輯。已解鎖的文件內容也會保存在此裝置，密碼不會保存。刪除或關閉自動儲存會清除目前工作區共用的草稿；清除瀏覽器資料或無痕模式可能無法保留。</p></section>`);
   let enabled = true; try { enabled = localStorage.getItem(preference) !== 'false'; } catch { /* Optional preference only. */ }
   $('autosave-enabled').checked = enabled;
-  let store, revision = 0, initializing = true, saving = false, dirty = false, failed = false, conflict = false, timer, generation = 0, last = '', lastRaw = '', hasStored = false, pendingClear = false;
+  let store, revision = 0, initializing = true, saving = false, dirty = false, failed = false, conflict = false, timer, generation = 0, last = '', lastRaw = '', hasStored = false, pendingClear = false, paused = false;
   let knownDocuments = new Set(), knownAssets = new Set();
   let documentSizes = new Map(), assetSizes = new Map();
   const documents = new WeakMap(), assetIds = new Map();
   const say = (message, error = false) => { $('autosave-status').textContent = message; $('autosave-status').classList.toggle('error', error); };
   function controls() { $('autosave-now').disabled = initializing || saving || !enabled || !store || conflict; $('autosave-delete').disabled = initializing || saving || !store || !hasStored; }
   const setPreference = () => { try { localStorage.setItem(preference, String(enabled)); } catch { /* IndexedDB remains the document store. */ } };
-  function asset(url, newAssets, live) {
+  function asset(url, newAssets, live, complete) {
     if (!assetIds.has(url)) assetIds.set(url, crypto.randomUUID());
     const key = assetIds.get(url); live.add(key);
     // Start fetching while the snapshot's object URLs are still live. Documents
     // are normalized only once, outside the IndexedDB transaction.
-    if (!knownAssets.has(key) && !newAssets.has(key)) newAssets.set(key, fetch(url).then(r => { if (!r.ok) throw new Error('縮圖讀取失敗。'); return r.blob(); }));
+    if ((complete || !knownAssets.has(key)) && !newAssets.has(key)) newAssets.set(key, fetch(url).then(r => { if (!r.ok) throw new Error('縮圖讀取失敗。'); return r.blob(); }));
     return key;
   }
-  async function prepare(snapshot) {
+  async function prepare(snapshot, complete = false) {
     const newAssets = new Map(), liveAssets = new Set(), newDocuments = new Map();
-    const record = page => ({...page, thumbnail: asset(page.thumbnail, newAssets, liveAssets)});
+    const record = page => ({...page, thumbnail: asset(page.thumbnail, newAssets, liveAssets, complete)});
     const project = {...snapshot.project, version: 1, pages: snapshot.project.pages.map(record)};
     if (project.layout) project.layout = {...project.layout, items: project.layout.items.map(item => item.type === 'page'
-      ? {...item, record: record(item.record), preview: asset(item.preview, newAssets, liveAssets)} : item)};
+      ? {...item, record: record(item.record), preview: asset(item.preview, newAssets, liveAssets, complete)} : item)};
     project.assetKeys = [...liveAssets];
     // Attach rejection handlers immediately, including when another resource fails.
     const assetsReady = Promise.all([...newAssets].map(async ([key, promise]) => [key, await promise]));
     const docsReady = Promise.all(snapshot.sources.map(async source => {
-      if (knownDocuments.has(source.storageKey)) return;
+      if (!complete && knownDocuments.has(source.storageKey)) return;
       if (!documents.has(source.doc)) documents.set(source.doc, api.serializeSource(source));
       const blob = await documents.get(source.doc); newDocuments.set(source.storageKey, blob);
       source.size = Math.max(source.size, blob.size);
@@ -43,10 +43,10 @@ export function installAutosave(api) {
     if (size > 250 * 1024 * 1024) throw new Error('草稿過大，請分批處理或下載 PDF。');
     return {project, newDocuments, newAssets: new Map(resolvedAssets)};
   }
-  async function flush() {
+  async function flush(force = false) {
     clearTimeout(timer);
-    if (initializing || saving || !store || conflict && !pendingClear || !enabled && !pendingClear) return;
-    if (!pendingClear && !api.canCapture()) { dirty = true; timer = setTimeout(flush, 350); return; }
+    if (paused || initializing || saving || !store || conflict && !pendingClear || !enabled && !pendingClear) return;
+    if (!pendingClear && !force && !api.canCapture()) { dirty = true; timer = setTimeout(flush, 350); return; }
     saving = true; controls();
     const currentGeneration = generation;
     try {
@@ -86,7 +86,7 @@ export function installAutosave(api) {
     }
   }
   function changed() {
-    if (initializing || !enabled || conflict) return;
+    if (paused || initializing || !enabled || conflict) return;
     if (!store) { failed = true; return; }
     dirty = true; failed = false; clearTimeout(timer); say('變更尚在儲存中…'); timer = setTimeout(flush, 450);
   }
@@ -102,14 +102,28 @@ export function installAutosave(api) {
   $('autosave-enabled').onchange = async () => { enabled = $('autosave-enabled').checked; setPreference(); if (!enabled) await clear(); else { changed(); controls(); } };
   // Passwords and transient output/proof controls never enter the snapshot.
   for (const type of ['input', 'change', 'click', 'pointerup', 'keyup']) document.addEventListener(type, event => {
-    if (event.target.closest('#password-dialog,.autosave-panel,#proof-dialog,#preview-dialog')) return;
+    if (event.target.closest('#password-dialog,.autosave-panel,.project-panel,.document-search,#proof-dialog,#preview-dialog')) return;
     changed();
   });
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden' && dirty) void flush(); });
   window.addEventListener('pagehide', () => { if (dirty) void flush(); });
   return {
     changed, clear,
+    isEnabled:()=>enabled,
+    async saveNow(force = false) {
+      if (!enabled || !store || conflict) throw Error('請先啟用自動儲存並排除草稿錯誤，再切換工作區。');
+      while(saving) await new Promise(resolve=>setTimeout(resolve,15));
+      dirty=true;failed=false;await flush(force);
+      if(failed||dirty||pendingClear)throw Error('最新變更尚未儲存，請先下載專案備份，或在自動儲存區重試。');
+    },
+    async backup() {
+      while(saving) await new Promise(resolve=>setTimeout(resolve,15));
+      const prepared=await prepare(api.capture(),true);
+      return {project:prepared.project,documents:prepared.newDocuments,assets:prepared.newAssets};
+    },
+    navigate(){paused=true;clearTimeout(timer);store?.close();},
     needsWarning(fallback) {
+      if (paused) return false;
       if (pendingClear && store) return true;
       if (!enabled || !store) return fallback;
       if (failed || conflict || saving || !api.canCapture()) return true;
@@ -118,7 +132,7 @@ export function installAutosave(api) {
     },
     async init() {
       try {
-        store = await openDraftStore(); const saved = await store.read(); revision = saved.revision; hasStored = !!saved.project;
+        store = await openDraftStore(globalThis.indexedDB, api.databaseName); const saved = await store.read(); revision = saved.revision; hasStored = !!saved.project;
         if (!enabled) { if (hasStored) { revision = await store.write(revision, null); hasStored = false; } say('自動儲存已關閉。'); return; }
         if (saved.project) {
           validateDraft(saved.project, saved.documents, saved.assets);

@@ -2,23 +2,27 @@ import * as pdfjs from './vendor/pdfjs/pdf.mjs';
 import {PDFDocument} from './vendor/pdf-lib/pdf-lib.mjs';
 import {zipSync} from './vendor/fflate/fflate.mjs';
 import {parsePages,withDensity,dimensions} from './utils.mjs';
-import {movePages,assemblePdf,viewportCrop} from './editor-core.mjs?v=20261023-autosave';
-import {installPageTools} from './page-tools.mjs?v=20261023-autosave';
-import {installAnnotations} from './annotation-tools.mjs?v=20261023-autosave';
-import {installOcr} from './ocr-tools.mjs?v=20261023-autosave';
+import {movePages,assemblePdf,viewportCrop} from './editor-core.mjs?v=20261023-projects1';
+import {installPageTools} from './page-tools.mjs?v=20261023-projects1';
+import {installAnnotations} from './annotation-tools.mjs?v=20261023-projects1';
+import {installOcr} from './ocr-tools.mjs?v=20261023-projects1';
 import {imageToPdf} from './document-model.mjs';
-import {installImposition} from './imposition-tools.mjs?v=20261023-autosave';
-import {installWorkflow} from './workflow-tools.mjs?v=20261023-autosave';
-import {installPdfProof} from './pdf-proof.mjs?v=20261023-autosave';
-import {installFreeLayout} from './free-layout-tools.mjs?v=20261023-autosave';
-import {installAutosave} from './autosave-tools.mjs?v=20261023-autosave';
-import {validateFreeLayout} from './free-layout-core.mjs?v=20261023-autosave';
+import {installImposition} from './imposition-tools.mjs?v=20261023-projects1';
+import {installWorkflow} from './workflow-tools.mjs?v=20261023-projects1';
+import {installPdfProof} from './pdf-proof.mjs?v=20261023-projects1';
+import {installFreeLayout} from './free-layout-tools.mjs?v=20261023-projects1';
+import {installAutosave} from './autosave-tools.mjs?v=20261023-projects1';
+import {installProjects} from './project-tools.mjs';
+import {installDocumentSearch} from './document-search.mjs';
+import {installPageOperations} from './page-operations.mjs';
+import {installShortcuts} from './keyboard-shortcuts.mjs';
+import {validateFreeLayout} from './free-layout-core.mjs?v=20261023-projects1';
 
 pdfjs.GlobalWorkerOptions.workerSrc=new URL('./vendor/pdfjs/pdf.worker.mjs',import.meta.url).href;
 const $=id=>document.getElementById(id);
-let pages=[],sources=new Map(),selected=new Set(),history=[],results=[],busy=false,stopping=false,renderTask=null,passwordResolve=null,dragId=null,serial=0,toastTimer;
+let pages=[],sources=new Map(),selected=new Set(),history=[],future=[],results=[],busy=false,stopping=false,renderTask=null,passwordResolve=null,dragId=null,serial=0,toastTimer;
 const thumbnailUrls=new Set();
-let pageTools,annotationTools,ocrTools,impositionTools,workflowTools,proofTools,freeLayoutTools,autosaveTools;
+let pageTools,annotationTools,ocrTools,impositionTools,workflowTools,proofTools,freeLayoutTools,autosaveTools,projectTools,searchTools,operationTools;
 let annotationCache=new Map();const annotationTasks=new Set();
 const sourceDisposals=new Set();
 const MAX_INPUT=150*1024*1024,MAX_PAGES=500,MAX_IMAGES=256*1024*1024;
@@ -30,19 +34,19 @@ function toast(message){clearTimeout(toastTimer);$('toast').textContent=message;
 function setBusy(value){busy=value;updateControls();}
 function updateControls(){
   $('file-input').disabled=busy;$('dropzone').setAttribute('aria-disabled',String(busy));$('settings-fields').disabled=busy;$('editor-controls').disabled=busy;$('output-name').disabled=busy;
-  $('reset').disabled=busy||!sources.size;$('undo').disabled=busy||!history.length;
+  $('reset').disabled=busy||!sources.size;$('undo').disabled=busy||!history.length;if($('redo'))$('redo').disabled=busy||!future.length;
   $('export-pdf').disabled=$('convert').disabled=busy||!chosen().length;$('download-all').disabled=busy||!results.length;
   for(const control of $('page-grid').querySelectorAll('button,input'))control.disabled=busy||control.dataset.edge==='true';
   $('delete-selected').disabled=$('move-selected').disabled=busy||!chosen().length;
   $('page-count').textContent=String(pages.length);$('selection-summary').textContent=pages.length?`${sources.size} 份來源 · 共 ${pages.length} 頁 · 已選取 ${chosen().length} 頁`:'加入 PDF 後，可拖曳頁面調整順序。';
   $('move-position').max=String(Math.max(1,pages.length-chosen().length+1));$('empty').hidden=pages.length>0;$('editor-controls').hidden=!pages.length;
-  $('rotate-selected').disabled=busy||!chosen().length;$('image-import-fields').disabled=busy;pageTools?.refresh();ocrTools?.refresh();impositionTools?.refresh();workflowTools?.refresh();freeLayoutTools?.refresh();autosaveTools?.changed();
+  $('rotate-selected').disabled=busy||!chosen().length;$('image-import-fields').disabled=busy;pageTools?.refresh();ocrTools?.refresh();impositionTools?.refresh();workflowTools?.refresh();freeLayoutTools?.refresh();autosaveTools?.changed();projectTools?.refresh();searchTools?.refresh();operationTools?.refresh();
 }
 function clearResults(){for(const result of results){URL.revokeObjectURL(result.url);URL.revokeObjectURL(result.thumbnail);}results=[];$('gallery').replaceChildren();$('image-results').hidden=true;$('result-count').textContent='0';pageTools?.invalidateEstimate();}
-function snapshot(){history.push({pages:[...pages],selected:new Set(selected)});if(history.length>30)history.shift();}
+function snapshot(){future=[];history.push({pages:[...pages],selected:new Set(selected)});if(history.length>30)history.shift();}
 function collectWorkspaceResources(){
   const live=new Set(),liveSources=new Set();
-  for(const records of [pages,...history.map(state=>state.pages),freeLayoutTools?.retainedRecords()||[]])for(const page of records){live.add(page.thumbnail);liveSources.add(page.sourceId);}
+  for(const records of [pages,...history.map(state=>state.pages),...future.map(state=>state.pages),freeLayoutTools?.retainedRecords()||[]])for(const page of records){live.add(page.thumbnail);liveSources.add(page.sourceId);}
   for(const url of thumbnailUrls)if(!live.has(url)){URL.revokeObjectURL(url);thumbnailUrls.delete(url);}
   // A removed page remains restorable until its last undo snapshot expires.
   // Drop unreachable documents from the quota and terminate their PDF workers.
@@ -108,7 +112,7 @@ async function commitEdits(edits){
 }
 async function rotatePages(items){if(busy||!items.length)return;try{await commitEdits(items.map(page=>({...page,rotation:((page.rotation||0)+90)%360})));}catch(error){status(`旋轉失敗：${error.message}`,true);}}
 $('rotate-selected').onclick=()=>rotatePages(chosen());
-async function addFiles(files){
+async function addFiles(files,{replaceId,insertAt}={}){
   if(busy){toast('請等待目前的處理完成。');return;}files=Array.from(files);if(!files.length)return;setBusy(true);clearResults();const errors=[];let added=0;
   try{for(const file of files){let task,pdf,source,committed=false,password='',cancelled=false;const thumbnails=[];
     try{
@@ -119,13 +123,16 @@ async function addFiles(files){
       if(total+Math.max(file.size,original.length)>MAX_INPUT)throw new Error('圖片轉換後超過工作區 150 MB 上限，請縮小圖片或分批處理');
       task=pdfjs.getDocument({data:original.slice(),cMapUrl:new URL('./vendor/pdfjs/cmaps/',import.meta.url).href,cMapPacked:true,standardFontDataUrl:new URL('./vendor/pdfjs/standard_fonts/',import.meta.url).href,wasmUrl:new URL('./vendor/pdfjs/wasm/',import.meta.url).href,isEvalSupported:false});
       task.onPassword=(callback,reason)=>{askPassword(file.name,reason===pdfjs.PasswordResponses.INCORRECT_PASSWORD).then(value=>{if(value===null){cancelled=true;void task.destroy();}else{password=value;callback(value);}});};
-      pdf=await task.promise;if(pages.length+pdf.numPages>MAX_PAGES)throw new Error('工作區最多 500 頁，請分批處理');
+      pdf=await task.promise;if(pages.length+(replaceId?0:pdf.numPages)>MAX_PAGES)throw new Error('工作區最多 500 頁，請分批處理');
       const doc=await PDFDocument.load(original,{password,updateMetadata:false});password='';
       if(doc.getPageCount()!==pdf.numPages)throw new Error('文件頁數解析不一致，請先重新儲存這份 PDF');
       const form=doc.getForm();if(form.getFields().length)form.flatten({updateFieldAppearances:false});
       const ordinal=++serial;source={id:`s${ordinal}`,ordinal,name:file.name,size:Math.max(file.size,original.length),count:pdf.numPages,doc,pdf,task,color:['#2955df','#0b887c','#a04cab','#bd6b15'][((ordinal-1)%4)]};
-      const newPages=[];for(let index=0;index<pdf.numPages;index++){status(`正在建立 ${file.name} 的縮圖（${index+1} / ${pdf.numPages}）…`);const {blob}=await renderBlob(source,index,72,'jpeg',true);const thumbnail=URL.createObjectURL(blob);thumbnails.push(thumbnail);thumbnailUrls.add(thumbnail);newPages.push({id:`${source.id}-p${index}`,sourceId:source.id,index,thumbnail});}
-      sources.set(source.id,source);pages.push(...newPages);for(const page of newPages)selected.add(page.id);history=[];committed=true;added++;collectWorkspaceResources();drawSources();drawPages();
+      const replacement=replaceId?await operationTools.chooseReplacement(source):null;if(replaceId&&replacement===null){cancelled=true;throw Error('已取消替換');}
+      const indices=replaceId?[replacement]:Array.from({length:pdf.numPages},(_,i)=>i);
+      const newPages=[];for(const index of indices){status(`正在建立 ${file.name} 的縮圖（${index+1} / ${pdf.numPages}）…`);const {blob}=await renderBlob(source,index,72,'jpeg',true);const thumbnail=URL.createObjectURL(blob);thumbnails.push(thumbnail);thumbnailUrls.add(thumbnail);newPages.push({id:replaceId||`${source.id}-p${index}`,sourceId:source.id,index,thumbnail});}
+      if(replaceId||insertAt!==undefined)snapshot();else{history=[];future=[];}
+      sources.set(source.id,source);if(replaceId){const index=pages.findIndex(p=>p.id===replaceId);if(index<0)throw Error('找不到要替換的頁面');pages=pages.map((page,i)=>i===index?newPages[0]:page);}else if(insertAt!==undefined)pages=[...pages.slice(0,insertAt),...newPages,...pages.slice(insertAt)];else pages.push(...newPages);for(const page of newPages)selected.add(page.id);committed=true;added++;collectWorkspaceResources();drawSources();drawPages();
     }catch(error){errors.push(`${file.name}：${cancelled?'已取消加入':error.message||'無法讀取這份文件'}`);}
     finally{password='';if(!committed){for(const url of thumbnails){URL.revokeObjectURL(url);thumbnailUrls.delete(url);}await task?.destroy().catch(()=>{});}}
   }
@@ -141,8 +148,13 @@ $('select-all').onclick=()=>{selected=new Set(pages.map(p=>p.id));clearResults()
 $('apply-range').onclick=()=>{try{const indices=parsePages($('pages').value,pages.length);selected=new Set(indices.map(i=>pages[i-1].id));clearResults();drawPages();status(`已選取 ${indices.length} 頁。`);}catch(error){status(error.message,true);}};
 $('move-selected').onclick=()=>{try{const next=movePages(pages,selected,Number($('move-position').value));snapshot();pages=next;changed();status(`已移動 ${selected.size} 頁，兩種輸出都會使用新順序。`);}catch(error){status(error.message,true);}};
 $('delete-selected').onclick=()=>removePages(selected);
-$('undo').onclick=()=>{if(busy||!history.length)return;const previous=history.pop();pages=previous.pages;selected=previous.selected;changed();status('已復原上一次頁面操作。');};
-$('reset').onclick=async()=>{if(busy)return;setBusy(true);freeLayoutTools?.clear();clearResults();for(const url of thumbnailUrls)URL.revokeObjectURL(url);thumbnailUrls.clear();await Promise.all([...sourceDisposals,...[...sources.values()].map(s=>s.task.destroy().catch(()=>{}))]);await Promise.all([...annotationTasks].map(t=>t.destroy().catch(()=>{})));annotationTasks.clear();annotationCache=new Map();pages=[];selected.clear();sources.clear();history=[];serial=0;$('pages').value='';drawSources();drawPages();workflowTools?.clear();const cleared=await autosaveTools?.clear();status(cleared===false?'已清空畫面，但本機草稿尚未刪除，請在自動儲存區重試。':'已清空工作區與本機草稿。',cleared===false);setBusy(false);};
+$('undo').insertAdjacentHTML('afterend','<button id="redo" class="secondary" disabled title="Ctrl+Shift+Z / Ctrl+Y">重做操作</button>');
+function undo(){if(busy||!history.length)return;future.push({pages:[...pages],selected:new Set(selected)});const previous=history.pop();pages=previous.pages;selected=previous.selected;changed();status('已復原上一次頁面操作。');}
+function redo(){if(busy||!future.length)return;history.push({pages:[...pages],selected:new Set(selected)});const next=future.pop();pages=next.pages;selected=next.selected;changed();status('已重做頁面操作。');}
+$('undo').onclick=undo;$('redo').onclick=redo;
+function duplicatePages(){if(busy||!chosen().length)return;if(pages.length+chosen().length>MAX_PAGES){status('工作區最多 500 頁。',true);return;}snapshot();const copies=[];pages=pages.flatMap(page=>{if(!selected.has(page.id))return[page];const copy={...structuredClone(page),id:crypto.randomUUID()};copies.push(copy.id);return[page,copy];});selected=new Set(copies);changed();status(`已複製 ${copies.length} 頁，可復原。`);}
+
+$('reset').onclick=async()=>{if(busy)return;setBusy(true);freeLayoutTools?.clear();clearResults();for(const url of thumbnailUrls)URL.revokeObjectURL(url);thumbnailUrls.clear();await Promise.all([...sourceDisposals,...[...sources.values()].map(s=>s.task.destroy().catch(()=>{}))]);await Promise.all([...annotationTasks].map(t=>t.destroy().catch(()=>{})));annotationTasks.clear();annotationCache=new Map();pages=[];selected.clear();sources.clear();history=[];future=[];serial=0;$('pages').value='';drawSources();drawPages();workflowTools?.clear();const cleared=await autosaveTools?.clear();status(cleared===false?'已清空畫面，但本機草稿尚未刪除，請在自動儲存區重試。':'已清空工作區與本機草稿。',cleared===false);setBusy(false);};
 function download(blob,name){const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);}
 $('export-pdf').onclick=async()=>{if(busy||!chosen().length)return;setBusy(true);status('正在合併選取的頁面…');try{await new Promise(resolve=>setTimeout(resolve,30));const records=[...chosen()],data=await assemblePdf(records,sources,filename());download(new Blob([data],{type:'application/pdf'}),`${filename()}.pdf`);workflowTools?.markExported(records);status(`已輸出 ${chosen().length} 頁的新 PDF，請查看瀏覽器的下載項目。`);}catch(error){status(`PDF 輸出失敗：${error.message}。工作區已保留，可重試。`,true);}finally{setBusy(false);}};
 
@@ -164,12 +176,12 @@ $('download-all').onclick=async()=>{if(busy||!results.length)return;setBusy(true
 
 // The optional browser tool shares selection and output settings with the UI.
 if(document.modelContext?.registerTool){const lifecycle=new AbortController();window.addEventListener('pagehide',()=>lifecycle.abort(),{once:true});try{Promise.resolve(document.modelContext.registerTool({name:'configure_pdf_image_output',title:'選取頁面與設定圖片輸出',description:'Select current workspace page numbers and configure image resolution and format. Does not start conversion or download.',inputSchema:{type:'object',properties:{dpi:{type:'integer',enum:[150,300,450,600]},format:{type:'string',enum:['png','jpeg']},pages:{type:'string'}},required:['dpi','format','pages'],additionalProperties:false},annotations:{readOnlyHint:false,untrustedContentHint:false},execute(input){if(busy)throw new Error('正在處理檔案。');if(!input||![150,300,450,600].includes(input.dpi)||!['png','jpeg'].includes(input.format)||typeof input.pages!=='string')throw new Error('無效設定。');const indices=parsePages(input.pages,pages.length);selected=new Set(indices.map(i=>pages[i-1].id));$('dpi').value=String(input.dpi);$('format').value=input.format;$('pages').value=input.pages;$('dpi').onchange();clearResults();drawPages();workflowTools?.savePreferences();return{dpi:input.dpi,format:input.format,selectedPages:indices};}},{signal:lifecycle.signal})).catch(()=>{});}catch{}}
-const sharedApi={$,getPages:()=>pages,getSources:()=>sources,getSourcePage,chosen,isBusy:()=>busy,setBusy,status,toast,filename,bytes,renderBlob,pageViewport,commitEdits,updateRecords,download,showImage,markExported:records=>workflowTools?.markExported(records),previewChosen:()=>proofTools.openChosen(),showProof:options=>proofTools.show(options),needsLeaveWarning:fallback=>autosaveTools?.needsWarning(fallback)??fallback,autosaveChanged:()=>autosaveTools?.changed(),hasLayoutDraft:()=>freeLayoutTools?.hasPending()||false,hasEditorDraft:()=>!!(pageTools?.hasDraft?.()||annotationTools?.hasDraft?.()||ocrTools?.hasDraft?.()),addLayoutPiece:record=>freeLayoutTools.addPiece(record),openFreeLayout:()=>$('free-layout').click(),layoutChanged:()=>{collectWorkspaceResources();drawSources();updateControls();}};
+const sharedApi={$,addFiles,duplicatePages,undo,redo,autosave:()=>autosaveTools,validateProject:async value=>{for(const source of value.project.sources){const doc=await PDFDocument.load(await value.documents.get(source.key).arrayBuffer(),{updateMetadata:false});if(doc.getPageCount()!==source.count||doc.isEncrypted)throw Error('專案來源 PDF 不完整或仍有加密。');}},getPages:()=>pages,getSources:()=>sources,getSourcePage,chosen,isBusy:()=>busy,setBusy,status,toast,filename,bytes,renderBlob,pageViewport,commitEdits,updateRecords,download,showImage,markExported:records=>workflowTools?.markExported(records),previewChosen:()=>proofTools.openChosen(),showProof:options=>proofTools.show(options),needsLeaveWarning:fallback=>autosaveTools?.needsWarning(fallback)??fallback,autosaveChanged:()=>autosaveTools?.changed(),hasLayoutDraft:()=>freeLayoutTools?.hasPending()||false,hasEditorDraft:()=>!!(pageTools?.hasDraft?.()||annotationTools?.hasDraft?.()||ocrTools?.hasDraft?.()),addLayoutPiece:record=>freeLayoutTools.addPiece(record),openFreeLayout:()=>$('free-layout').click(),layoutChanged:()=>{collectWorkspaceResources();drawSources();updateControls();}};
 annotationTools=installAnnotations(sharedApi);ocrTools=installOcr(sharedApi);
 impositionTools=installImposition(sharedApi);
 pageTools=installPageTools(sharedApi);
-proofTools=installPdfProof(sharedApi);freeLayoutTools=installFreeLayout(sharedApi);workflowTools=installWorkflow(sharedApi);
-updateControls();
+proofTools=installPdfProof(sharedApi);freeLayoutTools=installFreeLayout(sharedApi);workflowTools=installWorkflow(sharedApi);operationTools=installPageOperations(sharedApi);searchTools=installDocumentSearch(sharedApi);installShortcuts({...sharedApi,annotations:annotationTools,layout:freeLayoutTools,search:searchTools});
+setBusy(true);projectTools=await installProjects(sharedApi);
 
 const restoredAssetUrls=new Map();
 function captureWorkspace(){
@@ -177,7 +189,7 @@ function captureWorkspace(){
   const retained=[...sources.values()].filter(s=>ids.has(s.id));for(const source of retained)source.storageKey??=crypto.randomUUID();
   return {sources:retained,project:{version:1,pages:structuredClone(pages),selected:[...selected],name:$('output-name').value,
     sources:retained.map(s=>({id:s.id,key:s.storageKey,name:s.name,size:s.size,count:s.count,ordinal:s.ordinal})),layout,
-    editor:annotationTools.captureDraft()||pageTools.captureDraft()||ocrTools.captureDraft(),receipts:workflowTools.captureReceipts()}};
+    pageOptions:operationTools.capture(),editor:annotationTools.captureDraft()||pageTools.captureDraft()||ocrTools.captureDraft(),receipts:workflowTools.captureReceipts()}};
 }
 async function serializeSource(source){
   // Copy to a fresh PDF to persist unlocked content without any encryption
@@ -187,7 +199,7 @@ async function serializeSource(source){
 }
 async function restoreWorkspace(project,documents,assets){
   if(project.layout.items.length)validateFreeLayout(project.layout);
-  const previous={pages,sources,selected,history,serial};
+  const previous={pages,sources,selected,history,future,serial};
   const loaded=new Map(),urls=new Map();let adopted=false;
   const asset=key=>{if(!urls.has(key)){if(!assets.get(key))throw Error('草稿縮圖遺失。');const url=URL.createObjectURL(assets.get(key));urls.set(key,url);restoredAssetUrls.set(url,key);}return urls.get(key);};
   const record=page=>{const thumbnail=asset(page.thumbnail);thumbnailUrls.add(thumbnail);return {...page,thumbnail};};
@@ -205,19 +217,19 @@ async function restoreWorkspace(project,documents,assets){
       source.size=Math.max(saved.size||0,data.length);source.color=['#2955df','#0b887c','#a04cab','#bd6b15'][(source.ordinal-1)%4];
     }
     const restoredPages=project.pages.map(record);
-    sources=loaded;pages=restoredPages;selected=new Set(project.selected.filter(id=>pages.some(p=>p.id===id)));serial=Math.max(0,...[...sources.values()].map(s=>s.ordinal));history=[];
-    freeLayoutTools.restore(project.layout,record,asset);$('output-name').value=project.name;workflowTools.restoreReceipts(project.receipts);adopted=true;
+    sources=loaded;pages=restoredPages;selected=new Set(project.selected.filter(id=>pages.some(p=>p.id===id)));serial=Math.max(0,...[...sources.values()].map(s=>s.ordinal));history=[];future=[];
+    freeLayoutTools.restore(project.layout,record,asset);operationTools.restore(project.pageOptions);$('output-name').value=project.name;workflowTools.restoreReceipts(project.receipts);adopted=true;
     drawSources();drawPages();setBusy(false);
     if(project.editor?.kind==='marks')await annotationTools.restoreDraft(project.editor);
     else if(project.editor?.kind==='crop')await pageTools.restoreDraft(project.editor);
     else if(project.editor?.kind==='ocr')await ocrTools.restoreDraft(project.editor);
     else freeLayoutTools.resume(project.layout);
-  }catch(error){if(!adopted){freeLayoutTools.clear();({pages,sources,selected,history,serial}=previous);workflowTools.clear();drawSources();drawPages();for(const source of loaded.values())await source.task.destroy().catch(()=>{});for(const url of urls.values()){URL.revokeObjectURL(url);thumbnailUrls.delete(url);}restoredAssetUrls.clear();}throw error;}
+  }catch(error){if(!adopted){freeLayoutTools.clear();({pages,sources,selected,history,future,serial}=previous);workflowTools.clear();drawSources();drawPages();for(const source of loaded.values())await source.task.destroy().catch(()=>{});for(const url of urls.values()){URL.revokeObjectURL(url);thumbnailUrls.delete(url);}restoredAssetUrls.clear();}throw error;}
 }
 function canCaptureWorkspace(){
   if(!busy)return true;
   for(const [dialog,control]of [['mark-dialog','mark-fields'],['crop-dialog','crop-controls'],['free-dialog','free-controls'],['ocr-dialog','ocr-save']])if($(dialog)?.open)return !$(control).disabled;
   return false;
 }
-autosaveTools=installAutosave({$,capture:captureWorkspace,canCapture:canCaptureWorkspace,serializeSource,restore:restoreWorkspace,restoredAssets:()=>restoredAssetUrls});
+autosaveTools=installAutosave({$,databaseName:projectTools.databaseName,capture:captureWorkspace,canCapture:canCaptureWorkspace,serializeSource,restore:restoreWorkspace,restoredAssets:()=>restoredAssetUrls});
 setBusy(true);await autosaveTools.init();if(!document.querySelector('dialog[open]'))setBusy(false);

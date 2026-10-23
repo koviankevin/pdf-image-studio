@@ -23,7 +23,7 @@ test('crop preview and image download work on page 3 after importing a shorter P
   await expect(page.locator('#crop-status')).toContainText(/792 × 200[01] px/);
 });
 
-test('thumbnail lifetime is bounded by current pages and 30 undo states', async ({page}) => {
+test('thumbnail lifetime is bounded by current pages and 30 undo/redo states', async ({page}) => {
   test.setTimeout(120_000);
   const {sources} = await createFixtures();
   await page.addInitScript(() => {
@@ -46,7 +46,9 @@ test('thumbnail lifetime is bounded by current pages and 30 undo states', async 
     await page.locator('#page-grid img').evaluateAll(imgs=>Promise.all(imgs.map(img=>img.decode())));
   }
   await expect(page.locator('#undo')).toBeDisabled();
-  expect(await page.evaluate(()=>liveImages.size)).toBe(2);
+  // Redo retains the same 30 reachable snapshots until a new edit branches.
+  expect(await page.evaluate(()=>liveImages.size)).toBe(32);
+  await expect(page.locator('#redo')).toBeEnabled();
   await page.locator('#rotate-selected').click();
   await expect(page.locator('#rotate-selected')).toBeEnabled();
   await page.locator('#file-input').setInputFiles(upload(sources.get('B')));

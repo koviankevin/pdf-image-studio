@@ -1,4 +1,4 @@
-import {sheetSize, arrangeItems, composeFreePdf, MM} from './free-layout-core.mjs?v=20261023-autosave';
+import {sheetSize, arrangeItems, composeFreePdf, MM} from './free-layout-core.mjs?v=20261023-projects1';
 
 export function installFreeLayout(api) {
   const {$} = api, NS = 'http://www.w3.org/2000/svg';
@@ -17,22 +17,22 @@ export function installFreeLayout(api) {
         <div class="free-pair"><button id="free-back" class="secondary">往下一層</button><button id="free-front" class="secondary">往上一層</button></div>
         <div class="free-pair"><button id="free-duplicate" class="secondary">複製項目</button><button id="free-delete" class="secondary danger">移除項目</button></div>
       </fieldset>
-      <div class="free-pair"><button id="free-undo" class="secondary">復原版面</button><button id="free-clear" class="secondary">清空版面</button></div>
+      <div class="free-pair"><button id="free-undo" class="secondary">復原版面</button><button id="free-redo" class="secondary">重做版面</button><button id="free-clear" class="secondary">清空版面</button></div>
       <button id="free-preview" class="primary full">預覽並下載 A4 PDF</button>
       <p class="field-hint">可回到原稿「框選／裁切」，把局部加入這張 A4。版面保留加入當時的裁切與標記，最多 30 個項目；開啟自動儲存後可在這台裝置接續編輯。裁切外內容未永久刪除。</p>
     </fieldset><div class="free-preview"><p id="free-sheet-label" class="free-sheet-label"></p><div class="free-desk"><svg id="free-sheet" role="group" aria-label="可拖曳與縮放的 A4 排版紙面" tabindex="0"></svg></div><p id="free-status" class="status" role="status"></p></div></div>
   </dialog>`);
   const dialog = $('free-dialog'), stage = $('free-sheet'), previews = new Map();
-  let items = [], orientation = 'portrait', selected = null, history = [], working = false, drag = null, saved = '';
+  let items = [], orientation = 'portrait', selected = null, history = [], future = [], working = false, drag = null, saved = '';
   const current = () => items.find(item => item.id === selected);
   const layout = () => ({orientation, items: structuredClone(items)});
   const signature = value => JSON.stringify(value);
   const say = (text, error = false) => { $('free-status').textContent = text; $('free-status').classList.toggle('error', error); };
   const round = value => String(Math.round(value * 10) / 10);
   const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
-  function remember() { history.push({items: structuredClone(items), orientation, selected}); if (history.length > 30) history.shift(); }
+  function remember() { future=[]; history.push({items: structuredClone(items), orientation, selected}); if (history.length > 30) history.shift(); }
   function collect() {
-    const live = new Set([items, ...history.map(h => h.items)].flat().map(i => i.id));
+    const live = new Set([items, ...history.map(h => h.items), ...future.map(h => h.items)].flat().map(i => i.id));
     for (const [id, url] of [...previews]) if (!live.has(id)) { previews.delete(id); if (![...previews.values()].includes(url)) URL.revokeObjectURL(url); }
     api.layoutChanged();
   }
@@ -45,7 +45,7 @@ export function installFreeLayout(api) {
     for (const [key, id] of [['x', 'free-x'], ['y', 'free-y'], ['width', 'free-width'], ['height', 'free-height']]) $(id).value = item ? round(item[key]) : '';
     $('free-width').disabled = $('free-height').disabled = item?.type === 'text';
     if (item?.type === 'text') { $('free-text').value = item.text; $('free-font-size').value = item.fontSize; $('free-color').value = item.color; }
-    $('free-undo').disabled = working || !history.length; $('free-preview').disabled = working || !items.length;
+    $('free-undo').disabled = working || !history.length; $('free-redo').disabled = working || !future.length; $('free-preview').disabled = working || !items.length;
     $('free-clear').disabled = $('free-arrange').disabled = working || !items.length;
   }
   function render(sync = true) {
@@ -143,9 +143,10 @@ export function installFreeLayout(api) {
     if (action === 'middle') item.y = (size.height - item.height) / 2; return item;
   });
   $('free-item').onchange = () => { selected = $('free-item').value || null; render(); };
-  function undo() { if (working || !history.length) return; const last = history.pop(); ({items, orientation, selected} = last); $('free-orientation').value = orientation; commit(); say('已復原版面操作。'); }
+  function undo() { if (working || drag || !history.length) return; future.push({items:structuredClone(items),orientation,selected}); const last = history.pop(); ({items, orientation, selected} = last); $('free-orientation').value = orientation; commit(); say('已復原版面操作。'); }
+  function redo() { if(working||drag||!future.length)return;history.push({items:structuredClone(items),orientation,selected});const next=future.pop();({items,orientation,selected}=next);$('free-orientation').value=orientation;commit();say('已重做版面操作。');}
   function remove() { if (!current() || working) return; remember(); items = items.filter(i => i.id !== selected); selected = null; commit(); }
-  $('free-delete').onclick = remove; $('free-undo').onclick = undo;
+  $('free-delete').onclick = remove; $('free-undo').onclick = undo; $('free-redo').onclick=redo;
   $('free-clear').onclick = () => { remember(); items = []; selected = null; commit(); };
   $('free-duplicate').onclick = () => {
     const item = current(); if (!item || working) return; if (items.length >= 30) { say('每張 A4 最多 30 個項目。', true); return; }
@@ -185,7 +186,6 @@ export function installFreeLayout(api) {
     const item = event.target.closest('[data-item]'); if (item) selected = item.dataset.item;
     if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); render(); stage.focus(); }
     if (event.key === 'Delete' || event.key === 'Backspace') { event.preventDefault(); remove(); }
-    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'z') { event.preventDefault(); undo(); }
     const step = event.shiftKey ? 5 : 1, delta = {ArrowLeft: [-step, 0], ArrowRight: [step, 0], ArrowUp: [0, -step], ArrowDown: [0, step]}[event.key];
     if (delta) { event.preventDefault(); edit(i => ({...i, x: i.x + delta[0], y: i.y + delta[1]})); stage.focus(); }
   });
@@ -199,17 +199,18 @@ export function installFreeLayout(api) {
   dialog.addEventListener('close', () => { drag = null; api.setBusy(false); });
   $('free-layout').onclick = () => { if (open() && !items.length) void addRecords(api.chosen()); };
   return {
+    undo,redo,
     capture() { return {...layout(), selected, exported:signature(layout())===saved, open:dialog.open, fieldChanges:current()?['x','y','width','height'].filter(key=>$('free-'+key).value!==round(current()[key])).map(key=>'free-'+key).concat(current().type==='text'?['free-text','free-font-size','free-color'].filter(id=>$(id).value!==String(id==='free-text'?current().text:id==='free-font-size'?current().fontSize:current().color)):[]):[], fields:dialog.open&&current()?Object.fromEntries(['free-x','free-y','free-width','free-height','free-text','free-font-size','free-color'].map(id=>[id,$(id).value])):null, items:structuredClone(items).map(item=>item.type==='page'?{...item,preview:previews.get(item.id)}:item)}; },
-    restore(value,record,asset) { items=value.items.map(item=>item.type==='page'?{...item,record:record(item.record)}:item);for(const item of value.items)if(item.type==='page')previews.set(item.id,asset(item.preview));orientation=value.orientation;selected=items.some(item=>item.id===value.selected)?value.selected:null;history=[];$('free-orientation').value=orientation;saved=value.exported?signature(layout()):'';render(); },
-    resume(value) { if(value.open&&open()&&value.fields){for(const id of value.fieldChanges||[])if(['free-x','free-y','free-width','free-height','free-text','free-font-size','free-color'].includes(id)){$(id).value=value.fields[id];$(id).dispatchEvent(new Event('change'));}history=[];} },
+    restore(value,record,asset) { items=value.items.map(item=>item.type==='page'?{...item,record:record(item.record)}:item);for(const item of value.items)if(item.type==='page')previews.set(item.id,asset(item.preview));orientation=value.orientation;selected=items.some(item=>item.id===value.selected)?value.selected:null;history=[];future=[];$('free-orientation').value=orientation;saved=value.exported?signature(layout()):'';render(); },
+    resume(value) { if(value.open&&open()&&value.fields){for(const id of value.fieldChanges||[])if(['free-x','free-y','free-width','free-height','free-text','free-font-size','free-color'].includes(id)){$(id).value=value.fields[id];$(id).dispatchEvent(new Event('change'));}history=[];future=[];} },
     refresh() { $('free-layout').disabled = api.isBusy() || !items.length && !api.chosen().length; },
-    retainedRecords: () => [items, ...history.map(h => h.items)].flat().filter(i => i.type === 'page').map(i => i.record),
+    retainedRecords: () => [items, ...history.map(h => h.items), ...future.map(h => h.items)].flat().filter(i => i.type === 'page').map(i => i.record),
     hasPending: () => {
       if (items.length > 0 && signature(layout()) !== saved) return true;
       const item = current(); if (!dialog.open || !item) return false;
       return ['x','y','width','height'].some(key => $('free-'+key).value !== round(item[key])) || item.type === 'text' && ($('free-text').value !== item.text || Number($('free-font-size').value) !== item.fontSize || $('free-color').value !== item.color);
     },
     addPiece(record) { if (open()) void addRecords([record]); },
-    clear() { items = []; history = []; selected = null; orientation = 'portrait'; saved = ''; for (const url of previews.values()) URL.revokeObjectURL(url); previews.clear(); $('free-orientation').value = orientation; render(); },
+    clear() { items = []; history = []; future=[]; selected = null; orientation = 'portrait'; saved = ''; for (const url of previews.values()) URL.revokeObjectURL(url); previews.clear(); $('free-orientation').value = orientation; render(); },
   };
 }
