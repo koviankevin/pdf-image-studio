@@ -18,7 +18,8 @@ concurrency:
 jobs:
   regression:
     name: Node and Chromium regression
-    runs-on: ubuntu-latest
+    # Match the OS supported by the pinned Playwright browser packages.
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v6
@@ -79,7 +80,7 @@ jobs:
 
   compatibility:
     name: Compatibility (${{ matrix.browser }})
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     strategy:
       fail-fast: false
