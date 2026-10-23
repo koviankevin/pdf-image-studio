@@ -1,5 +1,5 @@
 import {openProjectCatalog,projectDB} from './project-catalog.mjs';
-import {openDraftStore} from './draft-store.mjs?v=20261023-projects1';
+import {openDraftStore} from './draft-store.mjs?v=20261023-projects2';
 import {packProject,unpackProject} from './project-files.mjs';
 
 export async function installProjects(api){
@@ -15,8 +15,15 @@ export async function installProjects(api){
   }
   async function list(){const value=await catalog.read();items=value.projects;const selected=$('project-list').value||active;$('project-list').replaceChildren();for(const item of items){const option=new Option(`${item.name}${item.id===active?'（目前）':''}`,item.id);$('project-list').add(option);}$('project-list').value=items.some(p=>p.id===selected)?selected:active;const current=items.find(p=>p.id===active);$('project-name').value=current?.name||'工作區';$('project-badge').textContent=current?.name||'工作區';$('project-current').textContent=`目前：${current?.name||'工作區'} · ${items.length} / 20 個工作區`;refresh();}
   async function perform(action){if(working||api.isBusy())return;working=true;api.setBusy(true);refresh();try{await action();}catch(error){say(error.message,true);}finally{if(!navigating){working=false;api.setBusy(false);refresh();}}}
-  async function switchTo(id){await catalog.activate(id);navigating=true;api.autosave().navigate();location.reload();}
-  try{catalog=await openProjectCatalog();const value=await catalog.read();active=value.active;await catalog.activate(active);await list();}catch(error){say(`工作區清單暫時無法使用：${error.message}`,true);}
+  function reloadCurrent(){navigating=true;api.autosave()?.navigate();location.reload();}
+  async function switchTo(id){await catalog.activate(id);reloadCurrent();}
+  try{
+    catalog=await openProjectCatalog();
+    for(let attempt=0;attempt<3;attempt++){
+      try{const value=await catalog.read();active=value.active;await catalog.activate(active);await list();break;}
+      catch(error){if(attempt===2)throw error;}
+    }
+  }catch(error){catalog?.close();catalog=null;active=null;say(`工作區清單暫時無法使用：${error.message}。本次無法自動儲存，請下載文件或專案備份。`,true);}
   $('project-list').onchange=refresh;
   $('project-rename').onclick=()=>perform(async()=>{await catalog.rename(active,$('project-name').value);await list();say('工作區名稱已儲存。');});
   $('project-new').onclick=()=>perform(async()=>{await api.autosave().saveNow(true);const id=await catalog.add('未命名工作區');await switchTo(id);});
@@ -30,5 +37,5 @@ export async function installProjects(api){
     try{await store.write(0,value.project,value.documents,value.assets);}catch(error){store.close();await catalog.remove(id);throw error;}finally{store.close();}
     await switchTo(id);
   }).finally(()=>{$('project-file').value='';});};
-  refresh();return {databaseName:projectDB(active),refresh,active};
+  refresh();return {databaseName:catalog?projectDB(active):null,refresh,active,reloadCurrent,isNavigating:()=>navigating,async verifyActive(){if(!catalog)return false;const value=await catalog.read();return value.projects.some(item=>item.id===active&&!item.deleting);}};
 }

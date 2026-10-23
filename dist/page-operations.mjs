@@ -11,7 +11,7 @@ export function installPageOperations(api){
   $('replacement-cancel').onclick=()=>finish(null);$('replacement-use').onclick=()=>finish(Number($('replacement-index').value));
   $('replacement-dialog').addEventListener('cancel',event=>{event.preventDefault();finish(null);});
   $('duplicate-pages').onclick=()=>api.duplicatePages();
-  $('insert-blank').onclick=async()=>{if(api.isBusy())return;const landscape=$('blank-orientation').value==='landscape',document=await PDFDocument.create();document.addPage(landscape?[841.89,595.28]:[595.28,841.89]);const selected=api.chosen(),position=selected.length?api.getPages().indexOf(selected.at(-1))+1:api.getPages().length;await api.addFiles([new File([await document.save()],'空白頁.pdf',{type:'application/pdf'})],{insertAt:position});};
+  $('insert-blank').onclick=async()=>{if(api.isBusy())return;const landscape=$('blank-orientation').value==='landscape',selected=api.chosen(),position=selected.length?api.getPages().indexOf(selected.at(-1))+1:api.getPages().length;await api.addFiles(async()=>{const document=await PDFDocument.create();document.addPage(landscape?[841.89,595.28]:[595.28,841.89]);return [new File([await document.save()],'空白頁.pdf',{type:'application/pdf'})];},{insertAt:position});};
   $('replace-page').onclick=()=>$('replace-file').click();
   $('replace-file').onchange=async()=>{const file=$('replace-file').files[0],selected=api.chosen();$('replace-file').value='';if(file&&selected.length===1)await api.addFiles([file],{replaceId:selected[0].id});};
   const date=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;};

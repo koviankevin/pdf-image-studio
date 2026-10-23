@@ -1,4 +1,4 @@
-import {openDraftStore, validateDraft, validateDraftMetadata, DraftConflict} from './draft-store.mjs?v=20261023-projects1';
+import {openDraftStore, validateDraft, validateDraftMetadata, DraftConflict} from './draft-store.mjs?v=20261023-projects2';
 
 export function installAutosave(api) {
   const {$} = api, preference = 'shijian.autosave.enabled';
@@ -135,7 +135,10 @@ export function installAutosave(api) {
     },
     async init() {
       try {
+        if(api.databaseName===null)throw Error('工作區清單無法使用，本次不會建立草稿。');
         store = await openDraftStore(globalThis.indexedDB, api.databaseName,()=>{unavailable=true;generation++;failed=true;conflict=true;dirty=true;clearTimeout(timer);say(unavailableMessage,true);controls();}); const saved = await store.read(); if(unavailable)throw Error(unavailableMessage); revision = saved.revision; hasStored = !!saved.project;
+        // The catalog may change while this tab is opening its document database.
+        if(api.isWorkspaceValid&&!await api.isWorkspaceValid()){store.close();store=null;paused=true;api.onWorkspaceMissing();return;}
         if (!enabled) { if (hasStored) { revision = await store.write(revision, null); hasStored = false; } if(unavailable)throw Error(unavailableMessage); say('自動儲存已關閉。'); return; }
         if (saved.project) {
           validateDraft(saved.project, saved.documents, saved.assets);

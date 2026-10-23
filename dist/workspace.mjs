@@ -2,21 +2,21 @@ import * as pdfjs from './vendor/pdfjs/pdf.mjs';
 import {PDFDocument} from './vendor/pdf-lib/pdf-lib.mjs';
 import {zipSync} from './vendor/fflate/fflate.mjs';
 import {parsePages,withDensity,dimensions} from './utils.mjs';
-import {movePages,assemblePdf,viewportCrop} from './editor-core.mjs?v=20261023-projects1';
-import {installPageTools} from './page-tools.mjs?v=20261023-projects1';
-import {installAnnotations} from './annotation-tools.mjs?v=20261023-projects1';
-import {installOcr} from './ocr-tools.mjs?v=20261023-projects1';
+import {movePages,assemblePdf,viewportCrop} from './editor-core.mjs?v=20261023-projects2';
+import {installPageTools} from './page-tools.mjs?v=20261023-projects2';
+import {installAnnotations} from './annotation-tools.mjs?v=20261023-projects2';
+import {installOcr} from './ocr-tools.mjs?v=20261023-projects2';
 import {imageToPdf} from './document-model.mjs';
-import {installImposition} from './imposition-tools.mjs?v=20261023-projects1';
-import {installWorkflow} from './workflow-tools.mjs?v=20261023-projects1';
-import {installPdfProof} from './pdf-proof.mjs?v=20261023-projects1';
-import {installFreeLayout} from './free-layout-tools.mjs?v=20261023-projects1';
-import {installAutosave} from './autosave-tools.mjs?v=20261023-projects1';
-import {installProjects} from './project-tools.mjs';
-import {installDocumentSearch} from './document-search.mjs';
-import {installPageOperations} from './page-operations.mjs';
+import {installImposition} from './imposition-tools.mjs?v=20261023-projects2';
+import {installWorkflow} from './workflow-tools.mjs?v=20261023-projects2';
+import {installPdfProof} from './pdf-proof.mjs?v=20261023-projects2';
+import {installFreeLayout} from './free-layout-tools.mjs?v=20261023-projects2';
+import {installAutosave} from './autosave-tools.mjs?v=20261023-projects2';
+import {installProjects} from './project-tools.mjs?v=20261023-projects2';
+import {installDocumentSearch} from './document-search.mjs?v=20261023-projects2';
+import {installPageOperations} from './page-operations.mjs?v=20261023-projects2';
 import {installShortcuts} from './keyboard-shortcuts.mjs';
-import {validateFreeLayout} from './free-layout-core.mjs?v=20261023-projects1';
+import {validateFreeLayout} from './free-layout-core.mjs?v=20261023-projects2';
 
 pdfjs.GlobalWorkerOptions.workerSrc=new URL('./vendor/pdfjs/pdf.worker.mjs',import.meta.url).href;
 const $=id=>document.getElementById(id);
@@ -113,8 +113,8 @@ async function commitEdits(edits){
 async function rotatePages(items){if(busy||!items.length)return;try{await commitEdits(items.map(page=>({...page,rotation:((page.rotation||0)+90)%360})));}catch(error){status(`旋轉失敗：${error.message}`,true);}}
 $('rotate-selected').onclick=()=>rotatePages(chosen());
 async function addFiles(files,{replaceId,insertAt}={}){
-  if(busy){toast('請等待目前的處理完成。');return;}files=Array.from(files);if(!files.length)return;setBusy(true);clearResults();const errors=[];let added=0;
-  try{for(const file of files){let task,pdf,source,committed=false,password='',cancelled=false;const thumbnails=[];
+  if(busy){toast('請等待目前的處理完成。');return;}if(typeof files!=='function'){files=Array.from(files);if(!files.length)return;}setBusy(true);clearResults();const errors=[];let added=0;
+  try{files=Array.from(typeof files==='function'?await files():files);for(const file of files){let task,pdf,source,committed=false,password='',cancelled=false;const thumbnails=[];
     try{
       const isImage=/\.(png|jpe?g)$/i.test(file.name)||['image/png','image/jpeg'].includes(file.type);
       if(!isImage&&!/\.pdf$/i.test(file.name)&&file.type!=='application/pdf')throw new Error('請加入 PDF、JPG 或 PNG 檔案');
@@ -137,7 +137,7 @@ async function addFiles(files,{replaceId,insertAt}={}){
     finally{password='';if(!committed){for(const url of thumbnails){URL.revokeObjectURL(url);thumbnailUrls.delete(url);}await task?.destroy().catch(()=>{});}}
   }
   status(`已加入 ${added} 份檔案，共 ${pages.length} 頁。${errors.length?'\n'+errors.join('\n'):'可調整頁序，或直接選擇輸出方式。'}`,errors.length>0);
-  }finally{$('file-input').value='';setBusy(false);}
+  }catch(error){status(`加入失敗：${error.message}。工作區仍保留。`,true);}finally{$('file-input').value='';setBusy(false);}
 }
 $('file-input').addEventListener('change',event=>addFiles(event.target.files));
 $('dropzone').addEventListener('keydown',event=>{if((event.key==='Enter'||event.key===' ')&&!busy){event.preventDefault();$('file-input').click();}});
@@ -231,5 +231,5 @@ function canCaptureWorkspace(){
   for(const [dialog,control]of [['mark-dialog','mark-fields'],['crop-dialog','crop-controls'],['free-dialog','free-controls'],['ocr-dialog','ocr-save']])if($(dialog)?.open)return !$(control).disabled;
   return false;
 }
-autosaveTools=installAutosave({$,databaseName:projectTools.databaseName,capture:captureWorkspace,canCapture:canCaptureWorkspace,serializeSource,restore:restoreWorkspace,restoredAssets:()=>restoredAssetUrls});
-setBusy(true);await autosaveTools.init();if(!document.querySelector('dialog[open]'))setBusy(false);
+autosaveTools=installAutosave({$,databaseName:projectTools.databaseName,isWorkspaceValid:()=>projectTools.verifyActive(),onWorkspaceMissing:()=>projectTools.reloadCurrent(),capture:captureWorkspace,canCapture:canCaptureWorkspace,serializeSource,restore:restoreWorkspace,restoredAssets:()=>restoredAssetUrls});
+setBusy(true);await autosaveTools.init();if(!projectTools.isNavigating()&&!document.querySelector('dialog[open]'))setBusy(false);

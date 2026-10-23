@@ -1,5 +1,5 @@
 import {zipSync, unzipSync, strToU8, strFromU8} from './vendor/fflate/fflate.mjs';
-import {validateDraft} from './draft-store.mjs?v=20261023-projects1';
+import {validateDraft} from './draft-store.mjs?v=20261023-projects2';
 import {validateFreeLayout} from './free-layout-core.mjs';
 
 const LIMIT = 250 * 1024 * 1024, MANIFEST_LIMIT = 20 * 1024 * 1024;

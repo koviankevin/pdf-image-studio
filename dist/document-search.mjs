@@ -1,3 +1,4 @@
+import {textItemBounds} from './text-geometry.mjs?v=20261023-projects2';
 const normalize=text=>text.normalize('NFKC').toLocaleLowerCase().replace(/\s+/g,'');
 export function installDocumentSearch(api){
   const {$}=api;
@@ -11,8 +12,8 @@ export function installDocumentSearch(api){
       const source=api.getSources().get(record.sourceId);if(!source)return '';
       const page=await api.getSourcePage(source,record.index),content=await page.getTextContent();
       return [...content.items.filter(item=>{
-        if(!record.crop)return true;const {x,y,width,height}=record.crop,px=item.transform[4],py=item.transform[5];
-        return px+(item.width||0)>=x&&px<=x+width&&py+(item.height||0)>=y&&py<=y+height;
+        if(!item.str)return false;if(!record.crop)return true;const {x,y,width,height}=record.crop,bounds=textItemBounds(item);
+        return bounds&&bounds.right>=x&&bounds.left<=x+width&&bounds.bottom>=y&&bounds.top<=y+height;
       }).map(item=>item.str),...added].join(' ');
     })();cache.set(record,promise);try{return await promise;}catch(error){cache.delete(record);throw error;}
   }

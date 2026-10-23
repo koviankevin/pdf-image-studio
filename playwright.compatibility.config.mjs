@@ -11,6 +11,7 @@ export default defineConfig(regression, {
     'browser/workflow.spec.mjs',
     'browser/autosave.spec.mjs',
     'browser/productivity.spec.mjs',
+    'browser/productivity-regression.spec.mjs',
     'compatibility/*.spec.mjs',
   ],
   grep: /@compatibility/,

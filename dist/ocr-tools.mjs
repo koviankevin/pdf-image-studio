@@ -1,3 +1,4 @@
+import {textItemBounds} from './text-geometry.mjs?v=20261023-projects2';
 import {inverse,multiply,transformPoint} from './document-model.mjs';
 import {recognizeTwoColumns} from './ocr-columns.mjs';
 
@@ -8,9 +9,7 @@ export function installOcr(api){
   async function nativeText(source,page,viewport){
     const pdfPage=await api.getSourcePage(source,page.index),content=await pdfPage.getTextContent();
     const lines=[];
-    for(const item of content.items){if(!item.str?.trim())continue;const [a,b,c,d,x,y]=item.transform,w=Math.max(1,item.width),h=Math.max(1,item.height||Math.hypot(c,d)),u=Math.hypot(a,b)||1,v=Math.hypot(c,d)||1;
-      const corners=[[x,y],[x+a/u*w,y+b/u*w],[x+c/v*h,y+d/v*h],[x+a/u*w+c/v*h,y+b/u*w+d/v*h]].map(p=>transformPoint(viewport.transform,...p));
-      const left=Math.min(...corners.map(p=>p[0])),top=Math.min(...corners.map(p=>p[1])),right=Math.max(...corners.map(p=>p[0])),bottom=Math.max(...corners.map(p=>p[1]));
+    for(const item of content.items){if(!item.str?.trim())continue;const bounds=textItemBounds(item,viewport.transform);if(!bounds)continue;const {left,top,right,bottom}=bounds;
       if(right<0||left>viewport.width||bottom<0||top>viewport.height)continue;
       lines.push({text:item.str,x:left,y:top,width:Math.max(1,right-left),height:Math.max(1,bottom-top),confidence:100});
     }
