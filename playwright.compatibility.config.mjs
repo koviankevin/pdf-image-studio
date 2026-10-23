@@ -8,6 +8,7 @@ export default defineConfig(regression, {
     'browser/imposition.spec.mjs',
     'browser/resource-lifecycle.spec.mjs',
     'browser/safety-performance.spec.mjs',
+    'browser/workflow.spec.mjs',
     'compatibility/*.spec.mjs',
   ],
   grep: /@compatibility/,

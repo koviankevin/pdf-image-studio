@@ -1,0 +1,198 @@
+import {sheetSize, arrangeItems, composeFreePdf, MM} from './free-layout-core.mjs';
+
+export function installFreeLayout(api) {
+  const {$} = api, NS = 'http://www.w3.org/2000/svg';
+  document.body.insertAdjacentHTML('beforeend', `<dialog id="free-dialog" class="work-dialog free-dialog" aria-labelledby="free-title">
+    <div class="preview-header"><div><h2 id="free-title">A4 自由排版</h2><p>拖曳安排一張 A4；右下角可等比例縮放，也可輸入毫米精確調整。</p></div><button id="free-close" class="secondary">關閉</button></div>
+    <div class="free-layout"><fieldset id="free-controls"><legend class="sr-only">自由排版設定</legend>
+      <label class="field-label" for="free-orientation">紙張方向</label><select id="free-orientation"><option value="portrait">A4 直式</option><option value="landscape">A4 橫式</option></select>
+      <label class="field-label" for="free-source">加入工作區頁面</label><select id="free-source"></select><div class="free-pair"><button id="free-add-page" class="secondary">加入這頁</button><button id="free-add-selected" class="secondary">加入勾選頁</button></div>
+      <div class="free-pair"><button id="free-add-title" class="secondary">加入標題</button><button id="free-arrange" class="secondary">自動排齊</button></div>
+      <label class="field-label" for="free-item">選取版面項目</label><select id="free-item"></select>
+      <fieldset id="free-inspector"><legend class="sr-only">選取項目的屬性</legend>
+        <div class="free-coordinates"><label>左側 mm<input id="free-x" type="number" min="0" step=".1"></label><label>上方 mm<input id="free-y" type="number" min="0" step=".1"></label><label>寬度 mm<input id="free-width" type="number" min="1" step=".1"></label><label>高度 mm<input id="free-height" type="number" min="1" step=".1"></label></div>
+        <p class="field-hint">頁面保持原始比例。選中紙面項目後，可用方向鍵移動；Shift 加方向鍵每次移動 5 mm。</p>
+        <div class="free-align" role="group" aria-label="項目對齊"><button class="secondary" data-align="left">靠左</button><button class="secondary" data-align="center">水平置中</button><button class="secondary" data-align="right">靠右</button><button class="secondary" data-align="top">靠上</button><button class="secondary" data-align="middle">垂直置中</button><button class="secondary" data-align="bottom">靠下</button></div>
+        <div id="free-text-fields" hidden><label class="field-label" for="free-text">標題文字（最多 4 行）</label><textarea id="free-text" rows="3" maxlength="200"></textarea><div class="free-coordinates"><label>字級 pt<input id="free-font-size" type="number" min="6" max="72" value="22"></label><label>文字顏色<input id="free-color" type="color" value="#302f2b"></label></div></div>
+        <div class="free-pair"><button id="free-back" class="secondary">往下一層</button><button id="free-front" class="secondary">往上一層</button></div>
+        <div class="free-pair"><button id="free-duplicate" class="secondary">複製項目</button><button id="free-delete" class="secondary danger">移除項目</button></div>
+      </fieldset>
+      <div class="free-pair"><button id="free-undo" class="secondary">復原版面</button><button id="free-clear" class="secondary">清空版面</button></div>
+      <button id="free-preview" class="primary full">預覽並下載 A4 PDF</button>
+      <p class="field-hint">可回到原稿「框選／裁切」，把局部加入這張 A4。版面保留加入當時的裁切與標記，最多 30 個項目；只保留在這次工作階段。裁切外內容未永久刪除。</p>
+    </fieldset><div class="free-preview"><p id="free-sheet-label" class="free-sheet-label"></p><div class="free-desk"><svg id="free-sheet" role="group" aria-label="可拖曳與縮放的 A4 排版紙面" tabindex="0"></svg></div><p id="free-status" class="status" role="status"></p></div></div>
+  </dialog>`);
+  const dialog = $('free-dialog'), stage = $('free-sheet'), previews = new Map();
+  let items = [], orientation = 'portrait', selected = null, history = [], working = false, drag = null, saved = '';
+  const current = () => items.find(item => item.id === selected);
+  const layout = () => ({orientation, items: structuredClone(items)});
+  const signature = value => JSON.stringify(value);
+  const say = (text, error = false) => { $('free-status').textContent = text; $('free-status').classList.toggle('error', error); };
+  const round = value => String(Math.round(value * 10) / 10);
+  const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
+  function remember() { history.push({items: structuredClone(items), orientation, selected}); if (history.length > 30) history.shift(); }
+  function collect() {
+    const live = new Set([items, ...history.map(h => h.items)].flat().map(i => i.id));
+    for (const [id, url] of [...previews]) if (!live.has(id)) { previews.delete(id); if (![...previews.values()].includes(url)) URL.revokeObjectURL(url); }
+    api.layoutChanged();
+  }
+  const node = (tag, attrs = {}) => { const el = document.createElementNS(NS, tag); for (const [key, value] of Object.entries(attrs)) el.setAttribute(key, String(value)); return el; };
+  function label(item, index) { return item.type === 'text' ? `${index + 1}. 標題：${item.text.slice(0, 18)}` : `${index + 1}. ${api.getSources().get(item.record.sourceId)?.name || '來源頁面'} · 原第 ${item.record.index + 1} 頁${item.record.crop ? '（框選）' : ''}`; }
+  function inspector() {
+    const item = current(); $('free-item').replaceChildren(new Option('點選紙面項目', ''));
+    items.forEach((item, i) => $('free-item').add(new Option(label(item, i), item.id))); $('free-item').value = selected || '';
+    $('free-inspector').disabled = working || !item; $('free-text-fields').hidden = item?.type !== 'text';
+    for (const [key, id] of [['x', 'free-x'], ['y', 'free-y'], ['width', 'free-width'], ['height', 'free-height']]) $(id).value = item ? round(item[key]) : '';
+    $('free-width').disabled = $('free-height').disabled = item?.type === 'text';
+    if (item?.type === 'text') { $('free-text').value = item.text; $('free-font-size').value = item.fontSize; $('free-color').value = item.color; }
+    $('free-undo').disabled = working || !history.length; $('free-preview').disabled = working || !items.length;
+    $('free-clear').disabled = $('free-arrange').disabled = working || !items.length;
+  }
+  function render(sync = true) {
+    const size = sheetSize(orientation); stage.setAttribute('viewBox', `0 0 ${size.width} ${size.height}`);
+    stage.style.aspectRatio = `${size.width}/${size.height}`; $('free-sheet-label').textContent = `A4 · ${size.width} × ${size.height} mm · ${items.length} 個項目`;
+    const fragment = document.createDocumentFragment();
+    items.forEach((item, index) => {
+      const group = node('g', {'data-item': item.id, tabindex: 0, role: 'button', 'aria-label': label(item, index), 'aria-pressed': item.id === selected});
+      group.append(node('rect', {x: item.x, y: item.y, width: item.width, height: item.height, fill: 'transparent'}));
+      if (item.type === 'page') group.append(node('image', {href: previews.get(item.id) || '', x: item.x, y: item.y, width: item.width, height: item.height, preserveAspectRatio: 'xMidYMid meet', 'pointer-events': 'none'}));
+      else {
+        const text = node('text', {x: item.x, y: item.y + item.fontSize / MM, fill: item.color, 'font-family': 'PDFChinese, sans-serif', 'font-size': item.fontSize / MM, 'pointer-events': 'none'});
+        item.text.split('\n').forEach((line, i) => { const span = node('tspan', {x: item.x, dy: i ? item.fontSize / MM * 1.3 : 0}); span.textContent = line; text.append(span); }); group.append(text);
+      }
+      if (selected === item.id) {
+        group.append(node('rect', {x: item.x, y: item.y, width: item.width, height: item.height, fill: 'none', stroke: '#3b5685', 'stroke-width': 1.5, 'vector-effect': 'non-scaling-stroke', 'pointer-events': 'none'}));
+        if (item.type === 'page') group.append(node('rect', {'data-resize': 'true', x: item.x + item.width - 3, y: item.y + item.height - 3, width: 6, height: 6, rx: 1, fill: '#3b5685'}));
+      }
+      fragment.append(group);
+    });
+    stage.replaceChildren(fragment); if (sync) inspector();
+  }
+  function commit() { render(); collect(); }
+  function setWorking(value) { working = value; $('free-controls').disabled = value; $('free-close').disabled = value; stage.classList.toggle('working', value); inspector(); }
+  function sourceChoices() {
+    $('free-source').replaceChildren(); api.getPages().forEach((record, index) => $('free-source').add(new Option(`第 ${index + 1} 頁 · ${api.getSources().get(record.sourceId)?.name || ''}`, record.id)));
+    $('free-add-page').disabled = !api.getPages().length; $('free-add-selected').disabled = !api.chosen().length;
+  }
+  function open() {
+    if (api.isBusy()) return false;
+    api.setBusy(true); sourceChoices(); dialog.showModal(); render(); say('拖曳移動項目；右下角方塊可等比例縮放。先選項目，再使用左側對齊與位置設定。'); return true;
+  }
+  async function addRecords(records) {
+    if (!records.length) return;
+    if (items.length + records.length > 30) { say('每張 A4 最多 30 個項目，請減少勾選頁面。', true); return; }
+    remember(); setWorking(true);
+    try {
+      for (const record of records) {
+        say(`正在加入版面（${items.length + 1} 個項目）…`);
+        const source = api.getSources().get(record.sourceId), viewport = await api.pageViewport(source, record);
+        const rendered = await api.renderBlob(source, record.index, 96, 'jpeg', false, record, {maxEdge: 1000, quality: .9});
+        const id = crypto.randomUUID(), width = Math.min(80, 100 * viewport.width / viewport.height);
+        previews.set(id, URL.createObjectURL(rendered.blob)); items.push({id, type: 'page', record: structuredClone(record), x: 10, y: 10, width, height: width * viewport.height / viewport.width}); selected = id;
+      }
+      items = arrangeItems(items, orientation); say('已加入。可自由調整；「預覽並下載」會顯示實際 PDF。');
+    } catch (error) { say(`無法加入：${error.message}`, true); }
+    finally { setWorking(false); sourceChoices(); commit(); }
+  }
+  function titleGeometry(item) {
+    const canvas = document.createElement('canvas'), ctx = canvas.getContext('2d'); ctx.font = `${item.fontSize}px PDFChinese`;
+    return {...item, width: Math.max(1, ...item.text.split('\n').map(line => ctx.measureText(line).width / MM)), height: item.text.split('\n').length * item.fontSize / MM * 1.3};
+  }
+  async function addTitle() {
+    if (items.length >= 30) { say('每張 A4 最多 30 個項目。', true); return; }
+    setWorking(true);
+    try { await document.fonts.load('22px PDFChinese'); remember(); const item = titleGeometry({id: crypto.randomUUID(), type: 'text', text: '在這裡輸入標題', fontSize: 22, color: '#302f2b', x: 10, y: 10}); items.push(item); selected = item.id; say('在左側修改標題、字級與顏色；可拖曳移動標題。'); }
+    catch (error) { say(`無法加入標題：${error.message}`, true); }
+    finally { setWorking(false); commit(); }
+  }
+  function edit(change) {
+    const item = current(); if (!item || working) return;
+    try {
+      const next = change({...item}), size = sheetSize(orientation);
+      if (![next.x, next.y, next.width, next.height].every(Number.isFinite) || Math.min(next.width, next.height) < 1 || next.width > size.width || next.height > size.height) throw new Error('尺寸超出 A4，請縮小項目。');
+      next.x = clamp(next.x, 0, size.width - next.width); next.y = clamp(next.y, 0, size.height - next.height);
+      remember(); items = items.map(i => i.id === next.id ? next : i); commit();
+    } catch (error) { say(error.message, true); inspector(); }
+  }
+  for (const key of ['x', 'y', 'width', 'height']) $(`free-${key}`).onchange = () => edit(item => {
+    const value = Number($(`free-${key}`).value); if ($(`free-${key}`).value === '') throw new Error('請輸入位置或尺寸。');
+    if (key === 'width') item.height *= value / item.width; if (key === 'height') item.width *= value / item.height; item[key] = value; return item;
+  });
+  for (const id of ['free-text', 'free-font-size', 'free-color']) $(id).onchange = () => edit(item => {
+    const text = $('free-text').value, fontSize = Number($('free-font-size').value);
+    if (!text.trim() || text.length > 200 || text.split('\n').length > 4 || !Number.isFinite(fontSize) || fontSize < 6 || fontSize > 72) throw new Error('標題最多 200 字、4 行，字級須為 6 至 72 pt。');
+    return titleGeometry({...item, text, fontSize, color: $('free-color').value});
+  });
+  for (const control of dialog.querySelectorAll('[data-align]')) control.onclick = () => edit(item => {
+    const size = sheetSize(orientation), action = control.dataset.align;
+    if (action === 'left') item.x = Math.min(10, size.width - item.width);
+    if (action === 'right') item.x = Math.max(0, size.width - item.width - 10);
+    if (action === 'center') item.x = (size.width - item.width) / 2;
+    if (action === 'top') item.y = Math.min(10, size.height - item.height);
+    if (action === 'bottom') item.y = Math.max(0, size.height - item.height - 10);
+    if (action === 'middle') item.y = (size.height - item.height) / 2; return item;
+  });
+  $('free-item').onchange = () => { selected = $('free-item').value || null; render(); };
+  function undo() { if (working || !history.length) return; const last = history.pop(); ({items, orientation, selected} = last); $('free-orientation').value = orientation; commit(); say('已復原版面操作。'); }
+  function remove() { if (!current() || working) return; remember(); items = items.filter(i => i.id !== selected); selected = null; commit(); }
+  $('free-delete').onclick = remove; $('free-undo').onclick = undo;
+  $('free-clear').onclick = () => { remember(); items = []; selected = null; commit(); };
+  $('free-duplicate').onclick = () => {
+    const item = current(); if (!item || working) return; if (items.length >= 30) { say('每張 A4 最多 30 個項目。', true); return; }
+    remember(); const size = sheetSize(orientation), copy = {...structuredClone(item), id: crypto.randomUUID(), x: Math.min(size.width - item.width, item.x + 5), y: Math.min(size.height - item.height, item.y + 5)};
+    if (previews.has(item.id)) previews.set(copy.id, previews.get(item.id));
+    items.push(copy); selected = copy.id; commit();
+  };
+  for (const [id, step] of [['free-back', -1], ['free-front', 1]]) $(id).onclick = () => {
+    const index = items.findIndex(i => i.id === selected), to = index + step; if (index < 0 || to < 0 || to >= items.length) return;
+    remember(); const next = [...items], [item] = next.splice(index, 1); next.splice(to, 0, item); items = next; commit();
+  };
+  $('free-add-title').onclick = addTitle;
+  $('free-add-page').onclick = () => { const record = api.getPages().find(p => p.id === $('free-source').value); if (record) void addRecords([record]); };
+  $('free-add-selected').onclick = () => void addRecords(api.chosen());
+  $('free-arrange').onclick = () => { try { const next = arrangeItems(items, orientation); remember(); items = next; commit(); } catch (error) { say(error.message, true); } };
+  $('free-orientation').onchange = () => {
+    try { const nextOrientation = $('free-orientation').value, next = arrangeItems(items, nextOrientation); remember(); orientation = nextOrientation; items = next; commit(); }
+    catch (error) { $('free-orientation').value = orientation; say(error.message, true); }
+  };
+  const point = event => { const rect = stage.getBoundingClientRect(), size = sheetSize(orientation); return {x: (event.clientX - rect.left) / rect.width * size.width, y: (event.clientY - rect.top) / rect.height * size.height}; };
+  stage.addEventListener('pointerdown', event => {
+    if (working || event.button !== 0) return; const target = event.target.closest('[data-item]'); selected = target?.dataset.item || null;
+    if (!selected) { render(); return; } event.preventDefault(); remember(); drag = {start: point(event), original: {...current()}, resize: event.target.hasAttribute('data-resize'), previous: history.at(-1)}; stage.setPointerCapture(event.pointerId); render(); stage.focus();
+  });
+  stage.addEventListener('pointermove', event => {
+    if (!drag) return; const p = point(event), original = drag.original, size = sheetSize(orientation), next = {...original};
+    if (drag.resize) {
+      const ratio = original.width / original.height, dx = p.x - drag.start.x, dy = (p.y - drag.start.y) * ratio;
+      next.width = clamp(original.width + (Math.abs(dx) >= Math.abs(dy) ? dx : dy), Math.min(5, original.width), Math.min(size.width - original.x, (size.height - original.y) * ratio)); next.height = next.width / ratio;
+    } else { next.x = clamp(original.x + p.x - drag.start.x, 0, size.width - original.width); next.y = clamp(original.y + p.y - drag.start.y, 0, size.height - original.height); }
+    items = items.map(i => i.id === next.id ? next : i); render(false);
+  });
+  stage.addEventListener('pointerup', () => { if (drag) { drag = null; commit(); } });
+  stage.addEventListener('pointercancel', () => { if (drag) { const previous = history.pop(); items = previous.items; drag = null; commit(); } });
+  stage.addEventListener('keydown', event => {
+    if (working) return;
+    const item = event.target.closest('[data-item]'); if (item) selected = item.dataset.item;
+    if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); render(); }
+    if (event.key === 'Delete' || event.key === 'Backspace') { event.preventDefault(); remove(); }
+    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'z') { event.preventDefault(); undo(); }
+    const step = event.shiftKey ? 5 : 1, delta = {ArrowLeft: [-step, 0], ArrowRight: [step, 0], ArrowUp: [0, -step], ArrowDown: [0, step]}[event.key];
+    if (delta) { event.preventDefault(); edit(i => ({...i, x: i.x + delta[0], y: i.y + delta[1]})); stage.focus(); }
+  });
+  $('free-preview').onclick = () => {
+    if (working || !items.length) return; const snapshot = layout(), title = `${api.filename()}_A4自由排版`;
+    api.showProof({title, build: signal => composeFreePdf(snapshot, api.getSources(), title, {signal}), onDownload: () => {
+      saved = signature(snapshot); api.markExported(snapshot.items.filter(i => i.type === 'page').map(i => i.record)); api.layoutChanged();
+    }});
+  };
+  $('free-close').onclick = () => dialog.close(); dialog.addEventListener('cancel', event => { if (working) event.preventDefault(); });
+  dialog.addEventListener('close', () => { drag = null; api.setBusy(false); });
+  $('free-layout').onclick = () => { if (open() && !items.length) void addRecords(api.chosen()); };
+  return {
+    refresh() { $('free-layout').disabled = api.isBusy() || !items.length && !api.chosen().length; },
+    retainedRecords: () => [items, ...history.map(h => h.items)].flat().filter(i => i.type === 'page').map(i => i.record),
+    hasPending: () => items.length > 0 && signature(layout()) !== saved,
+    addPiece(record) { if (open()) void addRecords([record]); },
+    clear() { items = []; history = []; selected = null; orientation = 'portrait'; saved = ''; for (const url of previews.values()) URL.revokeObjectURL(url); previews.clear(); $('free-orientation').value = orientation; render(); },
+  };
+}

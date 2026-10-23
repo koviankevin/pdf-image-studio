@@ -1,10 +1,10 @@
 import * as pdfjs from './vendor/pdfjs/pdf.mjs';
-import {imposePdf, sheetLayout} from './imposition-core.mjs?v=20261021-shijian';
+import {imposePdf, sheetLayout} from './imposition-core.mjs?v=20261023-workflow';
 
 export function installImposition(api) {
   const {$} = api;
   document.body.insertAdjacentHTML('beforeend', `<dialog id="nup-dialog" class="work-dialog nup-dialog" aria-labelledby="nup-title">
-    <div class="preview-header"><div><h2 id="nup-title">A4 拼版</h2><p>把選取的多個頁面排進同一張 A4，直接下載 PDF。</p></div><button id="nup-close" class="secondary">關閉</button></div>
+    <div class="preview-header"><div><h2 id="nup-title">A4 拼版</h2><p>把選取的多個頁面排進同一張 A4，直接下載 PDF。</p></div><div class="dialog-header-actions"><button id="nup-free" class="secondary">自由排版</button><button id="nup-close" class="secondary">關閉</button></div></div>
     <div class="nup-layout"><div class="nup-options">
       <label class="field-label" for="nup-preset">每張 A4 放幾頁</label><select id="nup-preset"><option value="2">2 頁 · 左右並排</option><option value="4">4 頁 · 2 × 2</option><option value="6">6 頁 · 3 × 2</option><option value="custom">自訂列與欄</option></select>
       <div id="nup-custom" class="nup-pair" hidden><label for="nup-rows">列數（上下）<input id="nup-rows" type="number" min="1" max="6" step="1" value="1"></label><label for="nup-columns">欄數（左右）<input id="nup-columns" type="number" min="1" max="6" step="1" value="2"></label></div>
@@ -89,7 +89,8 @@ export function installImposition(api) {
     if (!doc) return; current += delta; const version = serial;
     try { await draw(version); } catch (error) { if (version === serial && dialog.open) say(`預覽失敗：${error.message}`, true); }
   };
-  $('nup-download').onclick = () => { if (data) { api.download(new Blob([data], {type: 'application/pdf'}), `${api.filename()}_A4拼版.pdf`); say('已下載 A4 拼版 PDF，請查看瀏覽器的下載項目。'); } };
+  $('nup-download').onclick = () => { if (data) { api.download(new Blob([data], {type: 'application/pdf'}), `${api.filename()}_A4拼版.pdf`); api.markExported(records);say('已下載 A4 拼版 PDF，請查看瀏覽器的下載項目。'); } };
+  $('nup-free').onclick=()=>{dialog.addEventListener('close',()=>api.openFreeLayout(),{once:true});dialog.close();};
   $('nup-close').onclick = () => dialog.close();
   dialog.addEventListener('close', () => { ++serial; clearTimeout(timer); controller?.abort(); data = null; records = []; render?.cancel(); queue = queue.then(dispose); $('nup-canvas').width = $('nup-canvas').height = 0; api.setBusy(false); });
   $('impose-pdf').onclick = () => {

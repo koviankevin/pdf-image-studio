@@ -1,4 +1,4 @@
-import {parseSplitRanges,assemblePdf,viewportCrop,selectionToCrop} from './editor-core.mjs?v=20261021-shijian';
+import {parseSplitRanges,assemblePdf,viewportCrop,selectionToCrop} from './editor-core.mjs?v=20261023-workflow';
 import {zipSync} from './vendor/fflate/fflate.mjs';
 
 export function installPageTools(api){
@@ -25,7 +25,7 @@ export function installPageTools(api){
   $('split-pdf').onclick=async()=>{
     if(api.isBusy())return;let groups;try{groups=splitGroups();if(!groups.length)throw new Error('請先選取要拆分的頁面。');}catch(error){api.status(error.message,true);return;}api.setBusy(true);
     try{const entries={},name=api.filename();let total=0;for(let i=0;i<groups.length;i++){api.status(`正在建立拆分 PDF（${i+1} / ${groups.length}）…`);const data=await assemblePdf(groups[i],api.getSources(),`${name} ${i+1}`);total+=data.length;if(total>256*1024*1024)throw new Error('拆分結果超過 256 MB，請減少範圍後分批處理');entries[`${name}_part${String(i+1).padStart(3,'0')}.pdf`]=data;await new Promise(resolve=>setTimeout(resolve,0));}
-      api.download(new Blob([zipSync(entries,{level:0})],{type:'application/zip'}),`${name}_split.zip`);api.status(`已將 ${groups.length} 份 PDF 打包下載，頁面皆已套用旋轉與裁切。`);
+      api.download(new Blob([zipSync(entries,{level:0})],{type:'application/zip'}),`${name}_split.zip`);api.markExported(groups.flat());api.status(`已將 ${groups.length} 份 PDF 打包下載，頁面皆已套用旋轉與裁切。`);
     }catch(error){api.status(`拆分失敗：${error.message}。工作區仍保留。`,true);}finally{api.setBusy(false);}
   };
 
@@ -67,6 +67,7 @@ export function installPageTools(api){
     }catch{editorStatus('無法存取剪貼簿，請使用「下載框選圖片」。',true);}finally{setWorking(false);}
   };
   $('crop-download').onclick=async()=>{if(working||!editor?.viewport)return;setWorking(true);try{const type=$('format').value,result=await regionRequest(type);api.download(result.blob,`${api.filename()}_p${String(editor.position).padStart(3,'0')}_region.${type==='png'?'png':'jpg'}`);editorStatus(`已下載框選圖片：${result.width} × ${result.height} px，${api.bytes(result.blob.size)}。`);}catch(error){editorStatus(error.message,true);}finally{setWorking(false);}};
+  $('crop-add-layout').onclick=()=>{if(working||!editor?.viewport)return;try{const record={...editor.page,rotation:editor.rotation,crop:currentCrop()};dialog.addEventListener('close',()=>api.addLayoutPiece(record),{once:true});dialog.close();}catch(error){editorStatus(error.message,true);}};
   $('crop-apply').onclick=async()=>{if(working||!editor?.viewport)return;let crop;try{crop=currentCrop();}catch(error){editorStatus(error.message,true);return;}setWorking(true);try{await api.commitEdits([{...editor.page,rotation:editor.rotation,crop}]);setWorking(false);dialog.close();}catch(error){api.setBusy(true);setWorking(false);editorStatus(`套用失敗：${error.message}`,true);}};
   return{refresh,imageOptions,invalidateEstimate,openEditor};
 }
