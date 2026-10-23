@@ -1,4 +1,4 @@
-import {openDraftStore, validateDraft, validateDraftMetadata, DraftConflict} from './draft-store.mjs?v=20261023-studio1';
+import {openDraftStore, validateDraft, validateDraftMetadata, DraftConflict} from './draft-store.mjs?v=20261024-studio1';
 
 export function installAutosave(api) {
   const {$} = api, preference = 'shijian.autosave.enabled';
@@ -58,7 +58,7 @@ export function installAutosave(api) {
       } else {
         dirty = false; const snapshot = api.capture();
         // Do not create an empty draft during initial page load.
-        if (!snapshot.project.pages.length && !snapshot.project.layout.items.length) {
+        if (!snapshot.project.pages.length && !snapshot.project.layout.items.length&&!snapshot.project.layout.created&&(snapshot.project.layout.sheetCount??1)===1) {
           if (hasStored) { revision = await store.write(revision, null); hasStored = false; knownDocuments.clear(); knownAssets.clear(); assetIds.clear(); }
           last = ''; say('自動儲存已開啟，加入文件後會開始儲存。');
         } else {

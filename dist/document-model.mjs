@@ -30,7 +30,7 @@ export async function drawPageExtras(doc,page,record,getFont){
     for(const line of record.ocr.lines){
       const text=line.text.trim().replace(/[\r\n]+/g,' ');if(!text)continue;
       const size=Math.max(2,line.height*.9),natural=font.widthOfTextAtSize(text,size),sx=line.width/Math.max(natural,.01);
-      page.pushOperators(pushGraphicsState(),concatTransformationMatrix(...record.ocr.frame),concatTransformationMatrix(sx,0,0,-1,line.x,line.y+line.height*.85),setTextRenderingMode(3));
+      page.pushOperators(pushGraphicsState(),concatTransformationMatrix(...(line.frame||record.ocr.frame)),concatTransformationMatrix(sx,0,0,-1,line.x,line.y+line.height*.85),setTextRenderingMode(3));
       page.drawText(text,{x:0,y:0,size,font,opacity:0});page.pushOperators(popGraphicsState());
     }
   }

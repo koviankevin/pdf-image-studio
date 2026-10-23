@@ -1,4 +1,4 @@
-import {sheetSize, arrangeItems, composeFreePdf, validateFreeLayout, MAX_SHEETS, MAX_LAYOUT_ITEMS, MM} from './free-layout-core.mjs?v=20261023-studio1';
+import {sheetSize, arrangeItems, composeFreePdf, validateFreeLayout, MAX_SHEETS, MAX_LAYOUT_ITEMS, MM} from './free-layout-core.mjs?v=20261024-studio1';
 
 export function installFreeLayout(api) {
   const {$} = api, NS = 'http://www.w3.org/2000/svg';
@@ -25,15 +25,18 @@ export function installFreeLayout(api) {
     </fieldset><div class="free-preview"><p id="free-sheet-label" class="free-sheet-label"></p><div class="free-desk"><svg id="free-sheet" role="group" aria-label="可拖曳與縮放的 A4 排版紙面" tabindex="0"></svg></div><p id="free-status" class="status" role="status"></p></div></div>
   </dialog>`);
   const dialog = $('free-dialog'), stage = $('free-sheet'), previews = new Map(),previewSizes=new Map();
-  let items = [], orientation = 'portrait', selected = null, history = [], future = [], working = false, drag = null, saved = '', sheetCount=1, activeSheet=0;
+  let items = [], orientation = 'portrait', selected = null, history = [], future = [], working = false, drag = null, saved = '', sheetCount=1, activeSheet=0,created=false;
   const current = () => items.find(item => item.id === selected);
   const visible=()=>items.filter(item=>(item.sheet??0)===activeSheet);
-  const layout = () => ({orientation,sheetCount, items: structuredClone(items)});
-  const signature = value => JSON.stringify(value);
+  // Page records are immutable snapshots. Geometry/history may share them safely.
+  const cloneItems=()=>items.map(item=>({...item})),recordSnapshots=new WeakMap(),recordVersions=new WeakMap();let nextVersion=0;
+  const pageSnapshot=record=>{if(!recordSnapshots.has(record))recordSnapshots.set(record,structuredClone(record));return recordSnapshots.get(record);};
+  const layout = () => ({orientation,sheetCount,created,items:cloneItems()});
+  const signature=value=>JSON.stringify({...value,items:value.items.map(item=>{if(item.type!=='page')return item;if(!recordVersions.has(item.record))recordVersions.set(item.record,++nextVersion);return {...item,record:recordVersions.get(item.record)};})});
   const say = (text, error = false) => { $('free-status').textContent = text; $('free-status').classList.toggle('error', error); };
   const round = value => String(Math.round(value * 10) / 10);
   const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
-  function remember() { future=[]; history.push({items: structuredClone(items), orientation, selected,sheetCount,activeSheet}); if (history.length > 30) history.shift(); }
+  function remember() { future=[]; history.push({items:cloneItems(), orientation, selected,sheetCount,activeSheet,created}); if (history.length > 30) history.shift(); }
   const retainedItems=()=>[items,...history.map(state=>state.items),...future.map(state=>state.items)].flat();
   const previewBytes=urls=>[...new Set(urls)].reduce((total,url)=>total+(previewSizes.get(url)||0),0);
   function collect() {
@@ -47,12 +50,12 @@ export function installFreeLayout(api) {
   }
   const previewKey=record=>`${record.sourceId}:${record.index}:${record.thumbnail}:${record.rotation||0}:${JSON.stringify(record.crop||null)}`;
   function cachedPreviews(){const cache=new Map();for(const item of retainedItems())if(item.type==='page'&&previews.has(item.id))cache.set(previewKey(item.record),previews.get(item.id));return cache;}
-  async function previewFor(record,cache,created,liveUrls,signal){
+  async function previewFor(record,cache,createdUrls,liveUrls,signal){
     signal?.throwIfAborted();const key=previewKey(record);let url=cache.get(key);
     if(url){if(previewBytes([...liveUrls,url])>32*1024*1024)throw Error('目前排版預覽超過 32 MB，請減少項目或拆成不同工作區。');return url;}
     const result=await api.renderBlob(api.getSources().get(record.sourceId),record.index,96,'jpeg',false,record,{maxEdge:900,quality:.85});signal?.throwIfAborted();
     if(previewBytes(liveUrls)+result.blob.size>32*1024*1024)throw Error('目前排版預覽超過 32 MB，請減少項目或拆成不同工作區。');
-    url=URL.createObjectURL(result.blob);previewSizes.set(url,result.blob.size);cache.set(key,url);created.add(url);return url;
+    url=URL.createObjectURL(result.blob);previewSizes.set(url,result.blob.size);cache.set(key,url);createdUrls.add(url);return url;
   }
   const node = (tag, attrs = {}) => { const el = document.createElementNS(NS, tag); for (const [key, value] of Object.entries(attrs)) el.setAttribute(key, String(value)); return el; };
   function label(item, index) { return item.type === 'text' ? `${index + 1}. 標題：${item.text.slice(0, 18)}` : `${index + 1}. ${api.getSources().get(item.record.sourceId)?.name || '來源頁面'} · 原第 ${item.record.index + 1} 頁${item.record.crop ? '（框選）' : ''}`; }
@@ -63,7 +66,7 @@ export function installFreeLayout(api) {
     for (const [key, id] of [['x', 'free-x'], ['y', 'free-y'], ['width', 'free-width'], ['height', 'free-height']]) $(id).value = item ? round(item[key]) : '';
     $('free-width').disabled = $('free-height').disabled = item?.type === 'text';
     if (item?.type === 'text') { $('free-text').value = item.text; $('free-font-size').value = item.fontSize; $('free-color').value = item.color; }
-    $('free-undo').disabled = working || !history.length; $('free-redo').disabled = working || !future.length; $('free-preview').disabled = working || !items.length;
+    $('free-undo').disabled = working || !history.length; $('free-redo').disabled = working || !future.length; $('free-preview').disabled = working || !created;
     for(const id of ['free-sheet-select','free-move-sheet']){const selectedValue=$(id).value;$(id).replaceChildren(...Array.from({length:sheetCount},(_,i)=>new Option(`第 ${i+1} 張 A4`,String(i))));$(id).value=id==='free-sheet-select'?String(activeSheet):Number(selectedValue)<sheetCount?selectedValue:String(activeSheet);}
     $('free-sheet-add').disabled=working||sheetCount>=MAX_SHEETS;$('free-sheet-remove').disabled=working||sheetCount===1;
     $('free-clear').disabled = $('free-arrange').disabled = working || !visible().length;
@@ -96,19 +99,19 @@ export function installFreeLayout(api) {
   }
   function open() {
     if (api.isBusy()) return false;
-    api.setBusy(true); sourceChoices(); dialog.showModal(); render(); say('拖曳移動項目；右下角方塊可等比例縮放。先選項目，再使用左側對齊與位置設定。'); return true;
+    api.setBusy(true);created=true; sourceChoices(); dialog.showModal(); render(); say('拖曳移動項目；右下角方塊可等比例縮放。先選項目，再使用左側對齊與位置設定。'); return true;
   }
   async function addRecords(records) {
     if (!records.length) return;
     if (visible().length + records.length > 30 || items.length+records.length>MAX_LAYOUT_ITEMS) { say('每張 A4 最多 30 個項目、總計 300 個；請新增紙張或減少勾選頁面。', true); return; }
-    const initiallyEmpty = !visible().length,cache=cachedPreviews(),created=new Set(); remember(); setWorking(true);
+    const initiallyEmpty = !visible().length,cache=cachedPreviews(),createdUrls=new Set(); remember(); setWorking(true);
     try {
       for (const record of records) {
         say(`正在加入版面（${items.length + 1} 個項目）…`);
         const source = api.getSources().get(record.sourceId), viewport = await api.pageViewport(source, record);
         const id = crypto.randomUUID(), width = Math.min(80, 100 * viewport.width / viewport.height), height = width * viewport.height / viewport.width;
         if (Math.min(width, height) < 1) throw new Error('頁面比例過長，請先框選需要的範圍。');
-        const item = {id, sheet:activeSheet, type: 'page', record: structuredClone(record), x: 10, y: 10, width, height};
+        const item = {id, sheet:activeSheet, type: 'page', record:pageSnapshot(record), x: 10, y: 10, width, height};
         if (!initiallyEmpty) {
           const size = sheetSize(orientation), xs = [...new Set([10, ...visible().map(i => i.x + i.width + 5)])].sort((a,b) => a-b), ys = [...new Set([10, ...visible().map(i => i.y + i.height + 5)])].sort((a,b) => a-b);
           let placed = false;
@@ -117,7 +120,7 @@ export function installFreeLayout(api) {
           } if (placed) break; }
           if (!placed) { item.x = Math.min(size.width - width, 10 + items.length * 5); item.y = Math.min(size.height - height, 10 + items.length * 5); }
         }
-        previews.set(id,await previewFor(record,cache,created,items.map(item=>previews.get(item.id)))); items.push(item); selected = id;
+        previews.set(id,await previewFor(record,cache,createdUrls,items.map(item=>previews.get(item.id)))); items.push(item); selected = id;
       }
       if (initiallyEmpty) arrangeActive(); say('已加入並保留既有位置。可自由調整；「預覽並下載」會顯示實際 PDF。');
     } catch (error) { say(`無法加入：${error.message}`, true); }
@@ -162,14 +165,14 @@ export function installFreeLayout(api) {
     if (action === 'middle') item.y = (size.height - item.height) / 2; return item;
   });
   $('free-item').onchange = () => { selected = $('free-item').value || null; render(); };
-  function undo() { if (working || drag || !history.length) return; future.push({items:structuredClone(items),orientation,selected,sheetCount,activeSheet}); const last = history.pop(); ({items, orientation, selected,sheetCount,activeSheet} = last); $('free-orientation').value = orientation; commit(); say('已復原版面操作。'); }
-  function redo() { if(working||drag||!future.length)return;history.push({items:structuredClone(items),orientation,selected,sheetCount,activeSheet});const next=future.pop();({items,orientation,selected,sheetCount,activeSheet}=next);$('free-orientation').value=orientation;commit();say('已重做版面操作。');}
+  function undo() { if (working || drag || !history.length) return; future.push({items:cloneItems(),orientation,selected,sheetCount,activeSheet,created}); const last = history.pop(); ({items, orientation, selected,sheetCount,activeSheet,created} = last); $('free-orientation').value = orientation; commit(); say('已復原版面操作。'); }
+  function redo() { if(working||drag||!future.length)return;history.push({items:cloneItems(),orientation,selected,sheetCount,activeSheet,created});const next=future.pop();({items,orientation,selected,sheetCount,activeSheet,created}=next);$('free-orientation').value=orientation;commit();say('已重做版面操作。');}
   function remove() { if (!current() || working) return; remember(); items = items.filter(i => i.id !== selected); selected = null; commit(); }
   $('free-delete').onclick = remove; $('free-undo').onclick = undo; $('free-redo').onclick=redo;
   $('free-clear').onclick = () => { remember();items=items.filter(item=>(item.sheet??0)!==activeSheet);selected=null;commit(); };
   $('free-duplicate').onclick = () => {
     const item = current(); if (!item || working) return; if (visible().length >= 30 || items.length>=MAX_LAYOUT_ITEMS) { say('每張 A4 最多 30 個項目。', true); return; }
-    remember(); const size = sheetSize(orientation), copy = {...structuredClone(item), id: crypto.randomUUID(), x: Math.min(size.width - item.width, item.x + 5), y: Math.min(size.height - item.height, item.y + 5)};
+    remember(); const size = sheetSize(orientation), copy = {...item, id: crypto.randomUUID(), x: Math.min(size.width - item.width, item.x + 5), y: Math.min(size.height - item.height, item.y + 5)};
     if (previews.has(item.id)) previews.set(copy.id, previews.get(item.id));
     items.push(copy); selected = copy.id; commit();
   };
@@ -214,7 +217,7 @@ export function installFreeLayout(api) {
     if (delta) { event.preventDefault(); edit(i => ({...i, x: i.x + delta[0], y: i.y + delta[1]})); stage.focus(); }
   });
   $('free-preview').onclick = () => {
-    if (working || !items.length) return; const snapshot = layout(), title = `${api.filename()}_A4自由排版`;
+    if (working || !created) return; const snapshot = layout(), title = `${api.filename()}_A4自由排版`;
     api.showProof({title, build: signal => composeFreePdf(snapshot, api.getSources(), title, {signal}), onDownload: () => {
       saved = signature(snapshot); api.markExported(snapshot.items.filter(i => i.type === 'page').map(i => i.record)); api.layoutChanged();
     }});
@@ -227,30 +230,30 @@ export function installFreeLayout(api) {
     template:()=>({...layout(),items:items.map(({record,preview,id,...item})=>item)}),
     async applyTemplate(value,records,{signal,onProgress}={}){
       const slots=value.items.filter(item=>item.type==='page');if(records.length>slots.length)throw Error(`此版型可放 ${slots.length} 頁，目前勾選 ${records.length} 頁。`);
-      const prepared=[],urls=new Map(),cache=cachedPreviews(),created=new Set();let index=0;
+      const prepared=[],urls=new Map(),cache=cachedPreviews(),createdUrls=new Set();let index=0;
       try{
         for(const slot of value.items){signal?.throwIfAborted();onProgress?.(prepared.length+1,value.items.length);
           const id=crypto.randomUUID();if(slot.type==='text'){prepared.push({...slot,id});continue;}
           const record=records[index++];if(!record)continue;
           const source=api.getSources().get(record.sourceId),viewport=await api.pageViewport(source,record),scale=Math.min(slot.width/viewport.width,slot.height/viewport.height),width=viewport.width*scale,height=viewport.height*scale;
-          urls.set(id,await previewFor(record,cache,created,[...urls.values()],signal));
-          prepared.push({...slot,id,record:structuredClone(record),x:slot.x+(slot.width-width)/2,y:slot.y+(slot.height-height)/2,width,height});
+          urls.set(id,await previewFor(record,cache,createdUrls,[...urls.values()],signal));
+          prepared.push({...slot,id,record:pageSnapshot(record),x:slot.x+(slot.width-width)/2,y:slot.y+(slot.height-height)/2,width,height});
         }
         signal?.throwIfAborted();validateFreeLayout({...value,items:prepared},{allowEmpty:true});
-      }catch(error){for(const url of created){URL.revokeObjectURL(url);previewSizes.delete(url);}throw error;}
-      remember();items=prepared;orientation=value.orientation;sheetCount=value.sheetCount??1;activeSheet=items[0]?.sheet??0;selected=items[0]?.id??null;for(const [id,url]of urls)previews.set(id,url);$('free-orientation').value=orientation;commit();
+      }catch(error){for(const url of createdUrls){URL.revokeObjectURL(url);previewSizes.delete(url);}throw error;}
+      remember();created=true;items=prepared;orientation=value.orientation;sheetCount=value.sheetCount??1;activeSheet=items[0]?.sheet??0;selected=items[0]?.id??null;for(const [id,url]of urls)previews.set(id,url);$('free-orientation').value=orientation;commit();
     },
     capture() { return {...layout(), activeSheet, selected, exported:signature(layout())===saved, open:dialog.open, fieldChanges:current()?['x','y','width','height'].filter(key=>$('free-'+key).value!==round(current()[key])).map(key=>'free-'+key).concat(current().type==='text'?['free-text','free-font-size','free-color'].filter(id=>$(id).value!==String(id==='free-text'?current().text:id==='free-font-size'?current().fontSize:current().color)):[]):[], fields:dialog.open&&current()?Object.fromEntries(['free-x','free-y','free-width','free-height','free-text','free-font-size','free-color'].map(id=>[id,$(id).value])):null, items:structuredClone(items).map(item=>item.type==='page'?{...item,preview:previews.get(item.id)}:item)}; },
-    restore(value,record,asset,assetSize=()=>0) { items=value.items.map(item=>item.type==='page'?{...item,record:record(item.record)}:item);for(const item of value.items)if(item.type==='page'){const url=asset(item.preview);previews.set(item.id,url);previewSizes.set(url,assetSize(item.preview));}if(previewBytes(previews.values())>32*1024*1024)throw Error('排版預覽超過 32 MB。');orientation=value.orientation;selected=items.some(item=>item.id===value.selected)?value.selected:null;sheetCount=value.sheetCount??1;activeSheet=value.activeSheet??0;if(selected)activeSheet=items.find(item=>item.id===selected).sheet??0;history=[];future=[];$('free-orientation').value=orientation;saved=value.exported?signature(layout()):'';render(); },
+    restore(value,record,asset,assetSize=()=>0) { items=value.items.map(item=>item.type==='page'?{...item,record:record(item.record)}:item);for(const item of value.items)if(item.type==='page'){const url=asset(item.preview);previews.set(item.id,url);previewSizes.set(url,assetSize(item.preview));}if(previewBytes(previews.values())>32*1024*1024)throw Error('排版預覽超過 32 MB。');orientation=value.orientation;created=value.created??!!(items.length||(value.sheetCount??1)>1);selected=items.some(item=>item.id===value.selected)?value.selected:null;sheetCount=value.sheetCount??1;activeSheet=value.activeSheet??0;if(selected)activeSheet=items.find(item=>item.id===selected).sheet??0;history=[];future=[];$('free-orientation').value=orientation;saved=value.exported?signature(layout()):'';render(); },
     resume(value) { if(value.open&&open()&&value.fields){for(const id of value.fieldChanges||[])if(['free-x','free-y','free-width','free-height','free-text','free-font-size','free-color'].includes(id)){$(id).value=value.fields[id];$(id).dispatchEvent(new Event('change'));}history=[];future=[];} },
-    refresh() { $('free-layout').disabled = api.isBusy() || !items.length && !api.chosen().length; },
+    refresh() { $('free-layout').disabled = api.isBusy()||!created&&!api.chosen().length; },isCreated:()=>created,
     retainedRecords: () => [items, ...history.map(h => h.items), ...future.map(h => h.items)].flat().filter(i => i.type === 'page').map(i => i.record),
     hasPending: () => {
-      if (items.length > 0 && signature(layout()) !== saved) return true;
+      if (created && signature(layout()) !== saved) return true;
       const item = current(); if (!dialog.open || !item) return false;
       return ['x','y','width','height'].some(key => $('free-'+key).value !== round(item[key])) || item.type === 'text' && ($('free-text').value !== item.text || Number($('free-font-size').value) !== item.fontSize || $('free-color').value !== item.color);
     },
     addPiece(record) { if (open()) void addRecords([record]); },
-    clear() { items = []; history = []; future=[]; selected = null; orientation = 'portrait';sheetCount=1;activeSheet=0; saved = ''; for (const url of previews.values()) URL.revokeObjectURL(url); previews.clear();previewSizes.clear(); $('free-orientation').value = orientation; render(); },
+    clear() { items = []; history = []; future=[]; selected = null; orientation = 'portrait';sheetCount=1;activeSheet=0;created=false; saved = ''; for (const url of previews.values()) URL.revokeObjectURL(url); previews.clear();previewSizes.clear(); $('free-orientation').value = orientation; render(); },
   };
 }

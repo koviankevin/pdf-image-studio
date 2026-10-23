@@ -1,4 +1,4 @@
-import {selectionToCrop} from './editor-core.mjs?v=20261023-studio1';
+import {selectionToCrop} from './editor-core.mjs?v=20261024-studio1';
 import {checkpoint} from './cancellation.mjs';
 
 export function cropTargets(pages,selected,mode){

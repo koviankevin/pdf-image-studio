@@ -1,6 +1,6 @@
-import {validSettings} from './workflow-core.mjs?v=20261023-studio1';
-import {sheetLayout} from './imposition-core.mjs?v=20261023-studio1';
-import {validateFreeLayout} from './free-layout-core.mjs?v=20261023-studio1';
+import {validSettings} from './workflow-core.mjs?v=20261024-studio1';
+import {sheetLayout} from './imposition-core.mjs?v=20261024-studio1';
+import {validateFreeLayout} from './free-layout-core.mjs?v=20261024-studio1';
 
 const oneOf=(...values)=>value=>values.includes(value);
 const number=(min,max,integer=false)=>value=>value.trim()!==''&&Number.isFinite(Number(value))&&Number(value)>=min&&Number(value)<=max&&(!integer||Number.isInteger(Number(value)));
@@ -19,7 +19,7 @@ export function cleanTemplate(value){
   const presets={'2':[1,2],'4':[2,2],'6':[3,2]},grid=presets[settings['nup-preset']]||[Number(settings['nup-rows']),Number(settings['nup-columns'])];
   sheetLayout({rows:grid[0],columns:grid[1],orientation:settings['nup-orientation'],margin:Number(settings['nup-margin']),gap:Number(settings['nup-gap'])});
   if(!value.layout||!Array.isArray(value.layout.items)||value.layout.items.length>300)throw Error('範本版型格式不正確。');
-  const layout={orientation:value.layout.orientation,sheetCount:value.layout.sheetCount??1,items:value.layout.items.map(item=>{
+  const layout={orientation:value.layout.orientation,created:value.layout.created??!!(value.layout.items.length||(value.layout.sheetCount??1)>1),sheetCount:value.layout.sheetCount??1,items:value.layout.items.map(item=>{
     if(!item||typeof item!=='object')throw Error('範本項目格式不正確。');
     const result={type:item.type,sheet:item.sheet??0,x:item.x,y:item.y,width:item.width,height:item.height};
     if(item.type==='text')Object.assign(result,{text:item.text,fontSize:item.fontSize,color:item.color});return result;
@@ -29,7 +29,7 @@ export function cleanTemplate(value){
 }
 export function readTemplates(text){
   if(text===null)return [];
-  if(typeof text!=='string'||text.length>1024*1024)throw Error('範本資料過大。');
+  if(typeof text!=='string'||text.length>1024*1024||new TextEncoder().encode(text).length>1024*1024)throw Error('範本資料過大。');
   const value=JSON.parse(text),ids=new Set();if(value?.version!==1||!Array.isArray(value.templates)||value.templates.length>20)throw Error('範本資料格式不正確。');
   return value.templates.map(item=>{if(!item||typeof item.id!=='string'||!/^[a-zA-Z0-9_-]{1,100}$/.test(item.id)||ids.has(item.id)||typeof item.name!=='string'||!item.name.trim()||item.name.length>60)throw Error('範本名稱或識別碼無效。');ids.add(item.id);return {id:item.id,name:item.name,...cleanTemplate(item)};});
 }

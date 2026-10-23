@@ -1,6 +1,6 @@
-import {mergeRegionLines} from './ocr-region.mjs?v=20261023-studio1';
-import {textItemBounds} from './text-geometry.mjs?v=20261023-studio1';
-import {inverse,multiply,transformPoint} from './document-model.mjs';
+import {mergeRegionLines} from './ocr-region.mjs?v=20261024-studio1';
+import {textItemBounds} from './text-geometry.mjs?v=20261024-studio1';
+import {inverse,multiply,transformPoint} from './document-model.mjs?v=20261024-studio1';
 import {recognizeTwoColumns} from './ocr-columns.mjs';
 
 export function installOcr(api){
@@ -68,7 +68,7 @@ export function installOcr(api){
     try{const viewport=await api.pageViewport(api.getSources().get(item.sourceId),item),result=await api.renderBlob(api.getSources().get(item.sourceId),item.index,120,'jpeg',false,item,{maxEdge:1800});if(serial!==loadSerial||!dialog.open)return;item.reviewViewport=viewport;reviewUrl=URL.createObjectURL(result.blob);$('ocr-image').src=reviewUrl;$('ocr-overlay').setAttribute('viewBox',`0 0 ${viewport.width} ${viewport.height}`);}
     catch(e){say(`原稿預覽失敗：${e.message}`,true);}finally{if(serial===loadSerial){loading=false;$('ocr-save').disabled=false;}}
   }
-  function highlight(line){const item=review[active];if(!item.reviewViewport)return;const g=document.createElementNS('http://www.w3.org/2000/svg','g'),rect=document.createElementNS('http://www.w3.org/2000/svg','rect');g.setAttribute('transform',`matrix(${multiply(item.reviewViewport.transform,item.ocr.frame).join(' ')})`);for(const [key,value]of Object.entries({x:line.x,y:line.y,width:line.width,height:line.height,fill:'#ffe234','fill-opacity':'.25',stroke:'#d47a00','stroke-width':'1'}))rect.setAttribute(key,value);g.append(rect);$('ocr-overlay').replaceChildren(g);}
+  function highlight(line){const item=review[active];if(!item.reviewViewport)return;const g=document.createElementNS('http://www.w3.org/2000/svg','g'),rect=document.createElementNS('http://www.w3.org/2000/svg','rect');g.setAttribute('transform',`matrix(${multiply(item.reviewViewport.transform,line.frame||item.ocr.frame).join(' ')})`);for(const [key,value]of Object.entries({x:line.x,y:line.y,width:line.width,height:line.height,fill:'#ffe234','fill-opacity':'.25',stroke:'#d47a00','stroke-width':'1'}))rect.setAttribute(key,value);g.append(rect);$('ocr-overlay').replaceChildren(g);}
   async function openReview(ids){if(api.isBusy())return;review=api.getPages().filter(p=>p.ocr&&(!ids||ids.includes(p.id))).map(p=>({...p,ocr:structuredClone(p.ocr)}));if(!review.length)return;api.setBusy(true);active=0;$('ocr-page').replaceChildren();review.forEach((p,i)=>$('ocr-page').add(new Option(`第 ${api.getPages().findIndex(v=>v.id===p.id)+1} 頁`,i)));dialog.showModal();say('文字只在此裝置處理。可逐行校對，再複製或儲存。');await showPage();}
   $('ocr-page').onchange=()=>{active=Number($('ocr-page').value);void showPage();};
   $('ocr-review').onclick=()=>openReview();

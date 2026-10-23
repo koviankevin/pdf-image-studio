@@ -1,4 +1,4 @@
-import {cropTargets,batchCropEdits} from './batch-crop.mjs?v=20261023-studio1';
+import {cropTargets,batchCropEdits} from './batch-crop.mjs?v=20261024-studio1';
 import {parseSplitRanges,assemblePdf,viewportCrop,selectionToCrop} from './editor-core.mjs?v=20261023-workflow';
 import {zipSync} from './vendor/fflate/fflate.mjs';
 

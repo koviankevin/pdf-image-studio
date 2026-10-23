@@ -11,7 +11,7 @@ export function validateMarks(marks){
 export function validateOcr(ocr){
   if(!ocr)return;
   if(!['ocr','native'].includes(ocr.mode)||!numbers(ocr.frame)||!Array.isArray(ocr.lines)||ocr.lines.length>100000)fail();
-  for(const line of ocr.lines)if(!line||!text(line.text,1000000)||!['x','y','width','height'].every(key=>Number.isFinite(line[key])&&Math.abs(line[key])<1e7)||line.width<0||line.height<0||!Number.isFinite(line.confidence))fail();
+  for(const line of ocr.lines)if(!line||line.frame!==undefined&&!numbers(line.frame)||!text(line.text,1000000)||!['x','y','width','height'].every(key=>Number.isFinite(line[key])&&Math.abs(line[key])<1e7)||line.width<0||line.height<0||!Number.isFinite(line.confidence))fail();
 }
 export function validateRecord(record){
   if(!record||!text(record.id,100)||!text(record.sourceId,100)||!Number.isInteger(record.index)||record.index<0||!text(record.thumbnail,100))fail();

@@ -1,6 +1,6 @@
 import {zipSync, unzipSync, strToU8, strFromU8} from './vendor/fflate/fflate.mjs';
-import {validateDraft} from './draft-store.mjs?v=20261023-studio1';
-import {validateFreeLayout} from './free-layout-core.mjs?v=20261023-studio1';
+import {validateDraft} from './draft-store.mjs?v=20261024-studio1';
+import {validateFreeLayout} from './free-layout-core.mjs?v=20261024-studio1';
 
 const LIMIT = 250 * 1024 * 1024, MANIFEST_LIMIT = 20 * 1024 * 1024;
 const safeKey = key => typeof key === 'string' && /^[a-zA-Z0-9_-]{1,100}$/.test(key);

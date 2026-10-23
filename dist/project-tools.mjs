@@ -1,6 +1,6 @@
 import {openProjectCatalog,projectDB} from './project-catalog.mjs';
-import {openDraftStore} from './draft-store.mjs?v=20261023-studio1';
-import {packProject,unpackProject} from './project-files.mjs?v=20261023-studio1';
+import {openDraftStore} from './draft-store.mjs?v=20261024-studio1';
+import {packProject,unpackProject} from './project-files.mjs?v=20261024-studio1';
 
 export async function installProjects(api){
   const {$}=api;

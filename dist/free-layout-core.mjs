@@ -1,7 +1,7 @@
 import {PDFDocument, rgb, pushGraphicsState, popGraphicsState} from './vendor/pdf-lib/pdf-lib.mjs';
 import {assemblePdf} from './editor-core.mjs?v=20261023-workflow';
 import {fitPage} from './imposition-core.mjs?v=20261023-workflow';
-import {embedChineseFont} from './document-model.mjs';
+import {embedChineseFont} from './document-model.mjs?v=20261024-studio1';
 import {checkpoint} from './cancellation.mjs';
 
 export const MM = 72 / 25.4;
@@ -12,6 +12,7 @@ export const sheetSize = orientation => {
 export const MAX_SHEETS=20, MAX_LAYOUT_ITEMS=300;
 export function validateFreeLayout(layout,{allowEmpty=false}={}) {
   const size = sheetSize(layout.orientation);
+  if(layout.created!==undefined&&typeof layout.created!=='boolean')throw Error('排版狀態格式不正確。');
   const count=layout.sheetCount??1;
   if(!Number.isInteger(count)||count<1||count>MAX_SHEETS||layout.activeSheet!==undefined&&(!Number.isInteger(layout.activeSheet)||layout.activeSheet<0||layout.activeSheet>=count))throw Error('A4 紙張數須為 1 至 20 張。');
   if (!Array.isArray(layout.items) || !allowEmpty&&!layout.items.length || layout.items.length > MAX_LAYOUT_ITEMS) throw new Error('版面最多 300 個項目，且至少需要一個項目。');
@@ -52,7 +53,7 @@ export function arrangeItems(items, orientation) {
 }
 
 export async function composeFreePdf(layout, sources, title = 'A4 自由排版', {signal} = {}) {
-  signal?.throwIfAborted(); const size = validateFreeLayout(layout);
+  signal?.throwIfAborted(); const size = validateFreeLayout(layout,{allowEmpty:layout.created===true||(layout.sheetCount??1)>1});
   const output = await PDFDocument.create(), sheets = Array.from({length:layout.sheetCount??1},()=>output.addPage([size.width * MM, size.height * MM]));
   const pieces = layout.items.filter(i => i.type === 'page'), embeddedById = new Map();
   if (pieces.length) {
