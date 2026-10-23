@@ -17,9 +17,15 @@ export async function openDraftStore(factory = globalThis.indexedDB) {
   });
   db.onversionchange = () => db.close();
   const done = transaction => new Promise((resolve, reject) => {
+    let failure;
     transaction.oncomplete = resolve;
-    transaction.onabort = transaction.onerror = () => reject(transaction.error || new Error('草稿寫入中斷。'));
+    transaction.onerror = event => { failure = event.target.error; };
+    transaction.onabort = () => reject(transaction.error || failure || new Error('草稿寫入中斷。'));
   });
+  // Store plain byte arrays, avoiding WebKit's file-backed Blob serialization
+  // path. All conversion finishes before opening the atomic write transaction.
+  const encode = async records => new Map(await Promise.all([...records].map(async ([key,blob])=>[key,{bytes:new Uint8Array(await blob.arrayBuffer()),type:blob.type}])));
+  const decode = value => value?.bytes && ArrayBuffer.isView(value.bytes) && typeof value.type === 'string' ? new Blob([value.bytes],{type:value.type}) : value;
   return {
     async read() {
       const transaction = db.transaction(['state', 'documents', 'assets'], 'readonly'), completion = done(transaction);
@@ -31,14 +37,15 @@ export async function openDraftStore(factory = globalThis.indexedDB) {
         // Enqueue within the request callback's microtasks, keeping the readonly
         // transaction live in all supported browsers.
         await Promise.all([
-          ...state.project.sources.map(source => get('documents', source.key).then(data => documents.set(source.key, data))),
-          ...state.project.assetKeys.map(key => get('assets', key).then(data => assets.set(key, data))),
+          ...state.project.sources.map(source => get('documents', source.key).then(data => documents.set(source.key, decode(data)))),
+          ...state.project.assetKeys.map(key => get('assets', key).then(data => assets.set(key, decode(data)))),
         ]);
       }
       await completion; return {...state, documents, assets};
       } catch (error) { await completion.catch(() => {}); throw error; }
     },
     async write(expectedRevision, project, documents = new Map(), assets = new Map()) {
+      [documents,assets] = await Promise.all([encode(documents),encode(assets)]);
       const transaction = db.transaction(['state', 'documents', 'assets'], 'readwrite'), completion = done(transaction);
       let conflict = false, failure;
       const state = transaction.objectStore('state'), request = state.get('current');
