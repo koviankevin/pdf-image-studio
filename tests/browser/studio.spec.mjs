@@ -1,7 +1,8 @@
 import {test,expect} from './fixtures.mjs';
 import {createFixtures} from '../support/pdfs.mjs';
 import {downloadBytes,inspectPdf} from '../support/ocr-pdf.mjs';
-import {PDFDocument,StandardFonts} from '../../dist/vendor/pdf-lib/pdf-lib.mjs';
+import {PDFDocument,StandardFonts,PDFName,PDFRawStream,decodePDFRawStream} from '../../dist/vendor/pdf-lib/pdf-lib.mjs';
+import {createHash} from 'node:crypto';
 import {comparisonFiles} from '../support/comparison.mjs';
 import {unpackProject} from '../../dist/project-files.mjs';
 
@@ -38,7 +39,29 @@ async function mixedPdf(page){
   const png=await page.evaluate(()=>{const canvas=document.createElement('canvas');canvas.width=800;canvas.height=250;const context=canvas.getContext('2d');context.fillStyle='white';context.fillRect(0,0,800,250);context.fillStyle='black';context.font='bold 58px Arial';context.fillText('REGION ALPHA 123',30,125);return [...Uint8Array.from(atob(canvas.toDataURL().split(',')[1]),character=>character.charCodeAt(0))];});
   const doc=await PDFDocument.create(),font=await doc.embedFont(StandardFonts.Helvetica),image=await doc.embedPng(new Uint8Array(png)),sheet=doc.addPage([500,500]);sheet.drawText('HEADER_NATIVE',{x:50,y:430,font,size:18});sheet.drawImage(image,{x:50,y:100,width:400,height:125});return doc.save();
 }
+async function originalVisualData(bytes){
+  const doc=await PDFDocument.load(bytes),result=[];
+  for(const [,stream]of doc.context.enumerateIndirectObjects())if(stream instanceof PDFRawStream){
+    const data=decodePDFRawStream(stream).decode();
+    const image=stream.dict.get(PDFName.of('Subtype'))===PDFName.of('Image');
+    // The synthetic native header uses this original, unmodified text stream;
+    // OCR text is independently checked through PDF.js's extracted text/modes.
+    const native=new TextDecoder().decode(data).includes('<4845414445525F4E4154495645> Tj');
+    if(image||native)result.push((image?'image:':'native:')+createHash('sha256').update(data).digest('hex'));
+  }
+  expect(result.filter(value=>value.startsWith('image:'))).toHaveLength(1);expect(result.filter(value=>value.startsWith('native:'))).toHaveLength(1);return result.sort();
+}
+
 test('region and forced OCR read mixed pages without cropping or changing visible output',{tag:'@compatibility'},async({page})=>{
+  let original;
+  // Render font glyph paths for exact visual comparisons across page reloads.
+  // WebKit's system-font rasterization can differ with identical PDF streams;
+  // retain strict pixel equality and also verify original image/content bytes.
+  const output=async page=>{
+    const bytes=await downloadBytes(page,page.locator('#export-pdf')),fingerprint=await originalVisualData(bytes);
+    if(original)expect(fingerprint).toEqual(original);else original=fingerprint;
+    return inspectPdf(page,bytes,{disableFontFace:true});
+  };
   test.setTimeout(180000);await ready(page);const source=await mixedPdf(page);await page.locator('#file-input').setInputFiles({name:'mixed.pdf',mimeType:'application/pdf',buffer:Buffer.from(source)});await expect(page.locator('#file-input')).toBeEnabled();const before=await output(page);await page.locator('#ocr-language').selectOption('eng');await page.locator('#ocr-layout').selectOption('single-column');
   await page.getByRole('button',{name:'框選第 1 頁',exact:true}).click();await expect(page.locator('#crop-controls')).toBeEnabled();for(const [key,value]of [['x','10'],['y','55'],['width','80'],['height','25']])await page.locator('#crop-'+key).fill(value);await page.locator('#crop-ocr').click();await expect(page.locator('#ocr-dialog')).toBeVisible({timeout:120000});await expect(page.locator('#ocr-save')).toBeEnabled();await expect(page.locator('#ocr-lines')).toContainText('第 1 行');expect((await page.locator('#ocr-lines textarea').evaluateAll(elements=>elements.map(element=>element.value))).join(' ')).toContain('REGION ALPHA 123');
   await page.locator('#ocr-save').click();await page.locator('#ocr-close').click();const after=await output(page);expect(after[0].pixelHash).toBe(before[0].pixelHash);expect(after[0].width).toBe(500);expect(after[0].text).toContain('HEADER_NATIVE');expect(after[0].text).toContain('REGION ALPHA 123');expect(after[0].hiddenModes).toContain(3);
