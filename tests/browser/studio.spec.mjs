@@ -30,7 +30,7 @@ test('batch crop uses displayed proportions on even pages and restores every pag
   await page.locator('#undo').click();expect((await output(page)).map(item=>item.pixelHash)).toEqual(before.map(item=>item.pixelHash));await page.locator('#redo').click();await saved(page);await page.reload();await expect(page.locator('#file-input')).toBeEnabled();expect((await output(page)).map(item=>item.pixelHash)).toEqual(after.map(item=>item.pixelHash));
 });
 
-test('cancelling a staged batch crop leaves original pages and controls usable',async({page})=>{
+test('cancelling a staged batch crop leaves original pages and controls usable',{tag:'@compatibility'},async({page})=>{
   await page.route('**/workspace.mjs*',async route=>{
     const response=await route.fetch(),original=await response.text();
     // Hold the real staging loop after page one has rendered. A fixed delay
@@ -39,9 +39,12 @@ test('cancelling a staged batch crop leaves original pages and controls usable',
     expect(body).not.toBe(original);await route.fulfill({response,body});
   });
   await ready(page);await load(page,['A','B']);const before=await output(page);await page.getByRole('button',{name:'框選第 1 頁',exact:true}).click();await expect(page.locator('#crop-controls')).toBeEnabled();await page.locator('#crop-width').fill('50');await page.locator('.batch-crop-settings summary').click();await page.locator('#crop-batch-apply').click();
-  try{await expect(page.locator('#crop-status')).toContainText('2 / 5');await page.locator('#crop-batch-cancel').click();}
+  try{await expect(page.locator('#crop-status')).toContainText('2 / 5');await expect.poll(()=>page.evaluate(()=>typeof window.releaseBatchCropStage)).toBe('function');await page.locator('#crop-batch-cancel').click();}
   finally{await page.evaluate(()=>window.releaseBatchCropStage?.());}
   await expect(page.locator('#crop-status')).toContainText('原有頁面全部保留');await page.locator('#crop-close').click();await expect(page.locator('#file-input')).toBeEnabled();expect((await output(page)).map(item=>item.pixelHash)).toEqual(before.map(item=>item.pixelHash));
+  // Exercise editing after cancellation, not only the enabled appearance.
+  await page.getByRole('button',{name:'旋轉第 1 頁',exact:true}).click();await expect(page.locator('#file-input')).toBeEnabled();const rotated=await output(page);expect(rotated[0].width).toBe(before[0].height);expect(rotated[0].height).toBe(before[0].width);expect(rotated[0].pixelHash).not.toBe(before[0].pixelHash);expect(rotated.slice(1).map(item=>item.pixelHash)).toEqual(before.slice(1).map(item=>item.pixelHash));
+  await page.locator('#undo').click();await expect(page.locator('#file-input')).toBeEnabled();expect((await output(page)).map(item=>item.pixelHash)).toEqual(before.map(item=>item.pixelHash));
 });
 
 async function mixedPdf(page){
