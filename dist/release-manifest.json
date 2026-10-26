@@ -4,7 +4,7 @@
   "canonicalization": "utf8-lf-binary-raw",
   "date": "2026-10-27",
   "channel": "readiness",
-  "buildId": "9f4a5f5f646bf443ae27d20e9dd0f9d0d429ab21e0251da8af208527761f1909",
+  "buildId": "9957f81b11bbdbe3831a313a123d4742ab18496d10dac5a9ba540a67bb054031",
   "files": 271,
   "assets": [
     {
@@ -194,8 +194,8 @@
     },
     {
       "file": "project-tools.mjs",
-      "size": 7467,
-      "sha256": "b68ca2de75e9df32181c85694b1408aed1eb81b5b0e2b160ff893e2f6b6844f7"
+      "size": 7487,
+      "sha256": "6feeb3628da16026177874c30a45376ee137d9dc90937a4ea116851c746e712a"
     },
     {
       "file": "social-preview-20261022.png",
