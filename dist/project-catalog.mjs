@@ -16,6 +16,7 @@ export async function openProjectCatalog(factory=globalThis.indexedDB){
     activate:id=>access(value=>{if(!value.projects.some(p=>p.id===id&&!p.deleting))throw Error('找不到工作區，或工作區正在刪除。');value.active=id;return value;}),
     rename:(id,name)=>access(value=>{const item=value.projects.find(p=>p.id===id);if(!item)throw Error('找不到工作區。');if(!name.trim())throw Error('請輸入工作區名稱。');item.name=name.trim().slice(0,80);item.updatedAt=Date.now();return value;}),
     touch:id=>access(value=>{const item=value.projects.find(p=>p.id===id);if(item)item.updatedAt=Date.now();return value;}),
+    markBackup:(id,revision,at=Date.now())=>access(value=>{const item=value.projects.find(p=>p.id===id&&!p.deleting);if(item){item.lastBackupAt=at;item.lastBackupRevision=Number.isSafeInteger(revision)?revision:null;}return value;}),
     async remove(id){
       // Reserve the entry atomically before deleting its database, so another
       // tab cannot activate it between our active-project check and deletion.

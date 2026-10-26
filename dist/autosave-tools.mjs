@@ -1,4 +1,4 @@
-import {openDraftStore, validateDraft, validateDraftMetadata, DraftConflict} from './draft-store.mjs?v=20261024-ease1';
+import {openDraftStore, validateDraft, validateDraftMetadata, DraftConflict} from './draft-store.mjs?v=20261027-product1';
 
 export function installAutosave(api) {
   const {$} = api, preference = 'shijian.autosave.enabled';
@@ -105,7 +105,7 @@ export function installAutosave(api) {
   $('autosave-enabled').onchange = async () => { enabled = $('autosave-enabled').checked; setPreference(); if (!enabled) await clear(); else { changed(); controls(); } };
   // Passwords and transient output/proof controls never enter the snapshot.
   for (const type of ['input', 'change', 'click', 'pointerup', 'keyup']) document.addEventListener(type, event => {
-    if (event.target.closest('#password-dialog,.autosave-panel,.project-panel,.document-search,#proof-dialog,#preview-dialog')) return;
+    if (event.target.closest('#password-dialog,.autosave-panel,.project-panel,.document-search,#proof-dialog,#preview-dialog,#product-dialog,.product-nav,.product-empty-actions')) return;
     changed();
   });
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden' && dirty) void flush(); });
@@ -121,8 +121,9 @@ export function installAutosave(api) {
     },
     async backup() {
       while(saving) await new Promise(resolve=>setTimeout(resolve,15));
-      const prepared=await prepare(api.capture(),true);
-      return {project:prepared.project,documents:prepared.newDocuments,assets:prepared.newAssets};
+      const snapshot=api.capture(),savedRevision=!conflict&&hasStored&&JSON.stringify(snapshot.project)===lastRaw?revision:null;
+      const prepared=await prepare(snapshot,true);
+      return {project:prepared.project,documents:prepared.newDocuments,assets:prepared.newAssets,revision:savedRevision};
     },
     navigate(){paused=true;clearTimeout(timer);store?.close();},
     needsWarning(fallback) {

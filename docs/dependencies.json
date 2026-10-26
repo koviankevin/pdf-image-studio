@@ -1,0 +1,71 @@
+{
+  "format": "shijian-dependencies",
+  "version": 1,
+  "versionEvidence": "README.md recorded vendoring versions; PDF.js additionally declares its version in the shipped module. Rebuilt bundle provenance must be reverified on replacement.",
+  "packages": [
+    {
+      "name": "pdfjs-dist",
+      "version": "5.4.624",
+      "ecosystem": "npm",
+      "license": "Apache-2.0",
+      "directory": "dist/vendor/pdfjs",
+      "upstream": "https://github.com/mozilla/pdf.js"
+    },
+    {
+      "name": "@cantoo/pdf-lib",
+      "version": "2.11.1",
+      "ecosystem": "npm",
+      "license": "MIT",
+      "directory": "dist/vendor/pdf-lib",
+      "upstream": "https://github.com/cantoo-scribe/pdf-lib"
+    },
+    {
+      "name": "fflate",
+      "version": "0.8.3",
+      "ecosystem": "npm",
+      "license": "MIT",
+      "directory": "dist/vendor/fflate",
+      "upstream": "https://github.com/101arrowz/fflate"
+    },
+    {
+      "name": "@cantoo/fontkit",
+      "version": "2.0.12",
+      "ecosystem": "npm",
+      "license": "MIT",
+      "directory": "dist/vendor/fontkit",
+      "upstream": "https://github.com/cantoo-scribe/fontkit"
+    },
+    {
+      "name": "tesseract.js",
+      "version": "7.0.0",
+      "ecosystem": "npm",
+      "license": "Apache-2.0",
+      "directory": "dist/vendor/ocr",
+      "upstream": "https://github.com/naptha/tesseract.js"
+    },
+    {
+      "name": "tesseract.js-core",
+      "version": "7.0.0",
+      "ecosystem": "npm",
+      "license": "Apache-2.0",
+      "directory": "dist/vendor/ocr/core",
+      "upstream": "https://github.com/naptha/tesseract.js-core"
+    }
+  ],
+  "data": [
+    {
+      "name": "Noto Sans CJK TC Regular",
+      "directory": "dist/vendor/fonts",
+      "license": "OFL-1.1",
+      "upstream": "https://github.com/notofonts/noto-cjk",
+      "version": "unrecorded; exact bytes tracked by release-manifest.json"
+    },
+    {
+      "name": "tessdata_fast chi_tra and eng",
+      "directory": "dist/vendor/ocr/lang",
+      "license": "Apache-2.0",
+      "upstream": "https://github.com/tesseract-ocr/tessdata_fast",
+      "version": "unrecorded; exact bytes tracked by release-manifest.json"
+    }
+  ]
+}

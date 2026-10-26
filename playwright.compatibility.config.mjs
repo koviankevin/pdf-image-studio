@@ -14,11 +14,12 @@ export default defineConfig(regression, {
     'browser/productivity-regression.spec.mjs',
     'browser/studio.spec.mjs',
     'browser/ease.spec.mjs',
+    'browser/product.spec.mjs',
     'compatibility/*.spec.mjs',
   ],
   grep: /@compatibility/,
   timeout: 90_000,
-  globalTimeout: 420_000,
+  globalTimeout: 480_000,
   outputDir: 'test-results/compatibility',
   reporter: [['list'], ['html', {open: 'never', outputFolder: 'playwright-report/compatibility'}]],
   projects: ['firefox', 'webkit'].map(browserName => ({

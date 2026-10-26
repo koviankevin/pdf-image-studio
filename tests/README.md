@@ -1,5 +1,11 @@
 # 多來源 PDF 與掃描 OCR 回歸測試
 
+## 商品化支援與資料管理
+
+`browser/product.spec.mjs` 以真實範例 PDF 檢查教師／辦公匯入、既有文件保留、文字／A4 輸出、取消延遲字型、資料清單僅讀 metadata、當前與其他工作區備份、刪除取消與確認、跨分頁備份版本判斷、缺少儲存資訊及 SecurityError 降級、診斷去識別與 JSON 下載、啟動失敗時說明仍可用、更新前保護一般／已輸出的純 A4 版面、無效更新資訊、320 px／鍵盤焦點／200% 字級，以及閱讀說明不觸發草稿寫入。教師範例、資料管理、診斷及窄螢幕案例納入 Firefox／WebKit 相容性範圍。
+
+`unit/product.test.mjs`／`unit/release-info.test.mjs` 檢查診斷白名單、數量與備份版本判斷、摘要及版本輸入；`ci/release.test.mjs` 核對全份網站與產物雜湊，不能使用過期的 release metadata。修改 `dist/` 後先執行 `node scripts/release-manifest.mjs`，再啟動測試。
+
 ## 任務模式與多選排版
 
 `browser/ease.spec.mjs` 用實際下載確認四種任務沿用原本框選／PDF 預覽／自由排版／原生文字擷取路徑，切換前後 PDF 文字、尺寸與像素雜湊及 DPI 設定不變；也驗證任務記憶、搜尋快捷鍵、320 px 介面、混合頁面／中文標題整組縮放及 PDF 文字座標、多選對齊等距、跨紙張移動、一次復原重做、滑鼠多選／框選／觸控多選模式、磁吸／Alt 暫停、取消手勢，以及未失焦整組欄位的草稿還原。

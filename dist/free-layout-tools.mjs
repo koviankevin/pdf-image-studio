@@ -1,6 +1,6 @@
-import {sheetSize, arrangeItems, composeFreePdf, validateFreeLayout, MAX_SHEETS, MAX_LAYOUT_ITEMS, MM} from './free-layout-core.mjs?v=20261024-ease1';
+import {sheetSize, arrangeItems, composeFreePdf, validateFreeLayout, MAX_SHEETS, MAX_LAYOUT_ITEMS, MM} from './free-layout-core.mjs?v=20261027-product1';
 
-import {selectionBounds, moveSelection, scaleSelection, alignSelection, distributeSelection, snapSelection} from './layout-selection.mjs?v=20261024-ease1';
+import {selectionBounds, moveSelection, scaleSelection, alignSelection, distributeSelection, snapSelection} from './layout-selection.mjs?v=20261027-product1';
 
 export function installFreeLayout(api) {
   const {$} = api, NS = 'http://www.w3.org/2000/svg';

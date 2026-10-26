@@ -42,5 +42,5 @@ export function installTasks(api) {
     else $(task === 'organize' ? 'preview-pdf' : task === 'layout' ? 'free-layout' : 'ocr-start').click();
   };
   try {const saved = localStorage.getItem(key); if (Object.hasOwn(tasks, saved)) task = saved;} catch { /* Use all tools when storage is unavailable. */ }
-  apply(task); return {refresh, showAll: () => apply('all'), showText: () => {if(task!=='all')apply('text');document.querySelector('.ocr-settings').open=true;}};
+  apply(task); return {refresh, select:apply, showAll: () => apply('all'), showText: () => {if(task!=='all')apply('text');document.querySelector('.ocr-settings').open=true;}};
 }
