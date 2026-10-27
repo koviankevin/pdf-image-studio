@@ -35,6 +35,13 @@ jobs:
         run: npm run test:ci
       - name: Node unit tests
         run: npm run test:unit
+      - name: Use primary Ubuntu mirror for browser dependencies
+        run: |
+          # The Azure mirror can stall before Playwright tests start.
+          # Keep the existing Ubuntu repositories and package-signature checks.
+          if [ -f /etc/apt/apt-mirrors.txt ]; then
+            printf '%s\n' 'https://archive.ubuntu.com/ubuntu' | sudo tee /etc/apt/apt-mirrors.txt >/dev/null
+          fi
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
       - name: Browser regression tests
@@ -96,6 +103,13 @@ jobs:
           node-version: '22'
           cache: npm
       - run: npm ci
+      - name: Use primary Ubuntu mirror for browser dependencies
+        run: |
+          # The Azure mirror can stall before Playwright tests start.
+          # Keep the existing Ubuntu repositories and package-signature checks.
+          if [ -f /etc/apt/apt-mirrors.txt ]; then
+            printf '%s\n' 'https://archive.ubuntu.com/ubuntu' | sudo tee /etc/apt/apt-mirrors.txt >/dev/null
+          fi
       - name: Install selected browser
         run: npx playwright install --with-deps ${{ matrix.browser }}
       - name: Targeted compatibility tests
