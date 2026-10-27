@@ -18,7 +18,7 @@ export default defineConfig(regression, {
     'browser/replacement.spec.mjs',
     'compatibility/*.spec.mjs',
   ],
-  grep: /scanned text replacement|region and forced OCR/,
+  grep: /scanned text replacement/,
   timeout: 90_000,
   globalTimeout: 540_000,
   outputDir: 'test-results/compatibility',

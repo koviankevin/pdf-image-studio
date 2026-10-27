@@ -1,17 +1,13 @@
 export async function rasterDiagnostic(page,bytes){
- const results=[];
- for(const disableNative of [false,true]){
-  if(disableNative)await page.route('**/vendor/pdfjs/pdf.worker.mjs*',async route=>{const response=await route.fetch();await route.fulfill({response,body:'globalThis.DecompressionStream=undefined;\n'+await response.text()});});
-  results.push(await page.evaluate(async({bytes,disableNative})=>{
-   const pdfjs=await import('/vendor/pdfjs/pdf.mjs');pdfjs.GlobalWorkerOptions.workerSrc='/vendor/pdfjs/pdf.worker.mjs?diagnostic='+disableNative;
-   const task=pdfjs.getDocument({data:new Uint8Array(bytes),isEvalSupported:false,isOffscreenCanvasSupported:false,disableFontFace:true});
-   try{const doc=await task.promise,p=await doc.getPage(1),ops=await p.getOperatorList(),renders=[];
-    const count=data=>{let ink=0;for(let i=0;i<data.length;i+=4)if(data[i]<250&&data[i+3])ink++;return ink;};
-    for(const scale of [1,3]){const v=p.getViewport({scale}),c=document.createElement('canvas');c.width=v.width;c.height=v.height;const ctx=c.getContext('2d');await p.render({canvasContext:ctx,viewport:v}).promise;renders.push({scale,ink:count(ctx.getImageData(0,0,c.width,c.height).data)});c.width=c.height=1;}
-    const images=[];for(let i=0;i<ops.fnArray.length;i++)if(ops.fnArray[i]===pdfjs.OPS.paintImageXObject){const id=ops.argsArray[i][0],obj=(id.startsWith('g_')?p.commonObjs:p.objs).get(id);let nonWhite=0;if(obj.data)for(const n of obj.data)if(n<250)nonWhite++;images.push({id,width:obj.width,height:obj.height,kind:obj.kind,bytes:obj.data?.length,nonWhite,bitmap:!!obj.bitmap});}
-    return {disableNative,ds:typeof DecompressionStream,renders,images};
+ const results=await page.evaluate(async bytes=>{
+  const pdfjs=await import('/vendor/pdfjs/pdf.mjs'),results=[];
+  const count=data=>{let ink=0;for(let i=0;i<data.length;i+=4)if(data[i]<250&&data[i+3])ink++;return ink;};
+  for(const mode of ['default','cpu','retain','attached']){
+   const retained=[];class Factory{create(w,h){const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;return{canvas,context:canvas.getContext('2d',{willReadFrequently:true})};}reset(o,w,h){o.canvas.width=w;o.canvas.height=h;}destroy(o){retained.push(o.canvas);}}
+   const task=pdfjs.getDocument({data:new Uint8Array(bytes),isEvalSupported:false,isOffscreenCanvasSupported:false,...(mode==='retain'?{CanvasFactory:Factory}:{})});
+   try{const doc=await task.promise,p=await doc.getPage(1),ops=await p.getOperatorList(),v=p.getViewport({scale:1}),c=document.createElement('canvas');c.width=v.width;c.height=v.height;if(mode==='attached')document.body.append(c);const ctx=c.getContext('2d',{willReadFrequently:mode==='cpu'});await p.render({canvasContext:ctx,viewport:v}).promise;const rendered=count(ctx.getImageData(0,0,c.width,c.height).data);
+    const id=ops.argsArray[ops.fnArray.indexOf(pdfjs.OPS.paintImageXObject)][0],obj=p.objs.get(id),source=document.createElement('canvas');source.width=obj.width;source.height=obj.height;const sc=source.getContext('2d',{willReadFrequently:true}),raw=sc.createImageData(obj.width,obj.height);for(let i=0,j=0;i<obj.data.length;i+=3,j+=4){raw.data[j]=obj.data[i];raw.data[j+1]=obj.data[i+1];raw.data[j+2]=obj.data[i+2];raw.data[j+3]=255;}sc.putImageData(raw,0,0);const sourceInk=count(sc.getImageData(0,0,source.width,source.height).data);ctx.fillStyle='white';ctx.fillRect(0,0,c.width,c.height);ctx.drawImage(source,0,0,c.width,c.height);const copied=count(ctx.getImageData(0,0,c.width,c.height).data);results.push({mode,rendered,sourceInk,copied,retained:retained.length});source.width=source.height=1;c.remove();c.width=c.height=1;for(const canvas of retained)canvas.width=canvas.height=1;
    }finally{await task.destroy();}
-  },{bytes:[...bytes],disableNative}));
- }
- console.log('[raster-probe] '+JSON.stringify(results));
+  }return results;
+ },[...bytes]);console.log('[raster-probe] '+JSON.stringify(results));
 }
