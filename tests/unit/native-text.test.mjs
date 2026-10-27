@@ -39,3 +39,14 @@ test('bundled CJK scalar advances equal shaped glyph advances for both replaceme
  const {readFile}=await import('node:fs/promises'),fontkit=(await import('../../dist/vendor/fontkit/fontkit.mjs')).default;
  for(const name of ['NotoSansCJKtc-Regular.otf','NotoSerifCJKtc-Regular.otf']){const font=fontkit.create(new Uint8Array(await readFile(new URL('../../dist/vendor/fonts/'+name,import.meta.url))));for(const cp of [0x3400,...Array.from({length:1000},(_,i)=>0x4e00+i),0x9fff,0x20000,0x2fa1f]){const scalar=font.glyphForCodePoint(cp).advanceWidth,shaped=font.layout(String.fromCodePoint(cp)).glyphs.reduce((sum,g)=>sum+g.advanceWidth,0);assert.equal(scalar,shaped,name+' U+'+cp.toString(16));}}
 });
+
+test('Word page-sized clipping and opaque states inside text stay editable; smaller or complex clips stay blocked',async()=>{
+ const doc=await fixture(),p=doc.getPage(0),font=p.node.Resources().lookup(PDFName.of('Font')).keys()[0];p.node.Resources().set(PDFName.of('ExtGState'),doc.context.obj({Normal:{ca:1,CA:1},Alpha:{ca:.5}}));
+ const set=code=>p.node.set(PDFName.of('Contents'),doc.context.obj([doc.context.register(doc.context.flateStream(encode(code)))])),body=`BT ${font} 16 Tf /Normal gs 1 0 0 1 40 420 Tm (WORD_CLIPPED_LINE) Tj ET`;
+ for(const prefix of ['0.000008871 0 500 500 re W* n','0 0 500 500 re W n','2 0 0 2 0 0 cm 0 0 250 250 re W n','0 1 -1 0 500 0 cm 0 0 500 500 re W n']){set(`q ${prefix} ${body} Q`);const plan=await nativePagePlan(p);assert.ok(plan.blocks[0].safe,prefix);await removeNativeText(p,[mark(plan)]);assert.ok(!text(nativePageBytes(p)).includes('WORD_CLIPPED_LINE'));assert.ok(text(nativePageBytes(p)).includes(prefix));}
+ for(const prefix of ['0 0 500 500 re W','0 0 250 500 re 2 0 0 1 0 0 cm W n','0 0 20 20 re W n','1 0 0 1 20 0 cm 0 0 500 500 re W n','1 0 .2 1 0 0 cm 0 0 500 500 re W n','0 0 500 500 re 10 10 20 20 re W* n','0 0 500 500 re W* 10 10 20 20 re n','0 0 m 500 0 l 500 500 l 0 500 l h W n','0 0 20 20 re W n 0 0 500 500 re W n']){set(`q ${prefix} ${body} Q`);assert.equal((await nativePagePlan(p)).blocks[0].safe,false,prefix);}
+ set(`q 0 0 20 20 re W n Q ${body}`);assert.ok((await nativePagePlan(p)).blocks[0].safe,'Q restores prior clip');
+ set(`q 0 0 500 500 re W n BT ${font} 16 Tf /Alpha gs (transparent) Tj ET Q`);assert.equal((await nativePagePlan(p)).blocks[0].safe,false);
+ p.setMediaBox(-50,-25,500,500);p.setCropBox(0,0,400,400);set(`q -50 -25 500 500 re W n ${body} Q`);assert.ok((await nativePagePlan(p)).blocks[0].safe,'nonzero MediaBox origin');set(`q 0 0 400 400 re W n ${body} Q`);assert.equal((await nativePagePlan(p)).blocks[0].safe,false,'CropBox alone is not full-page proof');
+
+});

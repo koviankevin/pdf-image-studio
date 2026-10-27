@@ -41,22 +41,37 @@ export function nativePageBytes(page){
   const out=new Uint8Array(length);let pos=0;for(const bytes of parts){out.set(bytes,pos);pos+=bytes.length;out[pos++]=10;}return out;
 }
 const textOps=new Set(['Tj','TJ',"'",'"']);
-const allowedText=new Set(['Tf','Tc','Tw','Tz','TL','Tr','Ts','Td','TD','Tm','T*','Tj','TJ',"'",'"','rg','g','k','RG','G','K','BMC','BDC','EMC']);
+const allowedText=new Set(['Tf','Tc','Tw','Tz','TL','Tr','Ts','Td','TD','Tm','T*','Tj','TJ',"'",'"','rg','g','k','RG','G','K','BMC','BDC','EMC','gs']);
 const value=token=>token?.value;
+const identity=[1,0,0,1,0,0];
+const matrixProduct=(a,b)=>[a[0]*b[0]+a[2]*b[1],a[1]*b[0]+a[3]*b[1],a[0]*b[2]+a[2]*b[3],a[1]*b[2]+a[3]*b[3],a[0]*b[4]+a[2]*b[5]+a[4],a[1]*b[4]+a[3]*b[5]+a[5]];
+// Word wraps text in an axis-aligned MediaBox-sized clip. It does not hide
+// any page content. Preserve all partial, compound, or skewed clip rejection.
+function pageRectangle(args,matrix,box){
+  if(args.length!==4||args.some(a=>a.kind!=='number')||!matrix.every(Number.isFinite))return false;
+  if(!((Math.abs(matrix[1])<1e-10&&Math.abs(matrix[2])<1e-10)||(Math.abs(matrix[0])<1e-10&&Math.abs(matrix[3])<1e-10)))return false;
+  const [x,y,w,h]=args.map(value),corners=[[x,y],[x+w,y],[x,y+h],[x+w,y+h]].map(([x,y])=>[matrix[0]*x+matrix[2]*y+matrix[4],matrix[1]*x+matrix[3]*y+matrix[5]]),xs=corners.map(p=>p[0]),ys=corners.map(p=>p[1]);
+  const epsilon=.001;return w!==0&&h!==0&&Math.min(...xs)<=box.x+epsilon&&Math.max(...xs)>=box.x+box.width-epsilon&&Math.min(...ys)<=box.y+epsilon&&Math.max(...ys)>=box.y+box.height-epsilon;
+}
 export async function nativePagePlan(page){
-  const bytes=nativePageBytes(page),ops=contentOperations(bytes),blocks=[],stack=[],marked=[];let state={mode:0,font:null,unsafe:false,clip:false},active=null;
+  const bytes=nativePageBytes(page),ops=contentOperations(bytes),blocks=[],stack=[],marked=[];let state={mode:0,font:null,unsafe:false,clip:false,ctm:identity},active=null,path={parts:0,full:false,clip:false};
+  const box=page.getMediaBox();
   const resources=page.node.Resources(),fonts=resources?.lookup(PDFName.of('Font'));
   for(const op of ops){
+    if(op.name==='re'){path.full=path.parts===0&&pageRectangle(op.args,state.ctm,box);path.parts++;}
+    else if(['m','l','c','v','y','h'].includes(op.name)){path.parts++;path.full=false;}
+    else if(['W','W*'].includes(op.name))path.clip=true;
+    else if(['n','S','s','f','F','f*','B','B*','b','b*'].includes(op.name)){if(path.clip)state.clip||=!path.full;path={parts:0,full:false,clip:false};}
     if(op.name==='q'){stack.push({...state});if(active)active.safe=false;}
-    else if(op.name==='Q'){if(active)active.safe=false;state=stack.pop()||{mode:0,font:null,unsafe:true,clip:true};}
-    else if(['W','W*'].includes(op.name))state.clip=true;
+    else if(op.name==='Q'){if(active)active.safe=false;state=stack.pop()||{mode:0,font:null,unsafe:true,clip:true,ctm:identity};}
+    else if(op.name==='cm'){if(op.args.length!==6||op.args.some(a=>a.kind!=='number'))state.unsafe=true;else state.ctm=matrixProduct(state.ctm,op.args.map(value));}
     else if(op.name==='gs'){const states=resources?.lookup(PDFName.of('ExtGState')),entry=states?.lookup(PDFName.of(value(op.args[0])||''));if(!entry||entry.keys().some(k=>!['/Type','/ca','/CA','/BM','/SMask','/SA','/OP','/op','/OPM','/LW','/LC','/LJ','/ML','/D','/RI','/FL'].includes(String(k)))||['ca','CA'].some(k=>entry.has(PDFName.of(k))&&String(entry.lookup(PDFName.of(k)))!=='1')||entry.has(PDFName.of('BM'))&&String(entry.lookup(PDFName.of('BM')))!=='/Normal'||entry.has(PDFName.of('SMask'))&&String(entry.lookup(PDFName.of('SMask')))!=='/None')state.unsafe=true;}
     else if(op.name==='Tr')state.mode=value(op.args[0]);
     else if(op.name==='Tf')state.font=value(op.args[0]);
     else if(op.name==='BMC')marked.push(false);
     else if(op.name==='BDC'){const properties=op.args[1];marked.push(properties?.kind!=='dict'||properties.values.some(([k])=>['ActualText','OC','Alt','E'].includes(k.value))||op.args[0]?.value==='OC');}
     else if(op.name==='EMC'){if(!marked.length)bad();marked.pop();}
-    if(op.name==='BT'){if(active)bad();active={id:'b'+blocks.length,safe:!state.unsafe&&!state.clip&&!marked.some(Boolean),operands:[],codes:[],start:op.start};}
+    if(op.name==='BT'){if(active)bad();active={id:'b'+blocks.length,safe:!state.unsafe&&!state.clip&&!path.clip&&!marked.some(Boolean),operands:[],codes:[],start:op.start};}
     else if(op.name==='ET'){if(!active)bad();active.end=op.end;blocks.push(active);active=null;if(blocks.length>2000)bad('此頁文字區塊超過 2,000 個。');}
     else if(active){
       if(!allowedText.has(op.name)||state.unsafe||state.clip||state.mode!==0||marked.some(Boolean))active.safe=false;

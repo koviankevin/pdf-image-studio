@@ -1,5 +1,5 @@
 import * as pdfjs from './vendor/pdfjs/pdf.mjs';
-import {nativePagePlan} from './native-stream.mjs?v=20261027-native1';
+import {nativePagePlan} from './native-stream.mjs?v=20261027-word1';
 const multiply=(a,b)=>[a[0]*b[0]+a[2]*b[1],a[1]*b[0]+a[3]*b[1],a[0]*b[2]+a[2]*b[3],a[1]*b[2]+a[3]*b[3],a[0]*b[4]+a[2]*b[5]+a[4],a[1]*b[4]+a[3]*b[5]+a[5]];
 const point=(m,x,y)=>[m[0]*x+m[2]*y+m[4],m[1]*x+m[3]*y+m[5]];
 const I=[1,0,0,1,0,0],cache=new WeakMap();

@@ -1,5 +1,5 @@
-import {PRODUCT_VERSION,RELEASE_DATE,RELEASE_CHANNEL,diagnosticSnapshot,backupState,readableBytes,readableDate,issueCodes,validateReleaseInfo} from './product-core.mjs?v=20261027-native1';
-import {release} from './release-info.mjs?v=20261027-native1';
+import {PRODUCT_VERSION,RELEASE_DATE,RELEASE_CHANNEL,diagnosticSnapshot,backupState,readableBytes,readableDate,issueCodes,validateReleaseInfo} from './product-core.mjs?v=20261027-word1';
+import {release} from './release-info.mjs?v=20261027-word1';
 
 let installed;
 export function installProductShell(){
@@ -90,7 +90,7 @@ export function installProductShell(){
     if(api.getPages().length&&!confirm('示範文件會加入目前工作區，原文件會保留。要繼續嗎？也可以取消後先新增空白工作區。'))return;
     open('guide');controller=new AbortController();const signal=controller.signal;api.setBusy(true);refresh();say('正在準備示範文件與中文字型，可隨時停止…');
     try{
-      const {createDemoDocuments}=await raceAbort(import('./demo-documents.mjs?v=20261027-native1'),signal);
+      const {createDemoDocuments}=await raceAbort(import('./demo-documents.mjs?v=20261027-word1'),signal);
       const files=await raceAbort(createDemoDocuments(kind,{signal}),signal);signal.throwIfAborted();controller=null;dialog.close();api.setBusy(false);await api.addFiles(files);api.showTask(kind==='handout'?'layout':'organize');
     }catch(error){if(error.name==='AbortError')say('已停止準備範例，原文件保留。');else{recordIssue('DEMO');say('範例暫時無法準備，請重試；也可以直接加入自己的 PDF。',true);}}
     finally{controller=null;api.setBusy(false);refresh();}

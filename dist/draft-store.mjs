@@ -1,5 +1,5 @@
-import {validateFreeLayout} from './free-layout-core.mjs?v=20261027-native1';
-import {validateRecord,validateEditor} from './draft-validation.mjs?v=20261027-native1';
+import {validateFreeLayout} from './free-layout-core.mjs?v=20261027-word1';
+import {validateRecord,validateEditor} from './draft-validation.mjs?v=20261027-word1';
 export const DRAFT_DB = 'shijian.workspace.v1';
 export class DraftConflict extends Error {
   constructor() { super('其他分頁已更新草稿，這個分頁已暫停自動儲存，避免覆蓋。請先下載這裡的內容，或重新整理接續最新草稿。'); this.name = 'DraftConflict'; }

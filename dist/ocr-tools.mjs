@@ -1,7 +1,7 @@
-import {nativeOcrLines} from './native-stream.mjs?v=20261027-native1';
-import {mergeRegionLines} from './ocr-region.mjs?v=20261027-native1';
-import {textItemBounds} from './text-geometry.mjs?v=20261027-native1';
-import {inverse,multiply,transformPoint} from './document-model.mjs?v=20261027-native1';
+import {nativeOcrLines} from './native-stream.mjs?v=20261027-word1';
+import {mergeRegionLines} from './ocr-region.mjs?v=20261027-word1';
+import {textItemBounds} from './text-geometry.mjs?v=20261027-word1';
+import {inverse,multiply,transformPoint} from './document-model.mjs?v=20261027-word1';
 import {recognizeTwoColumns} from './ocr-columns.mjs';
 
 export function installOcr(api){
