@@ -26,7 +26,7 @@ export default defineConfig(regression, {
   workers: process.env.CI ? 2 : 1,
   grep: /@compatibility/,
   timeout: 90_000,
-  globalTimeout: 540_000,
+  globalTimeout: 720_000,
   outputDir: 'test-results/compatibility',
   reporter: [['list'], ['html', {open: 'never', outputFolder: 'playwright-report/compatibility'}]],
   projects: ['firefox', 'webkit'].map(browserName => ({

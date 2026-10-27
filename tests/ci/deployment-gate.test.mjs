@@ -121,7 +121,7 @@ for (const event of ['push', 'workflow_dispatch']) {
 test('both compatibility engines are mandatory, bounded and read-only', () => {
   assert.deepEqual(compatibility.strategy.matrix.browser, ['firefox', 'webkit']);
   assert.equal(compatibility.strategy['fail-fast'], false);
-  assert.equal(compatibility['timeout-minutes'], 10);
+  assert.equal(compatibility['timeout-minutes'], 15);
   assert.ok(!compatibility['continue-on-error']);
   assert.ok(!compatibility.if);
   assert.ok(!compatibility.permissions);

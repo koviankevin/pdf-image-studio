@@ -68,7 +68,7 @@ for(const task of ['capture','all'])test(`regional OCR from ${task} keeps cancel
   let release,requested;const gate=new Promise(resolve=>release=resolve),loading=new Promise(resolve=>requested=resolve);
   await page.route('**/vendor/ocr/tesseract.mjs',async route=>{const response=await route.fetch();requested();await gate;await route.fulfill({response});});
   await ready(page);await load(page);await mode(page,task);
-  if(task==='all'){await page.locator('.ocr-settings summary').click();await page.getByRole('button',{name:'框選第 1 頁',exact:true}).click();}else await page.locator('#task-start').click();
+  if(task==='all'){await page.locator('.ocr-settings > summary').click();await page.getByRole('button',{name:'框選第 1 頁',exact:true}).click();}else await page.locator('#task-start').click();
   await expect(page.locator('#crop-controls')).toBeEnabled();await page.locator('#crop-ocr').click();await loading;
   try{
     await expect(page.locator(`[data-task="${task==='all'?'all':'text'}"]`)).toHaveAttribute('aria-pressed','true');await expect(page.locator('#ocr-cancel')).toBeVisible();await page.locator('#ocr-cancel').click();await expect(page.locator('#file-input')).toBeEnabled({timeout:2000});await expect(page.locator('#status')).toContainText('已停止');
