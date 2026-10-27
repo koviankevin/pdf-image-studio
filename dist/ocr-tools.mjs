@@ -1,6 +1,7 @@
-import {mergeRegionLines} from './ocr-region.mjs?v=20261027-replace2';
-import {textItemBounds} from './text-geometry.mjs?v=20261027-replace2';
-import {inverse,multiply,transformPoint} from './document-model.mjs?v=20261027-replace2';
+import {nativeOcrLines} from './native-stream.mjs?v=20261027-native1';
+import {mergeRegionLines} from './ocr-region.mjs?v=20261027-native1';
+import {textItemBounds} from './text-geometry.mjs?v=20261027-native1';
+import {inverse,multiply,transformPoint} from './document-model.mjs?v=20261027-native1';
 import {recognizeTwoColumns} from './ocr-columns.mjs';
 
 export function installOcr(api){
@@ -8,7 +9,7 @@ export function installOcr(api){
   const {$}=api,dialog=$('ocr-dialog');let cancelJob=null,review=[],active=0,reviewUrl=null,loading=false,loadSerial=0;
   function refresh(){const items=api.chosen();$('ocr-start').disabled=api.isBusy()||!items.length;$('ocr-review').disabled=api.isBusy()||!api.getPages().some(p=>p.ocr);$('ocr-language').disabled=api.isBusy();$('ocr-layout').disabled=$('ocr-mode').disabled=api.isBusy();}
   async function nativeText(source,page,viewport){
-    const pdfPage=await api.getSourcePage(source,page.index),content=await pdfPage.getTextContent();
+    const pdfPage=await api.getTextPage(source,page),content=await pdfPage.getTextContent();
     const lines=[];
     for(const item of content.items){if(!item.str?.trim())continue;const bounds=textItemBounds(item,viewport.transform);if(!bounds)continue;const {left,top,right,bottom}=bounds;
       if(right<0||left>viewport.width||bottom<0||top>viewport.height)continue;
@@ -40,7 +41,7 @@ export function installOcr(api){
             const pending=createWorker($('ocr-language').value,1,{workerPath:new URL('./vendor/ocr/worker.min.js',import.meta.url).href,corePath:new URL('./vendor/ocr/core/',import.meta.url).href,langPath:new URL('./vendor/ocr/lang',import.meta.url).href,gzip:false,cacheMethod:'none',workerBlobURL:false,logger:m=>{if(!stopped)api.status(m.status==='recognizing text'?`${jobLabel}：辨識中 ${Math.round((m.progress||0)*100)}%`:`${jobLabel}：正在準備辨識引擎…`);}});
             pending.then(w=>{if(stopped)void w.terminate();}).catch(()=>{});worker=await race(pending);await race(worker.setParameters({tessedit_pageseg_mode:pageSegMode,preserve_interword_spaces:'1'}));
           }
-          const rendered=await race(api.renderBlob(source,page.index,300,'png',false,{...renderRecord,annotations:[]},{maxEdge:3500}));
+          const rendered=await race(api.renderBlob(source,page.index,300,'png',false,{...renderRecord,annotations:(page.annotations||[]).filter(m=>m.type==='native')},{maxEdge:3500}));
           if(layout==='two-column'){
             lines=await recognizeTwoColumns(worker,rendered,viewport,race,column=>{jobLabel=`文字辨識 ${i+1} / ${items.length} · ${column?'右':'左'}欄`;api.status(`${jobLabel}：準備分欄影像…`);});
           }else{
@@ -70,12 +71,12 @@ export function installOcr(api){
     catch(e){say(`原稿預覽失敗：${e.message}`,true);}finally{if(serial===loadSerial){loading=false;$('ocr-save').disabled=false;}}
   }
   function highlight(line){const item=review[active];if(!item.reviewViewport)return;const g=document.createElementNS('http://www.w3.org/2000/svg','g'),rect=document.createElementNS('http://www.w3.org/2000/svg','rect');g.setAttribute('transform',`matrix(${multiply(item.reviewViewport.transform,line.frame||item.ocr.frame).join(' ')})`);for(const [key,value]of Object.entries({x:line.x,y:line.y,width:line.width,height:line.height,fill:'#ffe234','fill-opacity':'.25',stroke:'#d47a00','stroke-width':'1'}))rect.setAttribute(key,value);g.append(rect);$('ocr-overlay').replaceChildren(g);}
-  async function openReview(ids){if(api.isBusy())return;review=api.getPages().filter(p=>p.ocr&&(!ids||ids.includes(p.id))).map(p=>({...p,ocr:structuredClone(p.ocr)}));if(!review.length)return;api.setBusy(true);active=0;$('ocr-page').replaceChildren();review.forEach((p,i)=>$('ocr-page').add(new Option(`第 ${api.getPages().findIndex(v=>v.id===p.id)+1} 頁`,i)));dialog.showModal();say('文字只在此裝置處理。可逐行校對，再複製或儲存。');await showPage();}
+  async function openReview(ids){if(api.isBusy())return;review=api.getPages().filter(p=>p.ocr&&(!ids||ids.includes(p.id))).map(p=>({...p,ocr:structuredClone({...p.ocr,lines:nativeOcrLines(p)})}));if(!review.length)return;api.setBusy(true);active=0;$('ocr-page').replaceChildren();review.forEach((p,i)=>$('ocr-page').add(new Option(`第 ${api.getPages().findIndex(v=>v.id===p.id)+1} 頁`,i)));dialog.showModal();say('文字只在此裝置處理。可逐行校對，再複製或儲存。');await showPage();}
   $('ocr-page').onchange=()=>{active=Number($('ocr-page').value);void showPage();};
   $('ocr-review').onclick=()=>openReview();
   $('ocr-copy').onclick=async()=>{try{await navigator.clipboard.writeText(textOf(review[active]));say('已複製此頁文字。');}catch{say('無法存取剪貼簿，請下載 TXT 或直接選取文字複製。',true);}};
   $('ocr-text-download').onclick=()=>api.download(new Blob(['\ufeff'+review.map(p=>`第 ${api.getPages().findIndex(v=>v.id===p.id)+1} 頁\n${textOf(p)}`).join('\n\n')],{type:'text/plain;charset=utf-8'}),`${api.filename()}_文字.txt`);
-  $('ocr-save').onclick=()=>{if(loading)return;api.updateRecords(review.map(({reviewViewport,...p})=>({...p,ocr:structuredClone(p.ocr)})));say('已儲存校對。關閉後按「下載新 PDF」，即可取得含 OCR 文字層的文件。');};
+  $('ocr-save').onclick=()=>{if(loading)return;api.updateRecords(review.map(({reviewViewport,...p})=>({...p,ocr:structuredClone({...p.ocr,lines:nativeOcrLines(p)})})));say('已儲存校對。關閉後按「下載新 PDF」，即可取得含 OCR 文字層的文件。');};
   $('ocr-close').onclick=()=>dialog.close();dialog.addEventListener('close',()=>{++loadSerial;if(reviewUrl)URL.revokeObjectURL(reviewUrl);reviewUrl=null;review=[];$('ocr-image').removeAttribute('src');$('ocr-lines').replaceChildren();api.setBusy(false);});
   return{refresh,openReview,recognizeRegion:(record,region)=>recognize([record],{region}),
     captureDraft:()=>dialog.open?{kind:'ocr',records:review.map(item=>({id:item.id,ocr:structuredClone(item.ocr)})),active}:null,

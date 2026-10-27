@@ -2,9 +2,9 @@
 window.addEventListener('dragover', event => event.preventDefault());
 window.addEventListener('drop', event => event.preventDefault());
 let productShell;
-import('./product-tools.mjs?v=20261027-replace2').then(module=>{
+import('./product-tools.mjs?v=20261027-native1').then(module=>{
   productShell=module.installProductShell();
-  return import('./workspace.mjs?v=20261027-replace2');
+  return import('./workspace.mjs?v=20261027-native1');
 }).catch(() => {
   productShell?.unavailable();
   const status = document.getElementById('status');

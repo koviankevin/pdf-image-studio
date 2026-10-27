@@ -1,6 +1,7 @@
+import {nativeOcrLines} from './native-stream.mjs?v=20261027-native1';
 import {PDFDocument,rgb,pushGraphicsState,popGraphicsState,concatTransformationMatrix,setTextRenderingMode,rectangle,clip,endPath} from './vendor/pdf-lib/pdf-lib.mjs';
 
-import {replacementFonts,replacementLayout,replacementMeasure} from './replacement-core.mjs?v=20261027-replace2';
+import {replacementFonts,replacementLayout,replacementMeasure} from './replacement-core.mjs?v=20261027-native1';
 
 export const transformPoint=(m,x,y)=>[m[0]*x+m[2]*y+m[4],m[1]*x+m[3]*y+m[5]];
 export function multiply(a,b){return[a[0]*b[0]+a[2]*b[1],a[1]*b[0]+a[3]*b[1],a[0]*b[2]+a[2]*b[3],a[1]*b[2]+a[3]*b[3],a[0]*b[4]+a[2]*b[5]+a[4],a[1]*b[4]+a[3]*b[5]+a[5]];}
@@ -32,7 +33,9 @@ export async function replacementFontMetrics(name){
       for(const glyph of font.layout(text).glyphs){const box=glyph.bbox;left=Math.min(left,x+box.minX);right=Math.max(right,x+box.maxX);top=Math.max(top,box.maxY);bottom=Math.min(bottom,box.minY);x+=glyph.advanceWidth;}
       const value={advance:x,left,right,top,bottom};cache.set(text,value);if(cache.size>2500)cache.delete(cache.keys().next().value);return value;
     }
-    return {widthOfTextAtSize:(text,size)=>run(text).advance*size/font.unitsPerEm,boundsAtSize:(text,size)=>{const b=run(text),scale=size/font.unitsPerEm;return {left:b.left*scale,right:b.right*scale,ascent:b.top*scale,descent:-b.bottom*scale};}};
+    // Single CJK advance does not need shaping or outline bounds. Completed
+    // lines still use full shaping and real ink bounds for clipping checks.
+    return {widthOfTextAtSize:(text,size)=>{const cp=text.codePointAt(0);const singleCjk=text.length===(cp>0xffff?2:1)&&((cp>=0x3400&&cp<=0x9fff)||(cp>=0x20000&&cp<=0x2fa1f));return(singleCjk?font.glyphForCodePoint(cp).advanceWidth:run(text).advance)*size/font.unitsPerEm;},boundsAtSize:(text,size)=>{const b=run(text),scale=size/font.unitsPerEm;return {left:b.left*scale,right:b.right*scale,ascent:b.top*scale,descent:-b.bottom*scale};}};
   })().catch(error=>{measurementFonts.delete(name);throw error;}));
   return measurementFonts.get(name);
 }
@@ -41,8 +44,8 @@ export async function drawPageExtras(doc,page,record,getFont){
   for(const mark of record.annotations||[]){
     page.pushOperators(pushGraphicsState(),concatTransformationMatrix(...mark.frame));
     const c=color(mark.color),w=mark.thickness||2;
-    if(mark.type==='replace'){
-      page.drawRectangle({x:mark.x,y:mark.y,width:mark.width,height:mark.height,color:color(mark.background),borderWidth:0});
+    if(['replace','native'].includes(mark.type)){
+      if(mark.type==='replace')page.drawRectangle({x:mark.x,y:mark.y,width:mark.width,height:mark.height,color:color(mark.background),borderWidth:0});
       if(mark.text){
         const font=await getFont(mark.font),metrics=embeddedFontNames.has(font)?await replacementFontMetrics(embeddedFontNames.get(font)):font,layout=replacementLayout(mark,replacementMeasure(metrics,mark.fontSize));
         if(layout.overflow)throw Error('替換文字超出範圍，請縮小字級、換行或擴大替換框。');
@@ -62,7 +65,7 @@ export async function drawPageExtras(doc,page,record,getFont){
   }
   if(record.ocr?.mode==='ocr'){
     const font=await getFont();
-    for(const line of record.ocr.lines){
+    for(const line of nativeOcrLines(record)){
       const text=line.text.trim().replace(/[\r\n]+/g,' ');if(!text)continue;
       const size=Math.max(2,line.height*.9),natural=font.widthOfTextAtSize(text,size),sx=line.width/Math.max(natural,.01);
       page.pushOperators(pushGraphicsState(),concatTransformationMatrix(...(line.frame||record.ocr.frame)),concatTransformationMatrix(sx,0,0,-1,line.x,line.y+line.height*.85),setTextRenderingMode(3));

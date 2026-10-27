@@ -1,27 +1,27 @@
-import {pdfCanvasContext} from './pdf-canvas.mjs?v=20261027-replace2';
-import {installProductShell} from './product-tools.mjs?v=20261027-replace2';
-import {installTasks} from './task-tools.mjs?v=20261027-replace2';
-import {installCompare} from './compare-tools.mjs?v=20261027-replace2';
-import {installTemplates} from './template-tools.mjs?v=20261027-replace2';
+import {pdfCanvasContext} from './pdf-canvas.mjs?v=20261027-native1';
+import {installProductShell} from './product-tools.mjs?v=20261027-native1';
+import {installTasks} from './task-tools.mjs?v=20261027-native1';
+import {installCompare} from './compare-tools.mjs?v=20261027-native1';
+import {installTemplates} from './template-tools.mjs?v=20261027-native1';
 import * as pdfjs from './vendor/pdfjs/pdf.mjs';
 import {PDFDocument} from './vendor/pdf-lib/pdf-lib.mjs';
 import {zipSync} from './vendor/fflate/fflate.mjs';
 import {parsePages,withDensity,dimensions} from './utils.mjs';
-import {movePages,assemblePdf,viewportCrop} from './editor-core.mjs?v=20261027-replace2';
-import {installPageTools} from './page-tools.mjs?v=20261027-replace2';
-import {installAnnotations} from './annotation-tools.mjs?v=20261027-replace2';
-import {installOcr} from './ocr-tools.mjs?v=20261027-replace2';
-import {imageToPdf} from './document-model.mjs?v=20261027-replace2';
-import {installImposition} from './imposition-tools.mjs?v=20261027-replace2';
-import {installWorkflow} from './workflow-tools.mjs?v=20261027-replace2';
-import {installPdfProof} from './pdf-proof.mjs?v=20261027-replace2';
-import {installFreeLayout} from './free-layout-tools.mjs?v=20261027-replace2';
-import {installAutosave} from './autosave-tools.mjs?v=20261027-replace2';
-import {installProjects} from './project-tools.mjs?v=20261027-replace2';
-import {installDocumentSearch} from './document-search.mjs?v=20261027-replace2';
-import {installPageOperations} from './page-operations.mjs?v=20261027-replace2';
-import {installShortcuts} from './keyboard-shortcuts.mjs?v=20261027-replace2';
-import {validateFreeLayout} from './free-layout-core.mjs?v=20261027-replace2';
+import {movePages,assemblePdf,viewportCrop} from './editor-core.mjs?v=20261027-native1';
+import {installPageTools} from './page-tools.mjs?v=20261027-native1';
+import {installAnnotations} from './annotation-tools.mjs?v=20261027-native1';
+import {installOcr} from './ocr-tools.mjs?v=20261027-native1';
+import {imageToPdf} from './document-model.mjs?v=20261027-native1';
+import {installImposition} from './imposition-tools.mjs?v=20261027-native1';
+import {installWorkflow} from './workflow-tools.mjs?v=20261027-native1';
+import {installPdfProof} from './pdf-proof.mjs?v=20261027-native1';
+import {installFreeLayout} from './free-layout-tools.mjs?v=20261027-native1';
+import {installAutosave} from './autosave-tools.mjs?v=20261027-native1';
+import {installProjects} from './project-tools.mjs?v=20261027-native1';
+import {installDocumentSearch} from './document-search.mjs?v=20261027-native1';
+import {installPageOperations} from './page-operations.mjs?v=20261027-native1';
+import {installShortcuts} from './keyboard-shortcuts.mjs?v=20261027-native1';
+import {validateFreeLayout} from './free-layout-core.mjs?v=20261027-native1';
 
 pdfjs.GlobalWorkerOptions.workerSrc=new URL('./vendor/pdfjs/pdf.worker.mjs',import.meta.url).href;
 const $=id=>document.getElementById(id);
@@ -94,18 +94,38 @@ function getSourcePage(source,index){
   pdfjs.PagesMapper.instance.pagesNumber=source.pdf.numPages;
   return source.pdf.getPage(index+1);
 }
-async function renderBlob(source,index,dpi,type='png',thumbnail=false,edit={},options={}){
+async function createEditedSource(source,index,edit,signal){
+  signal?.throwIfAborted();const data=await assemblePdf([{...edit,sourceId:source.id,index,rotation:0,crop:null,ocr:null}],new Map([[source.id,source]]),'頁面標記',{signal});signal?.throwIfAborted();
+  const task=pdfjs.getDocument({data,cMapUrl:new URL('./vendor/pdfjs/cmaps/',import.meta.url).href,cMapPacked:true,standardFontDataUrl:new URL('./vendor/pdfjs/standard_fonts/',import.meta.url).href,wasmUrl:new URL('./vendor/pdfjs/wasm/',import.meta.url).href,isEvalSupported:false});annotationTasks.add(task);
+  let released=false;const abort=()=>{void task.destroy().catch(()=>{});},release=async()=>{if(released)return;released=true;signal?.removeEventListener('abort',abort);annotationTasks.delete(task);await task.destroy();};signal?.addEventListener('abort',abort,{once:true});
+  try{const pdf=await task.promise;signal?.throwIfAborted();return{pdf,task,release};}catch(error){await release().catch(()=>{});throw error;}
+}
+async function editedSource(source,index,edit,{transient=false,signal}={}){
   if(edit.annotations?.length){
+    if(transient){const prepared=await createEditedSource(source,index,edit,signal);return{source:prepared,index:0,release:prepared.release};}
     let cached=annotationCache.get(edit.annotations);
-    if(!cached){cached=(async()=>{const data=await assemblePdf([{...edit,sourceId:source.id,index,rotation:0,crop:null,ocr:null}],new Map([[source.id,source]]),'頁面標記');const task=pdfjs.getDocument({data,cMapUrl:new URL('./vendor/pdfjs/cmaps/',import.meta.url).href,cMapPacked:true,standardFontDataUrl:new URL('./vendor/pdfjs/standard_fonts/',import.meta.url).href,wasmUrl:new URL('./vendor/pdfjs/wasm/',import.meta.url).href,isEvalSupported:false});annotationTasks.add(task);return{pdf:await task.promise,task};})();annotationCache.set(edit.annotations,cached);cached.catch(()=>annotationCache.delete(edit.annotations));if(annotationCache.size>8){const [key,old]=annotationCache.entries().next().value;annotationCache.delete(key);void old.then(s=>{annotationTasks.delete(s.task);return s.task.destroy();}).catch(()=>{});}}
-    source=await cached;index=0;
+    if(!cached){cached=createEditedSource(source,index,edit);annotationCache.set(edit.annotations,cached);cached.catch(()=>annotationCache.delete(edit.annotations));if(annotationCache.size>8){const [key,old]=annotationCache.entries().next().value;annotationCache.delete(key);void old.then(s=>s.release()).catch(()=>{});}}
+    return{source:await cached,index:0};
   }
-  const page=await getSourcePage(source,index),rotation=(page.rotate+(edit.rotation||0))%360,base=page.getViewport({scale:1,rotation}),region=viewportCrop(base,edit.crop);
-  let scale=thumbnail?Math.min(1,360/Math.max(region.width,region.height)):dpi/72;
-  if(options.maxEdge>0)scale=Math.min(scale,options.maxEdge/Math.max(region.width,region.height));
-  const viewport=page.getViewport({scale,rotation,offsetX:-region.x*scale,offsetY:-region.y*scale}),canvas=document.createElement('canvas');
-  try{const ceiling=options.maxEdge||Infinity;const {width,height}=dimensions(Math.min(ceiling,region.width*scale),Math.min(ceiling,region.height*scale));canvas.width=width;canvas.height=height;renderTask=page.render({canvasContext:pdfCanvasContext(canvas,{alpha:false}),viewport,background:'#fff'});await renderTask.promise;renderTask=null;const raw=await canvasBlob(canvas,type==='png'?'image/png':'image/jpeg',options.quality??.95);const effectiveDpi=Math.max(1,Math.round(scale*72));return{blob:thumbnail?raw:await withDensity(raw,effectiveDpi,type),width,height,dpi:effectiveDpi};}
-  finally{renderTask=null;canvas.width=canvas.height=0;page.cleanup();}
+  return{source,index};
+}
+const nativeAnnotations=new WeakMap();
+async function getTextPage(source,record){
+  if(!record.annotations?.some(m=>m.type==='native'))return getSourcePage(source,record.index);
+  let marks=nativeAnnotations.get(record.annotations);if(!marks){marks=record.annotations.filter(m=>m.type==='native');nativeAnnotations.set(record.annotations,marks);}
+  const prepared=await editedSource(source,record.index,{...record,annotations:marks});return getSourcePage(prepared.source,prepared.index);
+}
+async function inspectNativeText(source,index){const {inspectNativeText}=await import('./native-text-analysis.mjs?v=20261027-native1');return inspectNativeText(source.doc.getPage(index),await getSourcePage(source,index));}
+async function renderBlob(source,index,dpi,type='png',thumbnail=false,edit={},options={}){
+  const signal=options.signal;signal?.throwIfAborted();const prepared=await editedSource(source,index,edit,options);({source,index}=prepared);
+  let page,canvas,localRender;const abort=()=>localRender?.cancel();signal?.addEventListener('abort',abort,{once:true});
+  try{
+    page=await getSourcePage(source,index);signal?.throwIfAborted();const rotation=(page.rotate+(edit.rotation||0))%360,base=page.getViewport({scale:1,rotation}),region=viewportCrop(base,edit.crop);
+    let scale=thumbnail?Math.min(1,360/Math.max(region.width,region.height)):dpi/72;if(options.maxEdge>0)scale=Math.min(scale,options.maxEdge/Math.max(region.width,region.height));
+    const viewport=page.getViewport({scale,rotation,offsetX:-region.x*scale,offsetY:-region.y*scale});canvas=document.createElement('canvas');const ceiling=options.maxEdge||Infinity,{width,height}=dimensions(Math.min(ceiling,region.width*scale),Math.min(ceiling,region.height*scale));canvas.width=width;canvas.height=height;
+    localRender=page.render({canvasContext:pdfCanvasContext(canvas,{alpha:false}),viewport,background:'#fff'});renderTask=localRender;await localRender.promise;signal?.throwIfAborted();if(renderTask===localRender)renderTask=null;
+    const raw=await canvasBlob(canvas,type==='png'?'image/png':'image/jpeg',options.quality??.95),effectiveDpi=Math.max(1,Math.round(scale*72)),blob=thumbnail?raw:await withDensity(raw,effectiveDpi,type);signal?.throwIfAborted();return{blob,width,height,dpi:effectiveDpi};
+  }finally{signal?.removeEventListener('abort',abort);if(renderTask===localRender)renderTask=null;if(canvas)canvas.width=canvas.height=0;page?.cleanup();await prepared.release?.();}
 }
 async function pageViewport(source,edit){const page=await getSourcePage(source,edit.index),rotation=(page.rotate+(edit.rotation||0))%360,base=page.getViewport({scale:1,rotation}),region=viewportCrop(base,edit.crop);const view=page.getViewport({scale:1,rotation,offsetX:-region.x,offsetY:-region.y});view.width=region.width;view.height=region.height;return view;}
 function updateRecords(edits){const replacements=new Map(edits.map(p=>[p.id,p]));snapshot();pages=pages.map(p=>replacements.get(p.id)||p);changed();}
@@ -182,7 +202,7 @@ $('download-all').onclick=async()=>{if(busy||!results.length)return;setBusy(true
 
 // The optional browser tool shares selection and output settings with the UI.
 if(document.modelContext?.registerTool){const lifecycle=new AbortController();window.addEventListener('pagehide',()=>lifecycle.abort(),{once:true});try{Promise.resolve(document.modelContext.registerTool({name:'configure_pdf_image_output',title:'選取頁面與設定圖片輸出',description:'Select current workspace page numbers and configure image resolution and format. Does not start conversion or download.',inputSchema:{type:'object',properties:{dpi:{type:'integer',enum:[150,300,450,600]},format:{type:'string',enum:['png','jpeg']},pages:{type:'string'}},required:['dpi','format','pages'],additionalProperties:false},annotations:{readOnlyHint:false,untrustedContentHint:false},execute(input){if(busy)throw new Error('正在處理檔案。');if(!input||![150,300,450,600].includes(input.dpi)||!['png','jpeg'].includes(input.format)||typeof input.pages!=='string')throw new Error('無效設定。');const indices=parsePages(input.pages,pages.length);selected=new Set(indices.map(i=>pages[i-1].id));$('dpi').value=String(input.dpi);$('format').value=input.format;$('pages').value=input.pages;$('dpi').onchange();clearResults();drawPages();workflowTools?.savePreferences();return{dpi:input.dpi,format:input.format,selectedPages:indices};}},{signal:lifecycle.signal})).catch(()=>{});}catch{}}
-const sharedApi={$,projects:()=>projectTools,showTask:value=>taskTools.select(value),showAllTools:()=>taskTools?.showAll(),showTextTools:()=>taskTools?.showText(),layoutTemplate:()=>freeLayoutTools.template(),applyLayoutTemplate:(...args)=>freeLayoutTools.applyTemplate(...args),addFiles,duplicatePages,undo,redo,autosave:()=>autosaveTools,validateProject:async value=>{for(const source of value.project.sources){const doc=await PDFDocument.load(await value.documents.get(source.key).arrayBuffer(),{updateMetadata:false});if(doc.getPageCount()!==source.count||doc.isEncrypted)throw Error('專案來源 PDF 不完整或仍有加密。');}},getPages:()=>pages,getSources:()=>sources,getSourcePage,cancelRendering:()=>renderTask?.cancel(),recognizeRegion:(record,region)=>ocrTools.recognizeRegion(record,region),chosen,isBusy:()=>busy,setBusy,status,toast,filename,bytes,renderBlob,pageViewport,commitEdits,updateRecords,download,showImage,markExported:records=>workflowTools?.markExported(records),previewChosen:()=>proofTools.openChosen(),showProof:options=>proofTools.show(options),needsLeaveWarning:fallback=>autosaveTools?.needsWarning(fallback)??fallback,autosaveChanged:()=>autosaveTools?.changed(),hasLayoutContent:()=>freeLayoutTools?.isCreated()||false,hasLayoutDraft:()=>freeLayoutTools?.hasPending()||false,hasEditorDraft:()=>!!(pageTools?.hasDraft?.()||annotationTools?.hasDraft?.()||ocrTools?.hasDraft?.()),addLayoutPiece:record=>freeLayoutTools.addPiece(record),openFreeLayout:()=>$('free-layout').click(),layoutChanged:()=>{collectWorkspaceResources();drawSources();updateControls();}};
+const sharedApi={$,projects:()=>projectTools,showTask:value=>taskTools.select(value),showAllTools:()=>taskTools?.showAll(),showTextTools:()=>taskTools?.showText(),layoutTemplate:()=>freeLayoutTools.template(),applyLayoutTemplate:(...args)=>freeLayoutTools.applyTemplate(...args),addFiles,duplicatePages,undo,redo,autosave:()=>autosaveTools,validateProject:async value=>{for(const source of value.project.sources){const doc=await PDFDocument.load(await value.documents.get(source.key).arrayBuffer(),{updateMetadata:false});if(doc.getPageCount()!==source.count||doc.isEncrypted)throw Error('專案來源 PDF 不完整或仍有加密。');}},getPages:()=>pages,getSources:()=>sources,getSourcePage,getTextPage,inspectNativeText,cancelRendering:()=>renderTask?.cancel(),recognizeRegion:(record,region)=>ocrTools.recognizeRegion(record,region),chosen,isBusy:()=>busy,setBusy,status,toast,filename,bytes,renderBlob,pageViewport,commitEdits,updateRecords,download,showImage,markExported:records=>workflowTools?.markExported(records),previewChosen:()=>proofTools.openChosen(),showProof:options=>proofTools.show(options),needsLeaveWarning:fallback=>autosaveTools?.needsWarning(fallback)??fallback,autosaveChanged:()=>autosaveTools?.changed(),hasLayoutContent:()=>freeLayoutTools?.isCreated()||false,hasLayoutDraft:()=>freeLayoutTools?.hasPending()||false,hasEditorDraft:()=>!!(pageTools?.hasDraft?.()||annotationTools?.hasDraft?.()||ocrTools?.hasDraft?.()),addLayoutPiece:record=>freeLayoutTools.addPiece(record),openFreeLayout:()=>$('free-layout').click(),layoutChanged:()=>{collectWorkspaceResources();drawSources();updateControls();}};
 annotationTools=installAnnotations(sharedApi);ocrTools=installOcr(sharedApi);
 impositionTools=installImposition(sharedApi);
 pageTools=installPageTools(sharedApi);

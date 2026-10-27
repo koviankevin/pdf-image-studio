@@ -28,3 +28,7 @@
 @media(max-width:700px){.topbar{flex-wrap:wrap}.product-nav{width:100%;justify-content:flex-start}.product-dialog{padding:16px}.product-columns{grid-template-columns:1fr}.product-nav button{font-size:.75rem}.product-dialog .preview-header{position:sticky;top:-16px;z-index:2;background:var(--surface);padding:12px 0}.product-tabs button{flex-basis:calc(50% - 8px);white-space:normal}}
 
 .mark-replace-pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}.mark-replace-pair label{font-size:.8125rem;line-height:1.6}.mark-replace-pair input{width:100%;min-width:0}#mark-replace-fields select{width:100%}#mark-replacement-status{line-height:1.7}
+
+.mark-native-panel{padding:12px;margin:8px 0 16px;border:1px solid #cbd6e5;border-radius:12px;background:#f5f8fc}.mark-native-panel select{min-width:0;max-width:100%;flex:1}.mark-native-panel .search-row{flex-wrap:wrap}.mark-native-panel button{white-space:normal}
+
+.mark-native-panel .search-row select{flex:1 1 220px;width:100%}

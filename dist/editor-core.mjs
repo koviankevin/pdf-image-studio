@@ -1,6 +1,7 @@
+import {removeNativeText} from './native-stream.mjs?v=20261027-native1';
 import {PDFDocument,degrees} from './vendor/pdf-lib/pdf-lib.mjs';
 import {parsePages} from './utils.mjs';
-import {drawPageExtras,embedChineseFont} from './document-model.mjs?v=20261027-replace2';
+import {drawPageExtras,embedChineseFont} from './document-model.mjs?v=20261027-native1';
 import {checkpoint} from './cancellation.mjs';
 
 export function parseSplitRanges(text,count){
@@ -42,7 +43,15 @@ export async function assemblePdf(pages,sources,title,{signal}={}){
   for(const [sourceId,group] of groups){
     await checkpoint(signal);
     const source=sources.get(sourceId);if(!source)throw new Error('找不到來源 PDF，請重新加入檔案。');
-    const newPages=await output.copyPages(source.doc,group.map(page=>page.index));
+    let input=source.doc,indices=group.map(page=>page.index);
+    if(group.some(page=>page.annotations?.some(mark=>mark.type==='native'))){
+      input=await PDFDocument.create();const prepared=await input.copyPages(source.doc,indices);
+      for(let i=0;i<prepared.length;i++){await checkpoint(signal);await removeNativeText(prepared[i],(group[i].annotations||[]).filter(mark=>mark.type==='native'));input.addPage(prepared[i]);}
+      indices=prepared.map((_,i)=>i);
+    }
+    // Copy only reachable rewritten page objects into the output; old content
+    // streams in the temporary document must not survive as orphan objects.
+    const newPages=await output.copyPages(input,indices);
     group.forEach((page,index)=>copied.set(page.id,newPages[index]));
   }
   for(const [index,page] of pages.entries()){

@@ -2,10 +2,12 @@ const fail=()=>{throw Error('專案的頁面或編輯資料格式不正確。');
 const text=(value,max)=>typeof value==='string'&&value.length<=max;
 const numbers=value=>Array.isArray(value)&&value.length===6&&value.every(Number.isFinite)&&Math.abs(value[0]*value[3]-value[1]*value[2])>1e-12;
 export function validateMarks(marks){
-  if(!Array.isArray(marks)||marks.length>100000)fail();const ids=new Set();
+  if(!Array.isArray(marks)||marks.length>100000)fail();const ids=new Set(),nativeIds=new Set();
   for(const mark of marks){
-    if(!mark||!text(mark.id,100)||ids.has(mark.id)||!['text','highlight','arrow','box','replace'].includes(mark.type)||!numbers(mark.frame)||!/^#[\da-f]{6}$/i.test(mark.color)||!['x','y','width','height'].every(key=>Number.isFinite(mark[key])&&Math.abs(mark[key])<1e7)||!Number.isFinite(mark.fontSize)||mark.fontSize<2||mark.fontSize>120||!Number.isFinite(mark.thickness)||mark.thickness<1||mark.thickness>16||!text(mark.text,2000))fail();
-    if(mark.type==='replace'&&(!['sans','serif'].includes(mark.font)||!/^#[\da-f]{6}$/i.test(mark.background)||mark.width<=0||mark.height<=0||mark.width>10000||mark.height>10000||!['paddingX','paddingY'].every(key=>Number.isFinite(mark[key])&&mark[key]>=0&&mark[key]<=1000)))fail();
+    if(!mark||!text(mark.id,100)||ids.has(mark.id)||!['text','highlight','arrow','box','replace','native'].includes(mark.type)||!numbers(mark.frame)||!/^#[\da-f]{6}$/i.test(mark.color)||!['x','y','width','height'].every(key=>Number.isFinite(mark[key])&&Math.abs(mark[key])<1e7)||!Number.isFinite(mark.fontSize)||mark.fontSize<2||mark.fontSize>120||!Number.isFinite(mark.thickness)||mark.thickness<1||mark.thickness>16||!text(mark.text,2000))fail();
+    if(['replace','native'].includes(mark.type)&&(!['sans','serif'].includes(mark.font)||!/^#[\da-f]{6}$/i.test(mark.background)||mark.width<=0||mark.height<=0||mark.width>10000||mark.height>10000||!['paddingX','paddingY'].every(key=>Number.isFinite(mark[key])&&mark[key]>=0&&mark[key]<=1000)))fail();
+    if(mark.type==='native'&&(!/^b\d{1,4}$/.test(mark.blockId)||!/^[\da-f]{64}$/.test(mark.sourceHash)||!mark.original||!['x','y','width','height'].every(k=>Number.isFinite(mark.original[k])&&Math.abs(mark.original[k])<1e7)||mark.original.width<=0||mark.original.height<=0))fail();
+    if(mark.type==='native'){const key=mark.sourceHash+':'+mark.blockId;if(nativeIds.has(key))fail();nativeIds.add(key);}
     ids.add(mark.id);
   }
 }

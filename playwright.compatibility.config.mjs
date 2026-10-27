@@ -16,8 +16,11 @@ export default defineConfig(regression, {
     'browser/ease.spec.mjs',
     'browser/product.spec.mjs',
     'browser/replacement.spec.mjs',
+    'browser/native-text.spec.mjs',
     'compatibility/*.spec.mjs',
   ],
+  // Each test owns its browser context and worker-scoped local server.
+  workers: process.env.CI ? 2 : 1,
   grep: /@compatibility/,
   timeout: 90_000,
   globalTimeout: 540_000,
