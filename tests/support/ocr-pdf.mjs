@@ -9,10 +9,10 @@ export async function downloadBytes(page, button) {
   return readFile(await download.path());
 }
 
-export async function inspectPdf(page, bytes, {disableFontFace = false} = {}) {
-  return page.evaluate(async ({data, disableFontFace}) => {
+export async function inspectPdf(page, bytes, {disableFontFace = false, isOffscreenCanvasSupported = true} = {}) {
+  return page.evaluate(async ({data, disableFontFace, isOffscreenCanvasSupported}) => {
     const pdfjs = await import('/vendor/pdfjs/pdf.mjs');
-    const task = pdfjs.getDocument({data: new Uint8Array(data), isEvalSupported: false, disableFontFace,
+    const task = pdfjs.getDocument({data: new Uint8Array(data), isEvalSupported: false, disableFontFace, isOffscreenCanvasSupported,
       cMapUrl: `${location.origin}/vendor/pdfjs/cmaps/`, cMapPacked: true,
       standardFontDataUrl: `${location.origin}/vendor/pdfjs/standard_fonts/`,
       wasmUrl: `${location.origin}/vendor/pdfjs/wasm/`});
@@ -42,5 +42,5 @@ export async function inspectPdf(page, bytes, {disableFontFace = false} = {}) {
       }
       return result;
     } finally { await task.destroy(); }
-  }, {data: [...bytes], disableFontFace});
+  }, {data: [...bytes], disableFontFace, isOffscreenCanvasSupported});
 }
