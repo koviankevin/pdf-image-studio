@@ -1,28 +1,28 @@
-import {installToolHub} from './tool-hub.mjs?v=20261028-hub1';
-import {pdfCanvasContext} from './pdf-canvas.mjs?v=20261028-hub1';
-import {installProductShell} from './product-tools.mjs?v=20261028-hub1';
-import {installTasks} from './task-tools.mjs?v=20261028-hub1';
-import {installCompare} from './compare-tools.mjs?v=20261028-hub1';
-import {installTemplates} from './template-tools.mjs?v=20261028-hub1';
+import {installToolHub} from './tool-hub.mjs?v=20261028-hub2';
+import {pdfCanvasContext} from './pdf-canvas.mjs?v=20261028-hub2';
+import {installProductShell} from './product-tools.mjs?v=20261028-hub2';
+import {installTasks} from './task-tools.mjs?v=20261028-hub2';
+import {installCompare} from './compare-tools.mjs?v=20261028-hub2';
+import {installTemplates} from './template-tools.mjs?v=20261028-hub2';
 import * as pdfjs from './vendor/pdfjs/pdf.mjs';
 import {PDFDocument} from './vendor/pdf-lib/pdf-lib.mjs';
 import {zipSync} from './vendor/fflate/fflate.mjs';
 import {parsePages,withDensity,dimensions} from './utils.mjs';
-import {movePages,assemblePdf,viewportCrop} from './editor-core.mjs?v=20261028-hub1';
-import {installPageTools} from './page-tools.mjs?v=20261028-hub1';
-import {installAnnotations} from './annotation-tools.mjs?v=20261028-hub1';
-import {installOcr} from './ocr-tools.mjs?v=20261028-hub1';
-import {imageToPdf} from './document-model.mjs?v=20261028-hub1';
-import {installImposition} from './imposition-tools.mjs?v=20261028-hub1';
-import {installWorkflow} from './workflow-tools.mjs?v=20261028-hub1';
-import {installPdfProof} from './pdf-proof.mjs?v=20261028-hub1';
-import {installFreeLayout} from './free-layout-tools.mjs?v=20261028-hub1';
-import {installAutosave} from './autosave-tools.mjs?v=20261028-hub1';
-import {installProjects} from './project-tools.mjs?v=20261028-hub1';
-import {installDocumentSearch} from './document-search.mjs?v=20261028-hub1';
-import {installPageOperations} from './page-operations.mjs?v=20261028-hub1';
-import {installShortcuts} from './keyboard-shortcuts.mjs?v=20261028-hub1';
-import {validateFreeLayout} from './free-layout-core.mjs?v=20261028-hub1';
+import {movePages,assemblePdf,viewportCrop} from './editor-core.mjs?v=20261028-hub2';
+import {installPageTools} from './page-tools.mjs?v=20261028-hub2';
+import {installAnnotations} from './annotation-tools.mjs?v=20261028-hub2';
+import {installOcr} from './ocr-tools.mjs?v=20261028-hub2';
+import {imageToPdf} from './document-model.mjs?v=20261028-hub2';
+import {installImposition} from './imposition-tools.mjs?v=20261028-hub2';
+import {installWorkflow} from './workflow-tools.mjs?v=20261028-hub2';
+import {installPdfProof} from './pdf-proof.mjs?v=20261028-hub2';
+import {installFreeLayout} from './free-layout-tools.mjs?v=20261028-hub2';
+import {installAutosave} from './autosave-tools.mjs?v=20261028-hub2';
+import {installProjects} from './project-tools.mjs?v=20261028-hub2';
+import {installDocumentSearch} from './document-search.mjs?v=20261028-hub2';
+import {installPageOperations} from './page-operations.mjs?v=20261028-hub2';
+import {installShortcuts} from './keyboard-shortcuts.mjs?v=20261028-hub2';
+import {validateFreeLayout} from './free-layout-core.mjs?v=20261028-hub2';
 
 pdfjs.GlobalWorkerOptions.workerSrc=new URL('./vendor/pdfjs/pdf.worker.mjs',import.meta.url).href;
 const $=id=>document.getElementById(id);
@@ -116,7 +116,7 @@ async function getTextPage(source,record){
   let marks=nativeAnnotations.get(record.annotations);if(!marks){marks=record.annotations.filter(m=>m.type==='native');nativeAnnotations.set(record.annotations,marks);}
   const prepared=await editedSource(source,record.index,{...record,annotations:marks});return getSourcePage(prepared.source,prepared.index);
 }
-async function inspectNativeText(source,index){const {inspectNativeText}=await import('./native-text-analysis.mjs?v=20261028-hub1');return inspectNativeText(source.doc.getPage(index),await getSourcePage(source,index));}
+async function inspectNativeText(source,index){const {inspectNativeText}=await import('./native-text-analysis.mjs?v=20261028-hub2');return inspectNativeText(source.doc.getPage(index),await getSourcePage(source,index));}
 async function renderBlob(source,index,dpi,type='png',thumbnail=false,edit={},options={}){
   const signal=options.signal;signal?.throwIfAborted();const prepared=await editedSource(source,index,edit,options);({source,index}=prepared);
   let page,canvas,localRender;const abort=()=>localRender?.cancel();signal?.addEventListener('abort',abort,{once:true});

@@ -19,6 +19,7 @@ export default defineConfig(regression, {
     'browser/native-text.spec.mjs',
     'browser/tool-hub.spec.mjs',
     'browser/pdf-inspection.spec.mjs',
+    'browser/tool-coverage.spec.mjs',
     'compatibility/*.spec.mjs',
   ],
   // Each test owns its browser context and worker-scoped local server.

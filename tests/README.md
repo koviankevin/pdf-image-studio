@@ -346,3 +346,5 @@ PNG 簽章、實際／宣告尺寸、300 KB 上限及上傳目錄內的檔案；
 - `unit/tool-catalog.test.mjs` 要求每個工具都有唯一識別、分類、目標與有效測試對照；對照清單見 `docs/FEATURE-COVERAGE.md`。
 
 - `browser/pdf-inspection.spec.mjs` 在讀兩頁 PDF 的像素後，刻意載入另一份單頁 PDF，確認驗收讀頁始終綁定被檢查的文件；文字與像素斷言保持原樣。
+
+- `browser/tool-coverage.spec.mjs` 補驗原本缺少的直接操作：圖片轉 PDF、拆分／範圍 ZIP、JPG 容量預估和圖片 ZIP、框選剪貼簿 PNG 的尺寸與 DPI／權限失敗，以及文字、螢光筆、箭頭、方框的實際輸出。

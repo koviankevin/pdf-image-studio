@@ -1,5 +1,5 @@
-import {cropTargets,batchCropEdits} from './batch-crop.mjs?v=20261028-hub1';
-import {parseSplitRanges,assemblePdf,viewportCrop,selectionToCrop} from './editor-core.mjs?v=20261028-hub1';
+import {cropTargets,batchCropEdits} from './batch-crop.mjs?v=20261028-hub2';
+import {parseSplitRanges,assemblePdf,viewportCrop,selectionToCrop} from './editor-core.mjs?v=20261028-hub2';
 import {zipSync} from './vendor/fflate/fflate.mjs';
 
 export function installPageTools(api){

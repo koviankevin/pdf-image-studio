@@ -1,9 +1,9 @@
 import test from 'node:test';import assert from 'node:assert/strict';import {readFile} from 'node:fs/promises';
 import {toolGroups,toolCatalog,toolAvailability} from '../../dist/tool-catalog.mjs';
 test('every published tool has a unique entry, concrete target and existing functional acceptance coverage',async()=>{
- const ids=new Set();assert.ok(toolCatalog.length>=30);for(const tool of toolCatalog){assert.ok(!ids.has(tool.id),tool.id);ids.add(tool.id);assert.ok(toolGroups[tool.group]);assert.ok(tool.label&&tool.description&&tool.selector);assert.ok(tool.tests.length);for(const file of tool.tests){const source=await readFile(new URL('../browser/'+file,import.meta.url),'utf8');assert.match(source,/test\(/);assert.match(source,/expect\(/);}}
+ const ids=new Set();assert.ok(toolCatalog.length>=30);for(const tool of toolCatalog){assert.ok(!ids.has(tool.id),tool.id);ids.add(tool.id);assert.ok(toolGroups[tool.group]);assert.ok(tool.label&&tool.description&&tool.selector);assert.ok(tool.tests.length&&tool.probe);let exercisesControl=false;for(const file of tool.tests){const source=await readFile(new URL('../browser/'+file,import.meta.url),'utf8');assert.match(source,/test\(/);assert.match(source,/expect\(/);exercisesControl ||= source.includes(tool.probe);}assert.ok(exercisesControl,tool.id+' must reference a test that exercises '+tool.probe);}
  for(const group of Object.keys(toolGroups))assert.ok(toolCatalog.some(t=>t.group===group));
- const doc=await readFile(new URL('../../docs/FEATURE-COVERAGE.md',import.meta.url),'utf8');for(const tool of toolCatalog)assert.ok(doc.includes('`'+tool.id+'`'),tool.id+' needs a documented acceptance row');
+ const doc=await readFile(new URL('../../docs/FEATURE-COVERAGE.md',import.meta.url),'utf8');for(const tool of toolCatalog){const row=doc.split('\n').find(line=>line.includes('`'+tool.id+'`'));assert.ok(row,tool.id+' needs a documented acceptance row');for(const file of tool.tests)assert.ok(row.includes('../tests/browser/'+file),tool.id+' has a stale documented test reference');}
 });
 test('tool readiness distinguishes file, selection, source, image, operation and target conditions',()=>{
  const base={pages:3,selected:2,sources:2,images:true,busy:false};for(const tool of toolCatalog)assert.equal(toolAvailability(tool,base).ready,tool.requires==='single'?false:true,tool.id);

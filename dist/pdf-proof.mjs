@@ -1,6 +1,6 @@
-import {pdfCanvasContext} from './pdf-canvas.mjs?v=20261028-hub1';
+import {pdfCanvasContext} from './pdf-canvas.mjs?v=20261028-hub2';
 import * as pdfjs from './vendor/pdfjs/pdf.mjs';
-import {assemblePdf} from './editor-core.mjs?v=20261028-hub1';
+import {assemblePdf} from './editor-core.mjs?v=20261028-hub2';
 
 export function installPdfProof(api) {
   const {$} = api;
