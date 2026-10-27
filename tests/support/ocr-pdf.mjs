@@ -20,6 +20,9 @@ export async function inspectPdf(page, bytes, {disableFontFace = false} = {}) {
     try {
       const doc = await task.promise, result = [];
       for (let i = 1; i <= doc.numPages; i++) {
+        // Other preview/search documents share the bundled PDF.js page mapper.
+        // Bind each request to this inspected document before yielding.
+        pdfjs.PagesMapper.instance.pagesNumber = doc.numPages;
         const pdfPage = await doc.getPage(i), viewport = pdfPage.getViewport({scale: 1});
         const text = await pdfPage.getTextContent();
         const operators = await pdfPage.getOperatorList();

@@ -344,3 +344,5 @@ PNG 簽章、實際／宣告尺寸、300 KB 上限及上傳目錄內的檔案；
 
 - `browser/tool-hub.spec.mjs` 驗證全部工具入口、前置條件、搜尋定位、三種原文直接入口與實際 PDF，以及手機先顯示頁面再顯示輸出設定。
 - `unit/tool-catalog.test.mjs` 要求每個工具都有唯一識別、分類、目標與有效測試對照；對照清單見 `docs/FEATURE-COVERAGE.md`。
+
+- `browser/pdf-inspection.spec.mjs` 在讀兩頁 PDF 的像素後，刻意載入另一份單頁 PDF，確認驗收讀頁始終綁定被檢查的文件；文字與像素斷言保持原樣。
