@@ -66,6 +66,17 @@
       "license": "Apache-2.0",
       "upstream": "https://github.com/tesseract-ocr/tessdata_fast",
       "version": "unrecorded; exact bytes tracked by release-manifest.json"
+    },
+    {
+      "name": "Noto Serif CJK TC Regular",
+      "directory": "dist/vendor/fonts",
+      "file": "NotoSerifCJKtc-Regular.otf",
+      "license": "OFL-1.1",
+      "licenseFile": "dist/vendor/fonts/LICENSE-NotoSerif",
+      "upstream": "https://github.com/notofonts/noto-cjk",
+      "version": "commit f8d157532fbfaeda587e826d4cd5b21a49186f7c",
+      "source": "https://raw.githubusercontent.com/notofonts/noto-cjk/f8d157532fbfaeda587e826d4cd5b21a49186f7c/Serif/OTF/TraditionalChinese/NotoSerifCJKtc-Regular.otf",
+      "sha256": "234301038e76e7c35c43113785024700c4e4fe7bdce1d1fbbc42fca7e6683798"
     }
   ]
 }

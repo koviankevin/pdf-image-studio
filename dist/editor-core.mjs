@@ -1,6 +1,6 @@
 import {PDFDocument,degrees} from './vendor/pdf-lib/pdf-lib.mjs';
 import {parsePages} from './utils.mjs';
-import {drawPageExtras,embedChineseFont} from './document-model.mjs?v=20261027-product1';
+import {drawPageExtras,embedChineseFont} from './document-model.mjs?v=20261027-replace1';
 import {checkpoint} from './cancellation.mjs';
 
 export function parseSplitRanges(text,count){
@@ -36,7 +36,7 @@ export async function assemblePdf(pages,sources,title,{signal}={}){
   signal?.throwIfAborted();
   if(!pages.length)throw new Error('請至少選取一頁。');
   const output=await PDFDocument.create(),groups=new Map(),copied=new Map();
-  let font;const getFont=()=>font??=(embedChineseFont(output));
+  const fonts=new Map();const getFont=(name='sans')=>{if(!fonts.has(name))fonts.set(name,embedChineseFont(output,name));return fonts.get(name);};
   for(const page of pages){if(!groups.has(page.sourceId))groups.set(page.sourceId,[]);groups.get(page.sourceId).push(page);}
   // Copy a source's pages together so fonts and other shared resources are reused.
   for(const [sourceId,group] of groups){

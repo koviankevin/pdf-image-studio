@@ -1,5 +1,5 @@
-import {ocrLineVisible} from './ocr-region.mjs?v=20261027-product1';
-import {textItemBounds} from './text-geometry.mjs?v=20261027-product1';
+import {ocrLineVisible} from './ocr-region.mjs?v=20261027-replace1';
+import {textItemBounds} from './text-geometry.mjs?v=20261027-replace1';
 const normalize=text=>text.normalize('NFKC').toLocaleLowerCase().replace(/\s+/g,'');
 export function installDocumentSearch(api){
   const {$}=api;
@@ -8,7 +8,7 @@ export function installDocumentSearch(api){
   async function textOf(record){
     if(cache.has(record))return cache.get(record);
     const promise=(async()=>{
-      const added=(record.annotations||[]).filter(mark=>mark.type==='text').map(mark=>mark.text);
+      const added=(record.annotations||[]).filter(mark=>['text','replace'].includes(mark.type)).map(mark=>mark.text);
       const recognized=record.ocr?.mode==='ocr'?record.ocr.lines.filter(line=>ocrLineVisible(line,record.ocr.frame,record.crop)).map(line=>line.text):[];
       const source=api.getSources().get(record.sourceId);if(!source)return '';
       const page=await api.getSourcePage(source,record.index),content=await page.getTextContent();

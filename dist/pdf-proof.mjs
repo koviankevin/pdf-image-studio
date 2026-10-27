@@ -1,5 +1,5 @@
 import * as pdfjs from './vendor/pdfjs/pdf.mjs';
-import {assemblePdf} from './editor-core.mjs?v=20261027-product1';
+import {assemblePdf} from './editor-core.mjs?v=20261027-replace1';
 
 export function installPdfProof(api) {
   const {$} = api;

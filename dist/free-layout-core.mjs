@@ -1,7 +1,7 @@
 import {PDFDocument, rgb, pushGraphicsState, popGraphicsState} from './vendor/pdf-lib/pdf-lib.mjs';
-import {assemblePdf} from './editor-core.mjs?v=20261027-product1';
-import {fitPage} from './imposition-core.mjs?v=20261027-product1';
-import {embedChineseFont} from './document-model.mjs?v=20261027-product1';
+import {assemblePdf} from './editor-core.mjs?v=20261027-replace1';
+import {fitPage} from './imposition-core.mjs?v=20261027-replace1';
+import {embedChineseFont} from './document-model.mjs?v=20261027-replace1';
 import {checkpoint} from './cancellation.mjs';
 
 export const MM = 72 / 25.4;

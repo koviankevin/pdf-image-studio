@@ -1,20 +1,55 @@
-import {PDFDocument,rgb,pushGraphicsState,popGraphicsState,concatTransformationMatrix,setTextRenderingMode} from './vendor/pdf-lib/pdf-lib.mjs';
+import {PDFDocument,rgb,pushGraphicsState,popGraphicsState,concatTransformationMatrix,setTextRenderingMode,rectangle,clip,endPath} from './vendor/pdf-lib/pdf-lib.mjs';
+
+import {replacementFonts,replacementLayout,replacementMeasure} from './replacement-core.mjs?v=20261027-replace1';
 
 export const transformPoint=(m,x,y)=>[m[0]*x+m[2]*y+m[4],m[1]*x+m[3]*y+m[5]];
 export function multiply(a,b){return[a[0]*b[0]+a[2]*b[1],a[1]*b[0]+a[3]*b[1],a[0]*b[2]+a[2]*b[3],a[1]*b[2]+a[3]*b[3],a[0]*b[4]+a[2]*b[5]+a[4],a[1]*b[4]+a[3]*b[5]+a[5]];}
 export function inverse(m){const d=m[0]*m[3]-m[1]*m[2];return[m[3]/d,-m[1]/d,-m[2]/d,m[0]/d,(m[2]*m[5]-m[3]*m[4])/d,(m[1]*m[4]-m[0]*m[5])/d];}
-let fontBytes,fontkitPromise;
-export async function embedChineseFont(doc){
+let fontkitPromise;
+const fontBytes=new Map();
+async function chineseFontBytes(name){
+  if(!Object.hasOwn(replacementFonts,name))throw Error('不支援的字型。');
+  if(!fontBytes.has(name))fontBytes.set(name,fetch(new URL('./vendor/fonts/'+replacementFonts[name].file,import.meta.url)).then(r=>{if(!r.ok)throw Error('中文字型載入失敗，請重試。');return r.arrayBuffer();}).catch(error=>{fontBytes.delete(name);throw error;}));
+  return fontBytes.get(name);
+}
+export async function embedChineseFont(doc,name='sans'){
   fontkitPromise??=import('./vendor/fontkit/fontkit.mjs');
-  if(!fontBytes)fontBytes=fetch(new URL('./vendor/fonts/NotoSansCJKtc-Regular.otf',import.meta.url)).then(r=>{if(!r.ok)throw new Error('中文字型載入失敗，請檢查網路後重試。');return r.arrayBuffer();}).catch(e=>{fontBytes=null;throw e;});
-  doc.registerFontkit((await fontkitPromise).default);return doc.embedFont(await fontBytes,{subset:true});
+  const bytes=await chineseFontBytes(name);doc.registerFontkit((await fontkitPromise).default);const font=await doc.embedFont(bytes,{subset:true});embeddedFontNames.set(font,name);return font;
+}
+const browserFonts=new Map();
+export async function replacementBrowserFont(name){
+  if(!browserFonts.has(name))browserFonts.set(name,chineseFontBytes(name).then(async bytes=>{const face=new FontFace(replacementFonts[name].family,bytes);await face.load();document.fonts.add(face);return face;}).catch(error=>{browserFonts.delete(name);throw error;}));
+  return browserFonts.get(name);
+}
+// The bundled font's real glyph bounds are used for layout and clipping checks.
+// Cache shaped runs, bounded independently of document or editor history.
+const measurementFonts=new Map(),embeddedFontNames=new WeakMap();
+export async function replacementFontMetrics(name){
+  if(!measurementFonts.has(name))measurementFonts.set(name,(async()=>{
+    fontkitPromise??=import('./vendor/fontkit/fontkit.mjs');const bytes=await chineseFontBytes(name),font=(await fontkitPromise).default.create(new Uint8Array(bytes)),cache=new Map();
+    function run(text){
+      if(cache.has(text))return cache.get(text);let x=0,left=0,right=0,top=0,bottom=0;
+      for(const glyph of font.layout(text).glyphs){const box=glyph.bbox;left=Math.min(left,x+box.minX);right=Math.max(right,x+box.maxX);top=Math.max(top,box.maxY);bottom=Math.min(bottom,box.minY);x+=glyph.advanceWidth;}
+      const value={advance:x,left,right,top,bottom};cache.set(text,value);if(cache.size>2500)cache.delete(cache.keys().next().value);return value;
+    }
+    return {widthOfTextAtSize:(text,size)=>run(text).advance*size/font.unitsPerEm,boundsAtSize:(text,size)=>{const b=run(text),scale=size/font.unitsPerEm;return {left:b.left*scale,right:b.right*scale,ascent:b.top*scale,descent:-b.bottom*scale};}};
+  })().catch(error=>{measurementFonts.delete(name);throw error;}));
+  return measurementFonts.get(name);
 }
 const color=hex=>rgb(parseInt(hex.slice(1,3),16)/255,parseInt(hex.slice(3,5),16)/255,parseInt(hex.slice(5,7),16)/255);
 export async function drawPageExtras(doc,page,record,getFont){
   for(const mark of record.annotations||[]){
     page.pushOperators(pushGraphicsState(),concatTransformationMatrix(...mark.frame));
     const c=color(mark.color),w=mark.thickness||2;
-    if(mark.type==='text'){
+    if(mark.type==='replace'){
+      page.drawRectangle({x:mark.x,y:mark.y,width:mark.width,height:mark.height,color:color(mark.background),borderWidth:0});
+      if(mark.text){
+        const font=await getFont(mark.font),metrics=embeddedFontNames.has(font)?await replacementFontMetrics(embeddedFontNames.get(font)):font,layout=replacementLayout(mark,replacementMeasure(metrics,mark.fontSize));
+        if(layout.overflow)throw Error('替換文字超出範圍，請縮小字級、換行或擴大替換框。');
+        page.pushOperators(rectangle(mark.x,mark.y,mark.width,mark.height),clip(),endPath(),concatTransformationMatrix(1,0,0,-1,0,0));
+        for(const line of layout.lines)if(line.text)page.drawText(line.text,{x:line.x,y:-line.y,font,size:mark.fontSize,color:c});
+      }
+    }else if(mark.type==='text'){
       const font=await getFont();page.pushOperators(concatTransformationMatrix(1,0,0,-1,0,0));
       page.drawText(mark.text,{x:mark.x,y:-(mark.y+mark.fontSize*.88),font,size:mark.fontSize,lineHeight:mark.fontSize*1.3,color:c});
     }else if(mark.type==='arrow'){

@@ -4,7 +4,8 @@ const numbers=value=>Array.isArray(value)&&value.length===6&&value.every(Number.
 export function validateMarks(marks){
   if(!Array.isArray(marks)||marks.length>100000)fail();const ids=new Set();
   for(const mark of marks){
-    if(!mark||!text(mark.id,100)||ids.has(mark.id)||!['text','highlight','arrow','box'].includes(mark.type)||!numbers(mark.frame)||!/^#[\da-f]{6}$/i.test(mark.color)||!['x','y','width','height'].every(key=>Number.isFinite(mark[key])&&Math.abs(mark[key])<1e7)||!Number.isFinite(mark.fontSize)||mark.fontSize<2||mark.fontSize>120||!Number.isFinite(mark.thickness)||mark.thickness<1||mark.thickness>16||!text(mark.text,2000))fail();
+    if(!mark||!text(mark.id,100)||ids.has(mark.id)||!['text','highlight','arrow','box','replace'].includes(mark.type)||!numbers(mark.frame)||!/^#[\da-f]{6}$/i.test(mark.color)||!['x','y','width','height'].every(key=>Number.isFinite(mark[key])&&Math.abs(mark[key])<1e7)||!Number.isFinite(mark.fontSize)||mark.fontSize<2||mark.fontSize>120||!Number.isFinite(mark.thickness)||mark.thickness<1||mark.thickness>16||!text(mark.text,2000))fail();
+    if(mark.type==='replace'&&(!['sans','serif'].includes(mark.font)||!/^#[\da-f]{6}$/i.test(mark.background)||mark.width<=0||mark.height<=0||mark.width>10000||mark.height>10000||!['paddingX','paddingY'].every(key=>Number.isFinite(mark[key])&&mark[key]>=0&&mark[key]<=1000)))fail();
     ids.add(mark.id);
   }
 }
@@ -26,7 +27,7 @@ export function validateEditor(editor,pageIds){
     if(!Array.isArray(editor.records)||editor.records.length>500||!Number.isInteger(editor.active)||editor.active<0||editor.active>=editor.records.length)fail();
     for(const item of editor.records){if(!pageIds.has(item.id))fail();validateOcr(item.ocr);}
   }else{
-    if(!pageIds.has(editor.pageId)||!editor.fields||Object.keys(editor.fields).length>8||Object.values(editor.fields).some(value=>!text(value,2000)))fail();
+    if(!pageIds.has(editor.pageId)||!editor.fields||Object.keys(editor.fields).length>12||Object.values(editor.fields).some(value=>!text(value,2000)))fail();
     if(editor.kind==='marks')validateMarks(editor.marks);
     else if(![0,90,180,270].includes(editor.rotation)||editor.crop&&(!['x','y','width','height'].every(key=>Number.isFinite(editor.crop[key]))||editor.crop.width<=0||editor.crop.height<=0))fail();
   }
