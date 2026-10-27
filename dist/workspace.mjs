@@ -1,26 +1,27 @@
-import {installProductShell} from './product-tools.mjs?v=20261027-replace1';
-import {installTasks} from './task-tools.mjs?v=20261027-replace1';
-import {installCompare} from './compare-tools.mjs?v=20261027-replace1';
-import {installTemplates} from './template-tools.mjs?v=20261027-replace1';
+import {pdfCanvasContext} from './pdf-canvas.mjs?v=20261027-replace2';
+import {installProductShell} from './product-tools.mjs?v=20261027-replace2';
+import {installTasks} from './task-tools.mjs?v=20261027-replace2';
+import {installCompare} from './compare-tools.mjs?v=20261027-replace2';
+import {installTemplates} from './template-tools.mjs?v=20261027-replace2';
 import * as pdfjs from './vendor/pdfjs/pdf.mjs';
 import {PDFDocument} from './vendor/pdf-lib/pdf-lib.mjs';
 import {zipSync} from './vendor/fflate/fflate.mjs';
 import {parsePages,withDensity,dimensions} from './utils.mjs';
-import {movePages,assemblePdf,viewportCrop} from './editor-core.mjs?v=20261027-replace1';
-import {installPageTools} from './page-tools.mjs?v=20261027-replace1';
-import {installAnnotations} from './annotation-tools.mjs?v=20261027-replace1';
-import {installOcr} from './ocr-tools.mjs?v=20261027-replace1';
-import {imageToPdf} from './document-model.mjs?v=20261027-replace1';
-import {installImposition} from './imposition-tools.mjs?v=20261027-replace1';
-import {installWorkflow} from './workflow-tools.mjs?v=20261027-replace1';
-import {installPdfProof} from './pdf-proof.mjs?v=20261027-replace1';
-import {installFreeLayout} from './free-layout-tools.mjs?v=20261027-replace1';
-import {installAutosave} from './autosave-tools.mjs?v=20261027-replace1';
-import {installProjects} from './project-tools.mjs?v=20261027-replace1';
-import {installDocumentSearch} from './document-search.mjs?v=20261027-replace1';
-import {installPageOperations} from './page-operations.mjs?v=20261027-replace1';
-import {installShortcuts} from './keyboard-shortcuts.mjs?v=20261027-replace1';
-import {validateFreeLayout} from './free-layout-core.mjs?v=20261027-replace1';
+import {movePages,assemblePdf,viewportCrop} from './editor-core.mjs?v=20261027-replace2';
+import {installPageTools} from './page-tools.mjs?v=20261027-replace2';
+import {installAnnotations} from './annotation-tools.mjs?v=20261027-replace2';
+import {installOcr} from './ocr-tools.mjs?v=20261027-replace2';
+import {imageToPdf} from './document-model.mjs?v=20261027-replace2';
+import {installImposition} from './imposition-tools.mjs?v=20261027-replace2';
+import {installWorkflow} from './workflow-tools.mjs?v=20261027-replace2';
+import {installPdfProof} from './pdf-proof.mjs?v=20261027-replace2';
+import {installFreeLayout} from './free-layout-tools.mjs?v=20261027-replace2';
+import {installAutosave} from './autosave-tools.mjs?v=20261027-replace2';
+import {installProjects} from './project-tools.mjs?v=20261027-replace2';
+import {installDocumentSearch} from './document-search.mjs?v=20261027-replace2';
+import {installPageOperations} from './page-operations.mjs?v=20261027-replace2';
+import {installShortcuts} from './keyboard-shortcuts.mjs?v=20261027-replace2';
+import {validateFreeLayout} from './free-layout-core.mjs?v=20261027-replace2';
 
 pdfjs.GlobalWorkerOptions.workerSrc=new URL('./vendor/pdfjs/pdf.worker.mjs',import.meta.url).href;
 const $=id=>document.getElementById(id);
@@ -103,7 +104,7 @@ async function renderBlob(source,index,dpi,type='png',thumbnail=false,edit={},op
   let scale=thumbnail?Math.min(1,360/Math.max(region.width,region.height)):dpi/72;
   if(options.maxEdge>0)scale=Math.min(scale,options.maxEdge/Math.max(region.width,region.height));
   const viewport=page.getViewport({scale,rotation,offsetX:-region.x*scale,offsetY:-region.y*scale}),canvas=document.createElement('canvas');
-  try{const ceiling=options.maxEdge||Infinity;const {width,height}=dimensions(Math.min(ceiling,region.width*scale),Math.min(ceiling,region.height*scale));canvas.width=width;canvas.height=height;renderTask=page.render({canvasContext:canvas.getContext('2d',{alpha:false}),viewport,background:'#fff'});await renderTask.promise;renderTask=null;const raw=await canvasBlob(canvas,type==='png'?'image/png':'image/jpeg',options.quality??.95);const effectiveDpi=Math.max(1,Math.round(scale*72));return{blob:thumbnail?raw:await withDensity(raw,effectiveDpi,type),width,height,dpi:effectiveDpi};}
+  try{const ceiling=options.maxEdge||Infinity;const {width,height}=dimensions(Math.min(ceiling,region.width*scale),Math.min(ceiling,region.height*scale));canvas.width=width;canvas.height=height;renderTask=page.render({canvasContext:pdfCanvasContext(canvas,{alpha:false}),viewport,background:'#fff'});await renderTask.promise;renderTask=null;const raw=await canvasBlob(canvas,type==='png'?'image/png':'image/jpeg',options.quality??.95);const effectiveDpi=Math.max(1,Math.round(scale*72));return{blob:thumbnail?raw:await withDensity(raw,effectiveDpi,type),width,height,dpi:effectiveDpi};}
   finally{renderTask=null;canvas.width=canvas.height=0;page.cleanup();}
 }
 async function pageViewport(source,edit){const page=await getSourcePage(source,edit.index),rotation=(page.rotate+(edit.rotation||0))%360,base=page.getViewport({scale:1,rotation}),region=viewportCrop(base,edit.crop);const view=page.getViewport({scale:1,rotation,offsetX:-region.x,offsetY:-region.y});view.width=region.width;view.height=region.height;return view;}

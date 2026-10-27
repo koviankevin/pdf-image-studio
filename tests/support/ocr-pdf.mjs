@@ -12,6 +12,7 @@ export async function downloadBytes(page, button) {
 export async function inspectPdf(page, bytes, {disableFontFace = false} = {}) {
   return page.evaluate(async ({data, disableFontFace}) => {
     const pdfjs = await import('/vendor/pdfjs/pdf.mjs');
+    const {pdfCanvasContext} = await import('/pdf-canvas.mjs');
     const task = pdfjs.getDocument({data: new Uint8Array(data), isEvalSupported: false, disableFontFace,
       cMapUrl: `${location.origin}/vendor/pdfjs/cmaps/`, cMapPacked: true,
       standardFontDataUrl: `${location.origin}/vendor/pdfjs/standard_fonts/`,
@@ -24,7 +25,7 @@ export async function inspectPdf(page, bytes, {disableFontFace = false} = {}) {
         const operators = await pdfPage.getOperatorList();
         const canvas = document.createElement('canvas');
         canvas.width = viewport.width; canvas.height = viewport.height;
-        const ctx = canvas.getContext('2d');
+        const ctx = pdfCanvasContext(canvas);
         await pdfPage.render({canvasContext: ctx, viewport}).promise;
         const pixels = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
         const digest = await crypto.subtle.digest('SHA-256', pixels);

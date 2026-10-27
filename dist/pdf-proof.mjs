@@ -1,5 +1,6 @@
+import {pdfCanvasContext} from './pdf-canvas.mjs?v=20261027-replace2';
 import * as pdfjs from './vendor/pdfjs/pdf.mjs';
-import {assemblePdf} from './editor-core.mjs?v=20261027-replace1';
+import {assemblePdf} from './editor-core.mjs?v=20261027-replace2';
 
 export function installPdfProof(api) {
   const {$} = api;
@@ -33,7 +34,7 @@ export function installPdfProof(api) {
     const viewport = page.getViewport({scale}), canvas = $('proof-canvas');
     canvas.width = Math.ceil(viewport.width); canvas.height = Math.ceil(viewport.height);
     $('proof-paper').classList.toggle('is-fit', zoom === 'fit');
-    render = page.render({canvasContext: canvas.getContext('2d'), viewport, background: '#fff'});
+    render = page.render({canvasContext: pdfCanvasContext(canvas), viewport, background: '#fff'});
     await render.promise;
     if (version !== serial || !dialog.open) return;
     render = null; canvas.hidden = false; $('proof-page').value = String(current);

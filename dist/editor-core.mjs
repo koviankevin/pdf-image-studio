@@ -1,6 +1,6 @@
 import {PDFDocument,degrees} from './vendor/pdf-lib/pdf-lib.mjs';
 import {parsePages} from './utils.mjs';
-import {drawPageExtras,embedChineseFont} from './document-model.mjs?v=20261027-replace1';
+import {drawPageExtras,embedChineseFont} from './document-model.mjs?v=20261027-replace2';
 import {checkpoint} from './cancellation.mjs';
 
 export function parseSplitRanges(text,count){

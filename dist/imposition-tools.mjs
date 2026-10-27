@@ -1,5 +1,6 @@
+import {pdfCanvasContext} from './pdf-canvas.mjs?v=20261027-replace2';
 import * as pdfjs from './vendor/pdfjs/pdf.mjs';
-import {imposePdf, sheetLayout} from './imposition-core.mjs?v=20261027-replace1';
+import {imposePdf, sheetLayout} from './imposition-core.mjs?v=20261027-replace2';
 
 export function installImposition(api) {
   const {$} = api;
@@ -42,7 +43,7 @@ export function installImposition(api) {
     if (version !== serial || !dialog.open) return;
     const base = page.getViewport({scale: 1}), viewport = page.getViewport({scale: 1000 / Math.max(base.width, base.height)});
     const canvas = $('nup-canvas'); canvas.width = Math.ceil(viewport.width); canvas.height = Math.ceil(viewport.height);
-    render = page.render({canvasContext: canvas.getContext('2d'), viewport, background: '#fff'});
+    render = page.render({canvasContext: pdfCanvasContext(canvas), viewport, background: '#fff'});
     await render.promise;
     if (version !== serial || !dialog.open) return;
     render = null; canvas.hidden = false;

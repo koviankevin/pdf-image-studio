@@ -1,4 +1,4 @@
-import {multiply,transformPoint} from './document-model.mjs?v=20261027-replace1';
+import {multiply,transformPoint} from './document-model.mjs?v=20261027-replace2';
 
 function lineBounds(line,matrix){
   const corners=[[line.x,line.y],[line.x+line.width,line.y],[line.x,line.y+line.height],[line.x+line.width,line.y+line.height]].map(point=>transformPoint(matrix,...point));

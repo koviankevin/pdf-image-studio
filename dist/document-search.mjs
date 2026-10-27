@@ -1,5 +1,5 @@
-import {ocrLineVisible} from './ocr-region.mjs?v=20261027-replace1';
-import {textItemBounds} from './text-geometry.mjs?v=20261027-replace1';
+import {ocrLineVisible} from './ocr-region.mjs?v=20261027-replace2';
+import {textItemBounds} from './text-geometry.mjs?v=20261027-replace2';
 const normalize=text=>text.normalize('NFKC').toLocaleLowerCase().replace(/\s+/g,'');
 export function installDocumentSearch(api){
   const {$}=api;

@@ -1,4 +1,4 @@
-import {storedSummary} from './product-core.mjs?v=20261027-replace1';
+import {storedSummary} from './product-core.mjs?v=20261027-replace2';
 
 // Read only the small state record. Listing workspaces must not deserialize
 // every source PDF or preview into memory, or create a missing workspace DB.
