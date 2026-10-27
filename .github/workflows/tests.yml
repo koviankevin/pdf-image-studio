@@ -20,7 +20,9 @@ jobs:
     name: Node and Chromium regression
     # Match the OS supported by the pinned Playwright browser packages.
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    # Full OCR/output suite plus browser installation can exceed 15 minutes.
+    # Individual test timeouts and the mandatory deployment gate stay unchanged.
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v6
         with:
