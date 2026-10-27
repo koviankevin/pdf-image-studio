@@ -1,0 +1,12 @@
+import test from 'node:test';import assert from 'node:assert/strict';import {readFile} from 'node:fs/promises';
+import {toolGroups,toolCatalog,toolAvailability} from '../../dist/tool-catalog.mjs';
+test('every published tool has a unique entry, concrete target and existing functional acceptance coverage',async()=>{
+ const ids=new Set();assert.ok(toolCatalog.length>=30);for(const tool of toolCatalog){assert.ok(!ids.has(tool.id),tool.id);ids.add(tool.id);assert.ok(toolGroups[tool.group]);assert.ok(tool.label&&tool.description&&tool.selector);assert.ok(tool.tests.length);for(const file of tool.tests){const source=await readFile(new URL('../browser/'+file,import.meta.url),'utf8');assert.match(source,/test\(/);assert.match(source,/expect\(/);}}
+ for(const group of Object.keys(toolGroups))assert.ok(toolCatalog.some(t=>t.group===group));
+ const doc=await readFile(new URL('../../docs/FEATURE-COVERAGE.md',import.meta.url),'utf8');for(const tool of toolCatalog)assert.ok(doc.includes('`'+tool.id+'`'),tool.id+' needs a documented acceptance row');
+});
+test('tool readiness distinguishes file, selection, source, image, operation and target conditions',()=>{
+ const base={pages:3,selected:2,sources:2,images:true,busy:false};for(const tool of toolCatalog)assert.equal(toolAvailability(tool,base).ready,tool.requires==='single'?false:true,tool.id);
+ assert.match(toolAvailability({requires:'selection'},{...base,pages:0,selected:0}).label,/加入文件/);assert.match(toolAvailability({requires:'selection'},{...base,selected:0}).label,/勾選/);assert.match(toolAvailability({requires:'single'},base).label,/一頁/);assert.match(toolAvailability({requires:'sourcesPair'},{...base,sources:1}).label,/兩份/);assert.match(toolAvailability({requires:'images'},{...base,images:false}).label,/轉換圖片/);
+ assert.equal(toolAvailability({},base,{exists:false}).ready,false);assert.equal(toolAvailability({},base,{exists:true,disabled:true}).ready,false);assert.equal(toolAvailability({}, {...base,busy:true}).ready,false);assert.match(toolAvailability({}, {...base,busy:true,dialog:true}).label,/視窗/);
+});

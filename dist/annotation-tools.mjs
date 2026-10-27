@@ -1,5 +1,5 @@
-import {replacementBrowserFont,replacementFontMetrics,inverse,multiply,transformPoint} from './document-model.mjs?v=20261027-word1';
-import {replacementFonts,replacementLayout,replacementMeasure} from './replacement-core.mjs?v=20261027-word1';
+import {replacementBrowserFont,replacementFontMetrics,inverse,multiply,transformPoint} from './document-model.mjs?v=20261028-hub1';
+import {replacementFonts,replacementLayout,replacementMeasure} from './replacement-core.mjs?v=20261028-hub1';
 const numberLabel=value=>String(Math.round(value*100)/100);
 const fieldIds=['mark-text','mark-color','mark-size','mark-stroke','mark-font','mark-background','mark-width','mark-height','mark-padding-x','mark-padding-y'];
 const NS='http://www.w3.org/2000/svg';
@@ -144,7 +144,8 @@ export function installAnnotations(api){
     try{await document.fonts.load('20px PDFChinese');if(version!==openVersion||!dialog.open)return;const source=api.getSources().get(page.sourceId),viewport=await api.pageViewport(source,page);state={page,marks:structuredClone(page.annotations||[]),viewport,source,backgroundKey:null,backgroundError:false,nativeBlocks:null};svg.setAttribute('viewBox',`0 0 ${viewport.width} ${viewport.height}`);$('mark-title').textContent=`第 ${index+1} 頁 · 文字與標記`;const owner=state;await refreshNativeBackground();if(state!==owner||version!==openVersion)return;render();say('選「原文編輯」可點選可編輯原字；掃描件可用「文字替換」。');return owner;}
     catch(e){if(version===openVersion)say(e.message,true);}finally{if(version===openVersion&&dialog.open){setWorking(false);$('mark-fields').disabled=!state;$('mark-save').disabled=!state;if(state)render();}}
   }
-  return{open,undo,redo,
+  async function openTool(page,index,value){const owner=await open(page,index);if(owner&&state===owner&&dialog.open&&['native','replace','text'].includes(value))dialog.querySelector(`[data-tool="${value}"]`).click();return owner;}
+  return{open,openTool,undo,redo,
     captureDraft:()=>dialog.open&&state?{kind:'marks',pageId:state.page.id,marks:structuredClone(state.marks),tool,selected,fields:Object.fromEntries(fieldIds.map(id=>[id,$(id).value]))}:null,
     async restoreDraft(draft){const index=api.getPages().findIndex(p=>p.id===draft.pageId);if(index<0)return;const owner=await open(api.getPages()[index],index);if(!owner||state!==owner)return;state.marks=structuredClone(draft.marks);selected=draft.selected;selectTool(['select','text','highlight','arrow','box','replace','native'].includes(draft.tool)?draft.tool:'select');render();for(const [id,value]of Object.entries(draft.fields||{}))if(fieldIds.includes(id))$(id).value=value;try{applyFields();render();}catch(error){say(error.message,true);$('mark-save').disabled=true;}history=[];future=[];if(tool==='native')void loadNative();},
     hasDraft:()=>{if(!dialog.open||!state)return false;if(JSON.stringify(state.marks)!==JSON.stringify(state.page.annotations||[]))return true;const m=current();if(!m)return false;try{return JSON.stringify(readFields(m))!==JSON.stringify(m);}catch{return true;}}};

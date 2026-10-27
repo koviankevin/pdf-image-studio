@@ -1,5 +1,6 @@
 const tasks = {
-  all: ['全部工具', '保留所有設定與工具；也可以選一種任務，讓畫面只顯示相關操作。'],
+  all: ['全部工具', '顯示所有工具；也可切換任務，只留下相關設定。'],
+  edit: ['修改文字', '勾選一頁 → 原文編輯；掃描頁用文字替換。編輯完成後儲存此頁，再預覽輸出。'],
   capture: ['截圖複製', '加入文件 → 點頁面框選 → 複製圖片。解析度與長邊上限沿用左側圖片設定。'],
   organize: ['合併整理', '加入多份文件 → 勾選、拖曳調整頁序 → 預覽並下載新 PDF。'],
   layout: ['排成 A4', '勾選需要的頁面 → 選固定拼版或自由排版 → 預覽並下載 A4 PDF。'],
@@ -7,14 +8,14 @@ const tasks = {
 };
 export function installTasks(api) {
   const {$} = api, key = 'shijian.task.v1'; let task = 'all';
-  document.querySelector('.workspace').insertAdjacentHTML('beforebegin', `<section class="task-panel" aria-labelledby="task-title"><div class="task-heading"><h2 id="task-title">今天想整理什麼？</h2><span>隨時切換，文件與設定都會保留</span></div><div id="task-options" class="task-options" role="group" aria-label="選擇工作任務"></div><p id="task-hint" class="field-hint" aria-live="polite"></p><button id="task-start" class="secondary" hidden></button></section>`);
+  document.querySelector('.workspace').insertAdjacentHTML('beforebegin', `<section class="task-panel" aria-labelledby="task-title"><div class="task-heading"><h2 id="task-title">先選一種任務</h2><span>隨時切換，文件與設定都會保留</span></div><div id="task-options" class="task-options" role="group" aria-label="選擇工作任務"></div><p id="task-hint" class="field-hint" aria-live="polite"></p><button id="task-start" class="secondary" hidden></button></section>`);
   // Mark existing controls, including tools installed by other modules. Do not
   // duplicate buttons or change values: every path uses the original handlers.
   const groups = [
-    ['#pdf-output', 'organize layout text'], ['#a4-output', 'layout'],
+    ['#pdf-output', 'organize layout text edit'], ['#a4-output', 'layout'],
     ['.split-settings,.batch-label-settings,#compare-open,.page-operation-bar', 'organize'],
-    ['.ocr-settings,.document-search', 'text'], ['#image-output', 'capture'],
-    ['#quick-pdf', 'organize text'], ['#quick-images', 'capture'], ['#quick-a4', 'layout'],
+    ['#text-tools-step,.document-search', 'text'], ['#image-output', 'capture'],
+    ['#quick-pdf', 'organize text edit'], ['#quick-images', 'capture'], ['#quick-a4', 'layout'],
   ];
   const elements = groups.flatMap(([selector, modes]) => [...document.querySelectorAll(selector)].map(el => {el.dataset.tasks = modes; return el;}));
   for (const [id, [name]] of Object.entries(tasks)) {
@@ -31,14 +32,15 @@ export function installTasks(api) {
     for (const button of $('task-options').children) button.setAttribute('aria-pressed', String(button.dataset.task === task));
     $('task-hint').textContent = tasks[task][1];
     $('task-start').hidden = task === 'all';
-    $('task-start').textContent = {capture:'框選第一個勾選頁', organize:'預覽合併結果', layout:'開啟 A4 自由排版', text:'辨識勾選頁的文字'}[task] || '';
+    $('task-start').textContent = {edit:'編輯第一個勾選頁的原文',capture:'框選第一個勾選頁', organize:'預覽合併結果', layout:'開啟 A4 自由排版', text:'辨識勾選頁的文字'}[task] || '';
     if (task === 'text') document.querySelector('.ocr-settings').open = true;
     try {localStorage.setItem(key, task);} catch { /* UI preference is optional. */ }
-    refresh();
+    refresh();api.refreshToolHub?.();
   }
   $('task-start').onclick = () => {
     if (api.isBusy() || !api.chosen().length) return;
-    if (task === 'capture') api.openCrop(api.chosen()[0]);
+    if (task === 'edit') void api.openMarks(api.chosen()[0],'native');
+    else if (task === 'capture') api.openCrop(api.chosen()[0]);
     else $(task === 'organize' ? 'preview-pdf' : task === 'layout' ? 'free-layout' : 'ocr-start').click();
   };
   try {const saved = localStorage.getItem(key); if (Object.hasOwn(tasks, saved)) task = saved;} catch { /* Use all tools when storage is unavailable. */ }

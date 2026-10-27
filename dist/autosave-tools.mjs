@@ -1,8 +1,8 @@
-import {openDraftStore, validateDraft, validateDraftMetadata, DraftConflict} from './draft-store.mjs?v=20261027-word1';
+import {openDraftStore, validateDraft, validateDraftMetadata, DraftConflict} from './draft-store.mjs?v=20261028-hub1';
 
 export function installAutosave(api) {
   const {$} = api, preference = 'shijian.autosave.enabled';
-  $('source-list').insertAdjacentHTML('afterend', `<section class="autosave-panel" aria-label="本機自動儲存"><label class="remember-output"><input id="autosave-enabled" type="checkbox" checked>自動儲存工作區到這台裝置</label><p id="autosave-status" class="field-hint" role="status" aria-live="polite">正在檢查本機草稿…</p><div class="free-pair"><button id="autosave-now" class="secondary" disabled>立即儲存</button><button id="autosave-delete" class="secondary" disabled>刪除已存草稿</button></div><p class="field-hint">同一瀏覽器、同一裝置可接續編輯。已解鎖的文件內容也會保存在此裝置，密碼不會保存。刪除或關閉自動儲存會清除目前工作區共用的草稿；清除瀏覽器資料或無痕模式可能無法保留。</p></section>`);
+  $('source-list').insertAdjacentHTML('afterend', `<section class="autosave-panel" aria-label="本機自動儲存"><label class="remember-output"><input id="autosave-enabled" type="checkbox" checked>自動儲存工作區到這台裝置</label><p id="autosave-status" class="field-hint" role="status" aria-live="polite">正在檢查本機草稿…</p><div class="free-pair"><button id="autosave-now" class="secondary" disabled>立即儲存</button><button id="autosave-delete" class="secondary" disabled>刪除已存草稿</button></div><details class="tool-help"><summary>儲存與隱私說明</summary><p class="field-hint">同一瀏覽器、同一裝置可接續編輯。已解鎖的文件內容也會保存在此裝置，密碼不會保存。刪除或關閉自動儲存會清除目前工作區共用的草稿；清除瀏覽器資料或無痕模式可能無法保留。</p></details></section>`);
   let enabled = true; try { enabled = localStorage.getItem(preference) !== 'false'; } catch { /* Optional preference only. */ }
   $('autosave-enabled').checked = enabled;
   let store, revision = 0, initializing = true, saving = false, dirty = false, failed = false, conflict = false, timer, generation = 0, last = '', lastRaw = '', hasStored = false, pendingClear = false, paused = false, unavailable = false;
@@ -105,7 +105,7 @@ export function installAutosave(api) {
   $('autosave-enabled').onchange = async () => { enabled = $('autosave-enabled').checked; setPreference(); if (!enabled) await clear(); else { changed(); controls(); } };
   // Passwords and transient output/proof controls never enter the snapshot.
   for (const type of ['input', 'change', 'click', 'pointerup', 'keyup']) document.addEventListener(type, event => {
-    if (event.target.closest('#password-dialog,.autosave-panel,.project-panel,.document-search,#proof-dialog,#preview-dialog,#product-dialog,.product-nav,.product-empty-actions')) return;
+    if (event.target.closest('.task-panel,#password-dialog,.autosave-panel,.project-panel,.document-search,#proof-dialog,#preview-dialog,#product-dialog,.product-nav,.product-empty-actions')) return;
     changed();
   });
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden' && dirty) void flush(); });

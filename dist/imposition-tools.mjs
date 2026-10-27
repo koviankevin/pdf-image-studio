@@ -1,6 +1,6 @@
-import {pdfCanvasContext} from './pdf-canvas.mjs?v=20261027-word1';
+import {pdfCanvasContext} from './pdf-canvas.mjs?v=20261028-hub1';
 import * as pdfjs from './vendor/pdfjs/pdf.mjs';
-import {imposePdf, sheetLayout} from './imposition-core.mjs?v=20261027-word1';
+import {imposePdf, sheetLayout} from './imposition-core.mjs?v=20261028-hub1';
 
 export function installImposition(api) {
   const {$} = api;

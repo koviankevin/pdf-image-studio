@@ -1,33 +1,34 @@
-import {pdfCanvasContext} from './pdf-canvas.mjs?v=20261027-word1';
-import {installProductShell} from './product-tools.mjs?v=20261027-word1';
-import {installTasks} from './task-tools.mjs?v=20261027-word1';
-import {installCompare} from './compare-tools.mjs?v=20261027-word1';
-import {installTemplates} from './template-tools.mjs?v=20261027-word1';
+import {installToolHub} from './tool-hub.mjs?v=20261028-hub1';
+import {pdfCanvasContext} from './pdf-canvas.mjs?v=20261028-hub1';
+import {installProductShell} from './product-tools.mjs?v=20261028-hub1';
+import {installTasks} from './task-tools.mjs?v=20261028-hub1';
+import {installCompare} from './compare-tools.mjs?v=20261028-hub1';
+import {installTemplates} from './template-tools.mjs?v=20261028-hub1';
 import * as pdfjs from './vendor/pdfjs/pdf.mjs';
 import {PDFDocument} from './vendor/pdf-lib/pdf-lib.mjs';
 import {zipSync} from './vendor/fflate/fflate.mjs';
 import {parsePages,withDensity,dimensions} from './utils.mjs';
-import {movePages,assemblePdf,viewportCrop} from './editor-core.mjs?v=20261027-word1';
-import {installPageTools} from './page-tools.mjs?v=20261027-word1';
-import {installAnnotations} from './annotation-tools.mjs?v=20261027-word1';
-import {installOcr} from './ocr-tools.mjs?v=20261027-word1';
-import {imageToPdf} from './document-model.mjs?v=20261027-word1';
-import {installImposition} from './imposition-tools.mjs?v=20261027-word1';
-import {installWorkflow} from './workflow-tools.mjs?v=20261027-word1';
-import {installPdfProof} from './pdf-proof.mjs?v=20261027-word1';
-import {installFreeLayout} from './free-layout-tools.mjs?v=20261027-word1';
-import {installAutosave} from './autosave-tools.mjs?v=20261027-word1';
-import {installProjects} from './project-tools.mjs?v=20261027-word1';
-import {installDocumentSearch} from './document-search.mjs?v=20261027-word1';
-import {installPageOperations} from './page-operations.mjs?v=20261027-word1';
-import {installShortcuts} from './keyboard-shortcuts.mjs?v=20261027-word1';
-import {validateFreeLayout} from './free-layout-core.mjs?v=20261027-word1';
+import {movePages,assemblePdf,viewportCrop} from './editor-core.mjs?v=20261028-hub1';
+import {installPageTools} from './page-tools.mjs?v=20261028-hub1';
+import {installAnnotations} from './annotation-tools.mjs?v=20261028-hub1';
+import {installOcr} from './ocr-tools.mjs?v=20261028-hub1';
+import {imageToPdf} from './document-model.mjs?v=20261028-hub1';
+import {installImposition} from './imposition-tools.mjs?v=20261028-hub1';
+import {installWorkflow} from './workflow-tools.mjs?v=20261028-hub1';
+import {installPdfProof} from './pdf-proof.mjs?v=20261028-hub1';
+import {installFreeLayout} from './free-layout-tools.mjs?v=20261028-hub1';
+import {installAutosave} from './autosave-tools.mjs?v=20261028-hub1';
+import {installProjects} from './project-tools.mjs?v=20261028-hub1';
+import {installDocumentSearch} from './document-search.mjs?v=20261028-hub1';
+import {installPageOperations} from './page-operations.mjs?v=20261028-hub1';
+import {installShortcuts} from './keyboard-shortcuts.mjs?v=20261028-hub1';
+import {validateFreeLayout} from './free-layout-core.mjs?v=20261028-hub1';
 
 pdfjs.GlobalWorkerOptions.workerSrc=new URL('./vendor/pdfjs/pdf.worker.mjs',import.meta.url).href;
 const $=id=>document.getElementById(id);
 let pages=[],sources=new Map(),selected=new Set(),history=[],future=[],results=[],busy=false,stopping=false,renderTask=null,passwordResolve=null,dragId=null,serial=0,toastTimer;
 const thumbnailUrls=new Set();
-let pageTools,annotationTools,ocrTools,impositionTools,workflowTools,proofTools,freeLayoutTools,autosaveTools,projectTools,searchTools,operationTools,compareTools,templateTools,taskTools;
+let pageTools,annotationTools,ocrTools,impositionTools,workflowTools,proofTools,freeLayoutTools,autosaveTools,projectTools,searchTools,operationTools,compareTools,templateTools,taskTools,hubTools;
 const productTools=installProductShell();
 let annotationCache=new Map();const annotationTasks=new Set();
 const sourceDisposals=new Set();
@@ -46,7 +47,7 @@ function updateControls(){
   $('delete-selected').disabled=$('move-selected').disabled=busy||!chosen().length;
   $('page-count').textContent=String(pages.length);$('selection-summary').textContent=pages.length?`${sources.size} 份來源 · 共 ${pages.length} 頁 · 已選取 ${chosen().length} 頁`:'加入 PDF 後，可拖曳頁面調整順序。';
   $('move-position').max=String(Math.max(1,pages.length-chosen().length+1));$('empty').hidden=pages.length>0;$('editor-controls').hidden=!pages.length;
-  $('rotate-selected').disabled=busy||!chosen().length;$('image-import-fields').disabled=busy;pageTools?.refresh();ocrTools?.refresh();impositionTools?.refresh();workflowTools?.refresh();freeLayoutTools?.refresh();autosaveTools?.changed();projectTools?.refresh();searchTools?.refresh();operationTools?.refresh();compareTools?.refresh();templateTools?.refresh();taskTools?.refresh();productTools.refresh();
+  $('rotate-selected').disabled=busy||!chosen().length;$('image-import-fields').disabled=busy;pageTools?.refresh();ocrTools?.refresh();impositionTools?.refresh();workflowTools?.refresh();freeLayoutTools?.refresh();autosaveTools?.changed();projectTools?.refresh();searchTools?.refresh();operationTools?.refresh();compareTools?.refresh();templateTools?.refresh();taskTools?.refresh();productTools.refresh();hubTools?.refresh();
 }
 function clearResults(){for(const result of results){URL.revokeObjectURL(result.url);URL.revokeObjectURL(result.thumbnail);}results=[];$('gallery').replaceChildren();$('image-results').hidden=true;$('result-count').textContent='0';pageTools?.invalidateEstimate();}
 function snapshot(){future=[];history.push({pages:[...pages],selected:new Set(selected)});if(history.length>30)history.shift();}
@@ -73,7 +74,7 @@ function drawPages(focusId){
     const top=document.createElement('div');top.className='page-card-top';const label=document.createElement('label');const check=document.createElement('input');check.type='checkbox';check.checked=selected.has(page.id);check.setAttribute('aria-label',`選取第 ${index+1} 頁`);check.onchange=()=>{if(busy)return;check.checked?selected.add(page.id):selected.delete(page.id);clearResults();card.classList.toggle('selected',check.checked);updateControls();};label.append(check,document.createTextNode(`第 ${index+1} 頁`));const handle=document.createElement('span');handle.textContent='⠿';handle.className='drag-handle';handle.title='拖曳此頁調整順序';top.append(label,handle);
     const preview=button('',`編輯第 ${index+1} 頁`,()=>pageTools.openEditor(page,index),'page-thumb');const img=document.createElement('img');img.src=page.thumbnail;img.alt=`${source.name} 原第 ${page.index+1} 頁`;img.loading='lazy';img.draggable=false;preview.append(img);
     const origin=document.createElement('p');origin.className='page-origin';origin.textContent=`${source.ordinal}. ${source.name}`;origin.title=source.name;const meta=document.createElement('p');meta.className='page-origin';meta.textContent=`原第 ${page.index+1} 頁${page.rotation?' · 已旋轉 '+page.rotation+'°':''}${page.crop?' · 已裁切':''}`;
-    const actions=document.createElement('div');actions.className='page-actions';const up=button('上移',`上移第 ${index+1} 頁`,()=>moveOne(page.id,index-1));up.dataset.edge=String(index===0);const down=button('下移',`下移第 ${index+1} 頁`,()=>moveOne(page.id,index+1));down.dataset.edge=String(index===pages.length-1);const remove=button('移除',`移除第 ${index+1} 頁`,()=>removePages([page.id]),'secondary danger');actions.append(up,down,remove);const edits=document.createElement('div');edits.className='page-actions page-edit-actions';edits.append(button('旋轉',`旋轉第 ${index+1} 頁`,()=>rotatePages([page])),button('框選／裁切',`框選第 ${index+1} 頁`,()=>pageTools.openEditor(page,index)));edits.append(button('文字／標記／替換',`標記第 ${index+1} 頁`,()=>annotationTools.open(page,index)));if(page.annotations?.length)meta.textContent+=' · '+page.annotations.length+' 個標記';if(page.ocr)meta.textContent+=' · 已擷取文字';card.append(top,preview,origin,meta,actions,edits);
+    const actions=document.createElement('div');actions.className='page-actions';const up=button('上移',`上移第 ${index+1} 頁`,()=>moveOne(page.id,index-1));up.dataset.edge=String(index===0);const down=button('下移',`下移第 ${index+1} 頁`,()=>moveOne(page.id,index+1));down.dataset.edge=String(index===pages.length-1);const remove=button('移除',`移除第 ${index+1} 頁`,()=>removePages([page.id]),'secondary danger');actions.append(up,down,remove);const edits=document.createElement('div');edits.className='page-actions page-edit-actions';edits.append(button('旋轉',`旋轉第 ${index+1} 頁`,()=>rotatePages([page])),button('框選／裁切',`框選第 ${index+1} 頁`,()=>pageTools.openEditor(page,index)));edits.append(button('原文編輯',`編輯第 ${index+1} 頁原文`,()=>annotationTools.openTool(page,index,'native')));edits.append(button('標記／替換',`標記第 ${index+1} 頁`,()=>annotationTools.open(page,index)));if(page.annotations?.length)meta.textContent+=' · '+page.annotations.length+' 個標記';if(page.ocr)meta.textContent+=' · 已擷取文字';card.append(top,preview,origin,meta,actions,edits);
     card.addEventListener('dragstart',event=>{if(busy||event.target.closest('input')){event.preventDefault();return;}dragId=page.id;event.dataTransfer.effectAllowed='move';event.dataTransfer.setData('text/plain',page.id);card.classList.add('dragging');});
     card.addEventListener('dragover',event=>{if(!dragId||busy)return;event.preventDefault();event.dataTransfer.dropEffect='move';card.classList.add('drop-target');});
     card.addEventListener('dragleave',()=>card.classList.remove('drop-target'));
@@ -115,7 +116,7 @@ async function getTextPage(source,record){
   let marks=nativeAnnotations.get(record.annotations);if(!marks){marks=record.annotations.filter(m=>m.type==='native');nativeAnnotations.set(record.annotations,marks);}
   const prepared=await editedSource(source,record.index,{...record,annotations:marks});return getSourcePage(prepared.source,prepared.index);
 }
-async function inspectNativeText(source,index){const {inspectNativeText}=await import('./native-text-analysis.mjs?v=20261027-word1');return inspectNativeText(source.doc.getPage(index),await getSourcePage(source,index));}
+async function inspectNativeText(source,index){const {inspectNativeText}=await import('./native-text-analysis.mjs?v=20261028-hub1');return inspectNativeText(source.doc.getPage(index),await getSourcePage(source,index));}
 async function renderBlob(source,index,dpi,type='png',thumbnail=false,edit={},options={}){
   const signal=options.signal;signal?.throwIfAborted();const prepared=await editedSource(source,index,edit,options);({source,index}=prepared);
   let page,canvas,localRender;const abort=()=>localRender?.cancel();signal?.addEventListener('abort',abort,{once:true});
@@ -202,7 +203,7 @@ $('download-all').onclick=async()=>{if(busy||!results.length)return;setBusy(true
 
 // The optional browser tool shares selection and output settings with the UI.
 if(document.modelContext?.registerTool){const lifecycle=new AbortController();window.addEventListener('pagehide',()=>lifecycle.abort(),{once:true});try{Promise.resolve(document.modelContext.registerTool({name:'configure_pdf_image_output',title:'選取頁面與設定圖片輸出',description:'Select current workspace page numbers and configure image resolution and format. Does not start conversion or download.',inputSchema:{type:'object',properties:{dpi:{type:'integer',enum:[150,300,450,600]},format:{type:'string',enum:['png','jpeg']},pages:{type:'string'}},required:['dpi','format','pages'],additionalProperties:false},annotations:{readOnlyHint:false,untrustedContentHint:false},execute(input){if(busy)throw new Error('正在處理檔案。');if(!input||![150,300,450,600].includes(input.dpi)||!['png','jpeg'].includes(input.format)||typeof input.pages!=='string')throw new Error('無效設定。');const indices=parsePages(input.pages,pages.length);selected=new Set(indices.map(i=>pages[i-1].id));$('dpi').value=String(input.dpi);$('format').value=input.format;$('pages').value=input.pages;$('dpi').onchange();clearResults();drawPages();workflowTools?.savePreferences();return{dpi:input.dpi,format:input.format,selectedPages:indices};}},{signal:lifecycle.signal})).catch(()=>{});}catch{}}
-const sharedApi={$,projects:()=>projectTools,showTask:value=>taskTools.select(value),showAllTools:()=>taskTools?.showAll(),showTextTools:()=>taskTools?.showText(),layoutTemplate:()=>freeLayoutTools.template(),applyLayoutTemplate:(...args)=>freeLayoutTools.applyTemplate(...args),addFiles,duplicatePages,undo,redo,autosave:()=>autosaveTools,validateProject:async value=>{for(const source of value.project.sources){const doc=await PDFDocument.load(await value.documents.get(source.key).arrayBuffer(),{updateMetadata:false});if(doc.getPageCount()!==source.count||doc.isEncrypted)throw Error('專案來源 PDF 不完整或仍有加密。');}},getPages:()=>pages,getSources:()=>sources,getSourcePage,getTextPage,inspectNativeText,cancelRendering:()=>renderTask?.cancel(),recognizeRegion:(record,region)=>ocrTools.recognizeRegion(record,region),chosen,isBusy:()=>busy,setBusy,status,toast,filename,bytes,renderBlob,pageViewport,commitEdits,updateRecords,download,showImage,markExported:records=>workflowTools?.markExported(records),previewChosen:()=>proofTools.openChosen(),showProof:options=>proofTools.show(options),needsLeaveWarning:fallback=>autosaveTools?.needsWarning(fallback)??fallback,autosaveChanged:()=>autosaveTools?.changed(),hasLayoutContent:()=>freeLayoutTools?.isCreated()||false,hasLayoutDraft:()=>freeLayoutTools?.hasPending()||false,hasEditorDraft:()=>!!(pageTools?.hasDraft?.()||annotationTools?.hasDraft?.()||ocrTools?.hasDraft?.()),addLayoutPiece:record=>freeLayoutTools.addPiece(record),openFreeLayout:()=>$('free-layout').click(),layoutChanged:()=>{collectWorkspaceResources();drawSources();updateControls();}};
+const sharedApi={$,refreshToolHub:()=>hubTools?.refresh(),openMarks:(record,tool)=>annotationTools.openTool(record,pages.indexOf(record),tool),openCrop:record=>pageTools.openEditor(record,pages.indexOf(record)),projects:()=>projectTools,showTask:value=>taskTools.select(value),showAllTools:()=>taskTools?.showAll(),showTextTools:()=>taskTools?.showText(),layoutTemplate:()=>freeLayoutTools.template(),applyLayoutTemplate:(...args)=>freeLayoutTools.applyTemplate(...args),addFiles,duplicatePages,undo,redo,autosave:()=>autosaveTools,validateProject:async value=>{for(const source of value.project.sources){const doc=await PDFDocument.load(await value.documents.get(source.key).arrayBuffer(),{updateMetadata:false});if(doc.getPageCount()!==source.count||doc.isEncrypted)throw Error('專案來源 PDF 不完整或仍有加密。');}},getPages:()=>pages,getSources:()=>sources,getSourcePage,getTextPage,inspectNativeText,cancelRendering:()=>renderTask?.cancel(),recognizeRegion:(record,region)=>ocrTools.recognizeRegion(record,region),chosen,isBusy:()=>busy,setBusy,status,toast,filename,bytes,renderBlob,pageViewport,commitEdits,updateRecords,download,showImage,markExported:records=>workflowTools?.markExported(records),previewChosen:()=>proofTools.openChosen(),showProof:options=>proofTools.show(options),needsLeaveWarning:fallback=>autosaveTools?.needsWarning(fallback)??fallback,autosaveChanged:()=>autosaveTools?.changed(),hasLayoutContent:()=>freeLayoutTools?.isCreated()||false,hasLayoutDraft:()=>freeLayoutTools?.hasPending()||false,hasEditorDraft:()=>!!(pageTools?.hasDraft?.()||annotationTools?.hasDraft?.()||ocrTools?.hasDraft?.()),addLayoutPiece:record=>freeLayoutTools.addPiece(record),openFreeLayout:()=>$('free-layout').click(),layoutChanged:()=>{collectWorkspaceResources();drawSources();updateControls();}};
 annotationTools=installAnnotations(sharedApi);ocrTools=installOcr(sharedApi);
 impositionTools=installImposition(sharedApi);
 pageTools=installPageTools(sharedApi);
@@ -261,5 +262,6 @@ function canCaptureWorkspace(){
   return false;
 }
 autosaveTools=installAutosave({$,databaseName:projectTools.databaseName,isWorkspaceValid:()=>projectTools.verifyActive(),onWorkspaceMissing:()=>projectTools.reloadCurrent(),capture:captureWorkspace,canCapture:canCaptureWorkspace,serializeSource,restore:restoreWorkspace,restoredAssets:()=>restoredAssetUrls});
+hubTools=installToolHub(sharedApi);
 productTools.connect(sharedApi);
 setBusy(true);await autosaveTools.init();if(!projectTools.isNavigating()&&!document.querySelector('dialog[open]'))setBusy(false);

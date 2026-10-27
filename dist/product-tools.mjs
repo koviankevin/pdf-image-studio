@@ -1,5 +1,5 @@
-import {PRODUCT_VERSION,RELEASE_DATE,RELEASE_CHANNEL,diagnosticSnapshot,backupState,readableBytes,readableDate,issueCodes,validateReleaseInfo} from './product-core.mjs?v=20261027-word1';
-import {release} from './release-info.mjs?v=20261027-word1';
+import {PRODUCT_VERSION,RELEASE_DATE,RELEASE_CHANNEL,diagnosticSnapshot,backupState,readableBytes,readableDate,issueCodes,validateReleaseInfo} from './product-core.mjs?v=20261028-hub1';
+import {release} from './release-info.mjs?v=20261028-hub1';
 
 let installed;
 export function installProductShell(){
@@ -25,7 +25,7 @@ export function installProductShell(){
       <h3>目前支援與限制</h3><ul><li>加入 PDF、JPG、PNG；加密 PDF 需提供可開啟的密碼。特殊、損毀或過大的文件可能無法處理，遇到限制請分批或降低圖片 DPI。</li><li>OCR 可能有錯字與閱讀順序問題；可校對，但不是 Word／Excel 版面還原。</li><li>裁切與方框標記不是永久遮蔽，敏感內容可能仍在 PDF 中。紙間目前沒有永久刪除敏感資訊的功能。</li><li>Word 類 PDF 可用「原文編輯」修改可識別的單行、同字型水平區塊，移除原字再以內附黑體／明體寫入；特殊結構會提示不支援，不自動重排段落或表格。原始資料仍保存在本機來源與專案，非永久遮蔽。</li><li>可用「文字替換」框選覆蓋原字並輸入新文字；不是 Word 式原稿重排，原稿與既有 OCR 文字仍可能被擷取。新 PDF 不加密，表單會固定化，不保留有效數位簽章、書籤或附件。</li><li>剪貼簿能力依瀏覽器與權限而異；無法直接複製時，可下載或開啟圖片後右鍵／長按儲存。</li></ul>
       <h3>授權與回報</h3><p>紙間自有程式採 MIT 授權；PDF、OCR、字型等第三方資源依各自授權提供。你的文件權利不受程式授權影響。問題回報由你確認後自行送出，請避免在公開問題中附上敏感文件。</p><p><a href="https://github.com/koviankevin/pdf-image-studio/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">查看 MIT 授權（GitHub）</a> · <a href="https://github.com/koviankevin/pdf-image-studio/tree/main/dist/vendor" target="_blank" rel="noopener noreferrer">第三方授權資料（GitHub）</a></p>
     </section>
-    <section id="product-support-panel" aria-label="版本與回報" hidden><h3>目前版本</h3><p id="product-release">v${PRODUCT_VERSION} · ${RELEASE_CHANNEL} · ${RELEASE_DATE}</p><p>這次加入掃描文字替換，支援黑體／明體、底色、範圍與留白調整，並隨專案保存。裝置與真人使用驗收仍持續進行。</p><h3>建立問題診斷</h3><p>診斷只包含版本、瀏覽器類別、功能支援、頁數／來源數與固定問題代碼；不包含檔案、檔名、文件文字、密碼、網址、工作區名稱、自由輸入或錯誤堆疊。先預覽再決定是否下載或回報。</p><button id="product-diagnostic-create" class="secondary">建立診斷預覽</button><textarea id="product-diagnostic" class="product-diagnostic" aria-label="可檢查並複製的診斷資料" readonly hidden></textarea><div class="product-card-actions"><button id="product-diagnostic-copy" class="secondary" disabled>複製診斷</button><button id="product-diagnostic-download" class="secondary" disabled>下載診斷 JSON</button></div><p><a id="product-issue-link" href="https://github.com/koviankevin/pdf-image-studio/issues/new" target="_blank" rel="noopener noreferrer">前往 GitHub 回報問題</a>（會離開紙間，由你確認內容後送出）</p></section>
+    <section id="product-support-panel" aria-label="版本與回報" hidden><h3>目前版本</h3><p id="product-release">v${PRODUCT_VERSION} · ${RELEASE_CHANNEL} · ${RELEASE_DATE}</p><p>這次整理功能入口，加入可搜尋的工具總覽與可操作狀態；原文編輯可從任務列及每頁按鈕直接開啟。裝置與真人使用驗收仍持續進行。</p><p><a href="https://github.com/koviankevin/pdf-image-studio/blob/main/docs/FEATURE-COVERAGE.md" target="_blank" rel="noopener noreferrer">查看功能與自動驗收範圍</a>；當次驗收結果以 GitHub Actions 紀錄為準。</p><h3>建立問題診斷</h3><p>診斷只包含版本、瀏覽器類別、功能支援、頁數／來源數與固定問題代碼；不包含檔案、檔名、文件文字、密碼、網址、工作區名稱、自由輸入或錯誤堆疊。先預覽再決定是否下載或回報。</p><button id="product-diagnostic-create" class="secondary">建立診斷預覽</button><textarea id="product-diagnostic" class="product-diagnostic" aria-label="可檢查並複製的診斷資料" readonly hidden></textarea><div class="product-card-actions"><button id="product-diagnostic-copy" class="secondary" disabled>複製診斷</button><button id="product-diagnostic-download" class="secondary" disabled>下載診斷 JSON</button></div><p><a id="product-issue-link" href="https://github.com/koviankevin/pdf-image-studio/issues/new" target="_blank" rel="noopener noreferrer">前往 GitHub 回報問題</a>（會離開紙間，由你確認內容後送出）</p></section>
     <button id="product-demo-cancel" class="secondary" hidden>停止準備範例</button><p id="product-status" class="status" role="status" hidden></p>
   </dialog>`);
   const dialog=$('product-dialog');
@@ -90,7 +90,7 @@ export function installProductShell(){
     if(api.getPages().length&&!confirm('示範文件會加入目前工作區，原文件會保留。要繼續嗎？也可以取消後先新增空白工作區。'))return;
     open('guide');controller=new AbortController();const signal=controller.signal;api.setBusy(true);refresh();say('正在準備示範文件與中文字型，可隨時停止…');
     try{
-      const {createDemoDocuments}=await raceAbort(import('./demo-documents.mjs?v=20261027-word1'),signal);
+      const {createDemoDocuments}=await raceAbort(import('./demo-documents.mjs?v=20261028-hub1'),signal);
       const files=await raceAbort(createDemoDocuments(kind,{signal}),signal);signal.throwIfAborted();controller=null;dialog.close();api.setBusy(false);await api.addFiles(files);api.showTask(kind==='handout'?'layout':'organize');
     }catch(error){if(error.name==='AbortError')say('已停止準備範例，原文件保留。');else{recordIssue('DEMO');say('範例暫時無法準備，請重試；也可以直接加入自己的 PDF。',true);}}
     finally{controller=null;api.setBusy(false);refresh();}

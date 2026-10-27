@@ -1,5 +1,5 @@
-export const PRODUCT_VERSION='0.11.1';
-export const RELEASE_DATE='2026-10-27';
+export const PRODUCT_VERSION='0.12.0';
+export const RELEASE_DATE='2026-10-28';
 export const RELEASE_CHANNEL='商品化驗收版';
 export const issueCodes=new Set(['APP_RUNTIME','ASYNC_TASK','OPERATION_FAILED','FILE_IMPORT','PDF_EXPORT','IMAGE_EXPORT','STORAGE','BACKUP','DEMO','UPDATE']);
 export function validateReleaseInfo(value){
@@ -11,7 +11,7 @@ export function diagnosticSnapshot(value={}){
   // URLs, stacks, filenames, OCR, free-form descriptions or persistent IDs.
   const count=n=>Number.isSafeInteger(n)&&n>=0?Math.min(n,100000):0;
   const browser=/Firefox\//.test(value.userAgent||'')?'Firefox':/Edg\//.test(value.userAgent||'')?'Edge':/Chrome\//.test(value.userAgent||'')?'Chrome':/Safari\//.test(value.userAgent||'')?'Safari':'其他';
-  const task=['all','capture','organize','layout','text'].includes(value.task)?value.task:'all';
+  const task=['all','capture','organize','layout','text','edit'].includes(value.task)?value.task:'all';
   return {format:'shijian-diagnostic',version:1,appVersion:PRODUCT_VERSION,releaseDate:RELEASE_DATE,buildId:/^[a-f0-9]{64}$/.test(value.buildId)?value.buildId:null,browser,task,
     environment:{secureContext:value.secureContext===true,clipboard:value.clipboard===true,indexedDB:value.indexedDB===true,persistentStorage:typeof value.persistentStorage==='boolean'?value.persistentStorage:null},
     workspace:{pages:count(value.pages),sources:count(value.sources),selected:count(value.selected),autosave:value.autosave===true},
