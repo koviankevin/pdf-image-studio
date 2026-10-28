@@ -10,3 +10,10 @@ test('tool readiness distinguishes file, selection, source, image, operation and
  assert.match(toolAvailability({requires:'selection'},{...base,pages:0,selected:0}).label,/加入文件/);assert.match(toolAvailability({requires:'selection'},{...base,selected:0}).label,/勾選/);assert.match(toolAvailability({requires:'single'},base).label,/一頁/);assert.match(toolAvailability({requires:'sourcesPair'},{...base,sources:1}).label,/兩份/);assert.match(toolAvailability({requires:'images'},{...base,images:false}).label,/轉換圖片/);
  assert.equal(toolAvailability({},base,{exists:false}).ready,false);assert.equal(toolAvailability({},base,{exists:true,disabled:true}).ready,false);assert.equal(toolAvailability({}, {...base,busy:true}).ready,false);assert.match(toolAvailability({}, {...base,busy:true,dialog:true}).label,/視窗/);
 });
+
+
+test('history and existing OCR review follow enabled original controls rather than page selection',()=>{
+ const empty={pages:0,selected:0,sources:0,images:false,busy:false},undo=toolCatalog.find(t=>t.id==='undo'),review=toolCatalog.find(t=>t.id==='ocr-review');
+ assert.equal(toolAvailability(undo,empty,{exists:true,disabled:false}).ready,true);assert.equal(toolAvailability(undo,empty,{exists:true,disabled:true}).ready,false);
+ assert.equal(toolAvailability(review,{...empty,pages:2},{exists:true,disabled:false}).ready,true);assert.equal(toolAvailability(review,{...empty,pages:2},{exists:true,disabled:true}).ready,false);assert.equal(toolAvailability(review,{...empty,pages:2,busy:true},{exists:true,disabled:false}).ready,false);
+});

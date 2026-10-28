@@ -1,6 +1,6 @@
-import {nativeOcrLines} from './native-stream.mjs?v=20261028-hub2';
-import {ocrLineVisible} from './ocr-region.mjs?v=20261028-hub2';
-import {textItemBounds} from './text-geometry.mjs?v=20261028-hub2';
+import {nativeOcrLines} from './native-stream.mjs?v=20261028-hub3';
+import {ocrLineVisible} from './ocr-region.mjs?v=20261028-hub3';
+import {textItemBounds} from './text-geometry.mjs?v=20261028-hub3';
 const normalize=text=>text.normalize('NFKC').toLocaleLowerCase().replace(/\s+/g,'');
 export function installDocumentSearch(api){
   const {$}=api;

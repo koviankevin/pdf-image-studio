@@ -1,5 +1,5 @@
 import {PDFDocument,rgb} from './vendor/pdf-lib/pdf-lib.mjs';
-import {embedChineseFont} from './document-model.mjs?v=20261028-hub2';
+import {embedChineseFont} from './document-model.mjs?v=20261028-hub3';
 import {checkpoint} from './cancellation.mjs';
 
 export async function createDemoDocuments(kind,{signal}={}){

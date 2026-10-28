@@ -1,16 +1,16 @@
 {
   "format": "shijian-release",
-  "version": "0.12.0",
+  "version": "0.12.1",
   "canonicalization": "utf8-lf-binary-raw",
   "date": "2026-10-28",
   "channel": "readiness",
-  "buildId": "b834a40e321bf1485c4286319469bc92f3281de2b30a70e23819ad146a0c0842",
+  "buildId": "a7d53bbf14b2a41d16d3976773132e0c75d6da449da5e2c4fd72bd682b41f6a8",
   "files": 279,
   "assets": [
     {
       "file": "annotation-tools.mjs",
       "size": 28398,
-      "sha256": "ada70d4ef7e0aa2618b6df75c9e13c746fe82b49008cb909c6613adf3204e1c6"
+      "sha256": "db80e5034475f7fdf5d8fe6ff33da9cae8523de4b854130bf4a461ebbfa3aee9"
     },
     {
       "file": "apple-touch-icon.png",
@@ -20,17 +20,17 @@
     {
       "file": "autosave-tools.mjs",
       "size": 13124,
-      "sha256": "cb7099f6266fc05560cb213246f2d12b5695c3c6ce4f3b6433c0b14f2d1bbbdc"
+      "sha256": "84ecad257f273e7bb65f5d479277b2d4896829aa3d5ec5465618c9c902c24e9e"
     },
     {
       "file": "batch-crop.mjs",
       "size": 1053,
-      "sha256": "deeb50754c8bebf7b00aac5f3865b7a38d6d870c74f25ea28b5f1687deac4dd0"
+      "sha256": "150450577dc0a31d3fb15af455c242ef39d45fe4d4212315713796f7001dcb67"
     },
     {
       "file": "bootstrap.mjs",
       "size": 675,
-      "sha256": "c976f231321cfff8a6b6c578f9f950ea9edade62494fec059975fbbbde66f30a"
+      "sha256": "ace8aba5fd671018336e88d01f522a2e369138a37f2f6417b417df87878697e5"
     },
     {
       "file": "cancellation.mjs",
@@ -45,32 +45,32 @@
     {
       "file": "compare-tools.mjs",
       "size": 9770,
-      "sha256": "a41c2e4b78c21bf77c8237d8dff6ac263a161517c2baa5e439420a38284e62c6"
+      "sha256": "cfe3c545d7fdf51eb543ff9dc74c5318c6ea592fab52f6cc32eabc19581e8dcd"
     },
     {
       "file": "compare-worker.mjs",
       "size": 336,
-      "sha256": "0fee5332a7f5494264aa763089607bee17010a1bd95394a76668da3cdde78791"
+      "sha256": "1a1a5ae10cf2fe261b464b4f940126384845df0b54bb3d525a0dfc8c141135e6"
     },
     {
       "file": "demo-documents.mjs",
       "size": 2444,
-      "sha256": "a460f98439c7e9bf89940ccbcd21abb05b1f8b275a44b53a3d0815f1ef0cd1b5"
+      "sha256": "114ad9ff649b6f1c8044be48e7841945b60e26df1332ae259f47b3c28fa598d8"
     },
     {
       "file": "document-model.mjs",
       "size": 7956,
-      "sha256": "69c197bc18dfc83ca8734eb303a339ec783109aa41a4a09cb0a37a0365adecba"
+      "sha256": "95662db8c66984cff9b789c18b6bd426fea60786e1746e37d0b6573992e8864d"
     },
     {
       "file": "document-search.mjs",
       "size": 4341,
-      "sha256": "b4700846061f4a2a799a9fedb1c9a10149e3e29f71331f7dace6dade3302db3d"
+      "sha256": "4ad0f494fc4442bee31a14b0e13bfd8cdfedfa75aa02c5ba39d08f92170b2978"
     },
     {
       "file": "draft-store.mjs",
       "size": 9910,
-      "sha256": "089a6148d24aa5e610d1e2b76157d4c5fd9cf26893676da72aada59122d060df"
+      "sha256": "8119bc0b7819eea2ba7f95ba4fa75393fb8773eeedfe586fb42994d448874f22"
     },
     {
       "file": "draft-validation.mjs",
@@ -85,7 +85,7 @@
     {
       "file": "editor-core.mjs",
       "size": 4475,
-      "sha256": "f986a856bbaaa37587c66aa2745e027892619bd0f4005461ca105e0074a75fb9"
+      "sha256": "40755e6bcf43e76e61e9f92ebf52e5301cf48794d123f3b58e3cc926082157e1"
     },
     {
       "file": "favicon-32.png",
@@ -100,27 +100,27 @@
     {
       "file": "free-layout-core.mjs",
       "size": 7211,
-      "sha256": "6ad3d48b9cb2d152648e4e90f2b0f393430cdf8250df136673039082a6259b8a"
+      "sha256": "35ca1cc484f7b0a1fc22a1b8582aa48001700633f6e1ea757246b26628b7e30c"
     },
     {
       "file": "free-layout-tools.mjs",
       "size": 37547,
-      "sha256": "5d4ce496c54cc47e81d8641510ed4322b53dda3237701664bfc4ed538a4bddab"
+      "sha256": "de9932dff7e3a4165005b1d594cd8bb479385cbea7f88da8ca009126dcc8e4c1"
     },
     {
       "file": "imposition-core.mjs",
       "size": 4366,
-      "sha256": "e0201b2263af77e34c823568b54255da79ec191bd7939d2fad744edf185a971c"
+      "sha256": "d41912a1db75ec95cb354e2639485742a02d1485bc7af73e1470947249c510fc"
     },
     {
       "file": "imposition-tools.mjs",
       "size": 8408,
-      "sha256": "37695f0b1e95f0323392829e68bededa210deffe090af3e9d8f192f5e9e7f4d1"
+      "sha256": "de138afade0469422d9f8c55f3d8c9d98c75c3bd239048f608c92cbb72ea264d"
     },
     {
       "file": "index.html",
       "size": 18635,
-      "sha256": "4019085772486035e2e24742600ac651d69d9a5b6f4444f5369b68979a1b122a"
+      "sha256": "5b57e8aac158000221b643926821689f7750f629824aec5d3265a8be30372be3"
     },
     {
       "file": "keyboard-shortcuts.mjs",
@@ -140,7 +140,7 @@
     {
       "file": "native-text-analysis.mjs",
       "size": 5224,
-      "sha256": "cf27311a51637d4ef8327dd4af2df139294e0e9ac67b29fac2fbaa3deeda59c1"
+      "sha256": "f48e342387ea56e5a1161ce6ce664b6b9315d74a55e206158d48a416d3756978"
     },
     {
       "file": "ocr-columns.mjs",
@@ -150,22 +150,22 @@
     {
       "file": "ocr-region.mjs",
       "size": 1373,
-      "sha256": "5759284e934cd40c1bc9a10e5dd7541185f48969dcbfd1058249ec780aa6c14c"
+      "sha256": "f262360fea63f495b9c6b5068bc9303928cb64c4a6ed46545e10ac7580aa32a6"
     },
     {
       "file": "ocr-tools.mjs",
       "size": 12159,
-      "sha256": "ba7bc4ef3d3b8cbbdc3b4f21d5799d115916b62ea0266831c9c3138d0be7ffee"
+      "sha256": "75ed6d752a86479ae8ff281824b7e34a45f94c560192a413256266608f1dafb8"
     },
     {
       "file": "page-operations.mjs",
       "size": 8329,
-      "sha256": "7035a15cef26b4260a6713f05f00a0fa6bd42885e29aaede72329476e809ab85"
+      "sha256": "76bd898f952dd94b276154cc5b1bbb90de36bd8ebb8ba15bda0d7d9cf930e619"
     },
     {
       "file": "page-tools.mjs",
       "size": 14924,
-      "sha256": "94b23bea5f1504face8f93ade33192ae5186f2c4c992a4108365c4623df532bb"
+      "sha256": "8e9468640769934daee8fd063c9b739ac4144d6082715abeab61401eb382de25"
     },
     {
       "file": "paper.css",
@@ -180,17 +180,17 @@
     {
       "file": "pdf-proof.mjs",
       "size": 6346,
-      "sha256": "0c212a48348b83d1a5d03cb475de92178e387ca4c732a268bee9e24fbc4c1a04"
+      "sha256": "58f5b9d1f6f6daad947c578bdcc114beb90296ba73e90533157f3a5ed06093bb"
     },
     {
       "file": "product-core.mjs",
       "size": 3757,
-      "sha256": "265dd98ce869bc8d9c961d451717ca6b531b6418681f94d2a4a284ce18b86f4d"
+      "sha256": "295ce1ee49de4e7c5db5d8e5e17f42667f86ee278414147a1490a08c887b3732"
     },
     {
       "file": "product-tools.mjs",
-      "size": 21740,
-      "sha256": "690fb728d0e5ef98320dc0b6bbc839a695c7df8986b2406d748bc6728b57deeb"
+      "size": 21775,
+      "sha256": "0fbfeb50d6bab87438df7f49de7fcea7daafbd30d6825e835ec00f7706d9df73"
     },
     {
       "file": "product.css",
@@ -205,12 +205,12 @@
     {
       "file": "project-files.mjs",
       "size": 3808,
-      "sha256": "1971283691788d1986903ba48eac0344cba03f9c7ec797abce72a19f8318e7ab"
+      "sha256": "69b056cedd44ca778ad70b3e1f40679468b69fc782311b0f29e8a8971615fbd6"
     },
     {
       "file": "project-tools.mjs",
       "size": 7471,
-      "sha256": "f1e85d572eee13125bc99d3ad5a1224aebdb906c621ab62e46af06aef609fd0f"
+      "sha256": "a5cfee1746e918a698b7abd2f70dc25e5a83d1c196a562c54aa8b9e5e2e6f1ae"
     },
     {
       "file": "replacement-core.mjs",
@@ -225,7 +225,7 @@
     {
       "file": "storage-summary.mjs",
       "size": 1620,
-      "sha256": "5c0861a38ba72fc358ac76d061b97e343167c8392dcc679baf2f9fa0320e30a8"
+      "sha256": "6c4b50e6a92e717ddf62e8a0e1d5e9da21028f22daddf0a03aa64974133650b6"
     },
     {
       "file": "style.css",
@@ -240,27 +240,27 @@
     {
       "file": "template-core.mjs",
       "size": 4097,
-      "sha256": "9721db083133b34275417b15bd9ceaa49ec697fa4a6252466f2a1224dff3a32a"
+      "sha256": "3efe477318a3f0dfa64a4e8ded5cd883e3ac60d63b681b50b52ae8f5999faff5"
     },
     {
       "file": "template-tools.mjs",
       "size": 6916,
-      "sha256": "762627e7e3ed5898fd0a04c0d95851ed748585790c60f203da8561af1340bfc1"
+      "sha256": "9aebf4a9a13fbf7da246ed1da631e8d13b692b7feebd3ec5c257ec11b4c5daa8"
     },
     {
       "file": "text-geometry.mjs",
       "size": 852,
-      "sha256": "17fc744703b59401596a2795b5aa5c9283ad8453fd2fcd731881fafb02878cea"
+      "sha256": "bb28dae92e6f1458bab7d44274a8b015b9c661583867e28c661b89f9e1fcb317"
     },
     {
       "file": "tool-catalog.mjs",
-      "size": 9871,
-      "sha256": "8e47cf276c532655d8467e1bce7bfe5a7f71bb15747fd2d78a8956e2fb98f996"
+      "size": 9905,
+      "sha256": "1ba22a1048b8e2b27fd2b39da870c3833f1e0ec56eb61a7b78d3e10eb1b9d8bc"
     },
     {
       "file": "tool-hub.mjs",
-      "size": 5784,
-      "sha256": "602a147643e405c3c882fc5fd1af5ff1d8985de8ed5872d3039c38ba0bdb272e"
+      "size": 5945,
+      "sha256": "ac1c74072a816d103e7ccde6ab9a4c79020eafa66c3cdd0d67a9fca89c858b99"
     },
     {
       "file": "utils.mjs",
@@ -1390,7 +1390,7 @@
     {
       "file": "workflow-tools.mjs",
       "size": 4345,
-      "sha256": "4130e315aecc5630a4ef32d5e6317aa02f13dd78142a6d78e281296ca10dee0d"
+      "sha256": "edfd4f86d6de9c409c2380ab5d968e86691d1b9236a8458ef7b07e7836243ce5"
     },
     {
       "file": "workflow.css",
@@ -1400,7 +1400,7 @@
     {
       "file": "workspace.mjs",
       "size": 41229,
-      "sha256": "0e9f073b510c93bd2800f9ebcdb9aca5c0454bee11d008fb5f026335aff2d6d0"
+      "sha256": "148ce4bbb252c331063c306d087591a5fa56b83089eb66b4285f2fcfb73e0e8d"
     }
   ]
 }

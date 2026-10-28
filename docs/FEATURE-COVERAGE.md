@@ -23,7 +23,7 @@
 | 功能入口 | 使用範圍 | 實際操作驗收 |
 | --- | --- | --- |
 | 選頁、排序與移動 (`page-order`) | 勾選頁碼、拖曳排序或輸入移動位置。 | [multi-pdf.spec.mjs](../tests/browser/multi-pdf.spec.mjs) |
-| 復原／重做 (`undo`) | 保留整理、文字與排版操作的復原入口及快捷鍵。 | [productivity.spec.mjs](../tests/browser/productivity.spec.mjs)、[workflow.spec.mjs](../tests/browser/workflow.spec.mjs) |
+| 復原／重做 (`undo`) | 保留整理、文字與排版操作的復原入口及快捷鍵。 | [productivity.spec.mjs](../tests/browser/productivity.spec.mjs)、[workflow.spec.mjs](../tests/browser/workflow.spec.mjs)、[tool-hub.spec.mjs](../tests/browser/tool-hub.spec.mjs) |
 | 複製頁面 (`duplicate`) | 在原頁後加入副本，保留頁面編輯。 | [productivity.spec.mjs](../tests/browser/productivity.spec.mjs) |
 | 插入空白頁 (`blank`) | 選 A4 方向，再插入空白頁。 | [productivity.spec.mjs](../tests/browser/productivity.spec.mjs) |
 | 替換單頁 (`replace-page`) | 以另一份 PDF 的指定頁或圖片取代勾選單頁。 | [productivity.spec.mjs](../tests/browser/productivity.spec.mjs)、[productivity-regression.spec.mjs](../tests/browser/productivity-regression.spec.mjs) |
@@ -40,7 +40,7 @@
 | 掃描文字替換 (`replace-text`) | 框住舊字，以底色與新文字覆蓋外觀。 | [replacement.spec.mjs](../tests/browser/replacement.spec.mjs) |
 | 文字／螢光筆／箭頭／方框 (`annotations`) | 加註、移動、刪除與復原標記。 | [tool-coverage.spec.mjs](../tests/browser/tool-coverage.spec.mjs)、[autosave.spec.mjs](../tests/browser/autosave.spec.mjs)、[workflow.spec.mjs](../tests/browser/workflow.spec.mjs) |
 | 中文 OCR／擷取文字 (`ocr`) | 自動擷取或強制辨識，支援一般、單欄與雙欄。 | [scanned-ocr.spec.mjs](../tests/browser/scanned-ocr.spec.mjs)、[scan-conditions.spec.mjs](../tests/browser/scan-conditions.spec.mjs)、[two-column-ocr.spec.mjs](../tests/browser/two-column-ocr.spec.mjs) |
-| 檢視／校對辨識文字 (`ocr-review`) | 辨識完成後校對、複製或加入可搜尋 PDF。 | [scanned-ocr.spec.mjs](../tests/browser/scanned-ocr.spec.mjs)、[two-column-ocr.spec.mjs](../tests/browser/two-column-ocr.spec.mjs) |
+| 檢視／校對辨識文字 (`ocr-review`) | 辨識完成後校對、複製或加入可搜尋 PDF。 | [scanned-ocr.spec.mjs](../tests/browser/scanned-ocr.spec.mjs)、[two-column-ocr.spec.mjs](../tests/browser/two-column-ocr.spec.mjs)、[tool-hub.spec.mjs](../tests/browser/tool-hub.spec.mjs) |
 | 框選區域 OCR (`regional-ocr`) | 開啟框選，拖曳後選「辨識框選區域的文字」。 | [safety-performance.spec.mjs](../tests/browser/safety-performance.spec.mjs)、[ease.spec.mjs](../tests/browser/ease.spec.mjs) |
 | 搜尋文件文字 (`search`) | 搜尋原文、OCR 與新增文字，點結果定位頁面。 | [productivity.spec.mjs](../tests/browser/productivity.spec.mjs)、[productivity-regression.spec.mjs](../tests/browser/productivity-regression.spec.mjs)、[native-text.spec.mjs](../tests/browser/native-text.spec.mjs) |
 
@@ -77,3 +77,5 @@
 [tool-catalog.test.mjs](../tests/unit/tool-catalog.test.mjs) 要求名錄中的每項工具都有分類、目標、測試與清單記錄，且所列測試實際提到對應控制項；單純指定一個存在的檔案不算完成對照。
 
 [pdf-inspection.spec.mjs](../tests/browser/pdf-inspection.spec.mjs) 驗證讀頁檢查不受另一份不同頁數文件干擾，原有像素與文字斷言保持不變。自動化仍不取代真人、實機剪貼簿授權及複雜文件校對。
+
+0.12.1 在 `tool-hub.spec.mjs` 補驗移除全部頁面後的復原入口、只剩重做時的定位，以及未勾選頁面時開啟既有 OCR 校對。從入口定位不會直接操作；實際復原／重做及再次下載的 PDF 文字、尺寸與像素均需一致。

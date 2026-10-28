@@ -1,4 +1,5 @@
 import {test,expect} from './fixtures.mjs';
+import {createFixtures} from '../support/pdfs.mjs';
 import {toolCatalog} from '../../dist/tool-catalog.mjs';
 import {createNativePdf} from '../support/native-pdf.mjs';
 import {downloadBytes,inspectPdf} from '../support/ocr-pdf.mjs';
@@ -18,4 +19,22 @@ test('original text is directly editable from common shortcut, task and page con
 });
 test('mobile reading order puts pages before output settings and all tool controls fit 320px',async({page})=>{
  await page.setViewportSize({width:320,height:850});await load(page);const boxes=await page.evaluate(()=>({upload:document.querySelector('#import-step').getBoundingClientRect().top,pages:document.querySelector('.results').getBoundingClientRect().top,output:document.querySelector('.settings').getBoundingClientRect().top,body:document.body.scrollWidth,width:innerWidth}));expect(boxes.upload).toBeLessThan(boxes.pages);expect(boxes.pages).toBeLessThan(boxes.output);expect(boxes.body).toBeLessThanOrEqual(boxes.width);expect(await page.locator('#page-grid').evaluate(el=>getComputedStyle(el).gridTemplateColumns.split(' ').length)).toBe(1);await page.locator('#tool-catalog summary').click();expect(await page.locator('#tool-catalog').evaluate(el=>el.scrollWidth<=el.clientWidth)).toBe(true);await expect(page.getByRole('button',{name:'編輯第 1 頁原文',exact:true})).toBeEnabled();await page.locator('[data-task="edit"]').click();await expect(page.locator('#task-start')).toBeEnabled();
+});
+
+async function loadSimple(page){await ready(page);const source=(await createFixtures()).sources.get('A');await page.locator('#file-input').setInputFiles({name:source.name,mimeType:'application/pdf',buffer:Buffer.from(source.bytes)});await expect(page.locator('#page-count')).toHaveText('2');await expect(page.locator('#file-input')).toBeEnabled();}
+
+test('catalog locates undo with no pages and redo when only redo remains without applying either action',{tag:'@compatibility'},async({page})=>{
+ await ready(page);await page.locator('#tool-catalog > summary').click();const entry=card(page,'undo').getByRole('button');await expect(entry).toBeDisabled();await expect(card(page,'undo')).toContainText('沒有可復原或重做');
+ const source=(await createFixtures()).sources.get('A');await page.locator('#file-input').setInputFiles({name:source.name,mimeType:'application/pdf',buffer:Buffer.from(source.bytes)});await expect(page.locator('#page-count')).toHaveText('2');await expect(page.locator('#file-input')).toBeEnabled();await expect(entry).toBeDisabled();
+ const before=await inspectPdf(page,await downloadBytes(page,page.locator('#export-pdf')));
+ await page.locator('#delete-selected').click();await expect(page.locator('#page-count')).toHaveText('0');await expect(page.locator('#undo')).toBeEnabled();await expect(entry).toBeEnabled();await entry.click();await expect(page.locator('#undo')).toBeFocused();await expect(page.locator('#page-count')).toHaveText('0');
+ await page.locator('#undo').click();await expect(page.locator('#page-count')).toHaveText('2');await expect(page.locator('#undo')).toBeDisabled();await expect(page.locator('#redo')).toBeEnabled();await expect(entry).toBeEnabled();await entry.click();await expect(page.locator('#redo')).toBeFocused();await expect(page.locator('#page-count')).toHaveText('2');
+ await page.locator('#redo').click();await expect(page.locator('#page-count')).toHaveText('0');await entry.click();await expect(page.locator('#undo')).toBeFocused();await page.locator('#undo').click();await expect(page.locator('#page-count')).toHaveText('2');expect(await inspectPdf(page,await downloadBytes(page,page.locator('#export-pdf')))).toEqual(before);
+});
+
+test('catalog opens existing OCR review with no selected pages and preserves the original PDF',{tag:'@compatibility'},async({page})=>{
+ await loadSimple(page);await page.locator('#tool-catalog > summary').click();const entry=card(page,'ocr-review').getByRole('button');await expect(entry).toBeDisabled();await expect(card(page,'ocr-review')).toContainText('請先完成文字擷取或 OCR');const before=await inspectPdf(page,await downloadBytes(page,page.locator('#export-pdf')));
+ await page.locator('[data-task="text"]').click();await page.locator('#ocr-start').click();await expect(page.locator('#ocr-dialog')).toBeVisible();await expect(page.locator('#ocr-save')).toBeEnabled();await expect(entry).toBeDisabled();await page.locator('#ocr-close').click();
+ await page.locator('#select-none').click();await expect(page.locator('#ocr-review')).toBeEnabled();await expect(entry).toBeEnabled();await page.locator('[data-task="edit"]').click();await entry.click();await expect(page.locator('[data-task="text"]')).toHaveAttribute('aria-pressed','true');await expect(page.locator('#ocr-dialog')).toBeVisible();await expect(page.locator('#ocr-page option')).toHaveCount(2);await expect(page.locator('#ocr-lines textarea').first()).toHaveValue('SOURCE_A_PAGE_1');await expect(page.getByRole('checkbox',{name:'選取第 1 頁',exact:true})).not.toBeChecked();await page.locator('#ocr-close').click();
+ await page.locator('#select-all').click();await page.locator('[data-task="all"]').click();expect(await inspectPdf(page,await downloadBytes(page,page.locator('#export-pdf')))).toEqual(before);
 });

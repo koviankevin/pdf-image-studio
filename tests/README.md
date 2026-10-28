@@ -2,7 +2,7 @@
 
 ## 原生文字編輯
 
-`browser/native-text.spec.mjs` 以合成 Word 類 TJ／內嵌中文字型 PDF，驗證原字不再擷取、彩色底與區域外像素相等、其他原文／Form／影像／第二頁保留、字型替換、PDF／PNG／A4、搜尋、復原重做、清空／刪除此編輯、旋轉後滑鼠選取、320 px、超出／不支援提示、未失焦草稿、跨 context 備份、字型失敗重試、延遲識別與預覽取消、Worker 回收及載入期間連點。前兩案納入 Firefox／WebKit，相容性共 37 項；CI 用兩個 worker 執行隔離 context／伺服器，suite 9 分鐘與 job 10 分鐘上限保持，失敗仍阻擋部署。
+`browser/native-text.spec.mjs` 以合成 Word 類 TJ／內嵌中文字型 PDF，驗證原字不再擷取、彩色底與區域外像素相等、其他原文／Form／影像／第二頁保留、字型替換、PDF／PNG／A4、搜尋、復原重做、清空／刪除此編輯、旋轉後滑鼠選取、320 px、超出／不支援提示、未失焦草稿、跨 context 備份、字型失敗重試、延遲識別與預覽取消、Worker 回收及載入期間連點。前兩案納入 Firefox／WebKit；CI 用兩個 worker 執行隔離 context／伺服器。完整相容性案例與時間預算依目前設定檔，失敗仍阻擋部署。
 
 `unit/native-text.test.mjs` 檢查位元組區段定位、跳脫字串／註解／多串流、移除原字編碼、來源未變及輸出無孤立舊串流、來源雜湊與重複區塊驗證、不支援效果、解壓上限及 OCR 重疊排除。這不是一般永久遮蔽工具或任意 PDF 段落重排。
 
@@ -348,3 +348,7 @@ PNG 簽章、實際／宣告尺寸、300 KB 上限及上傳目錄內的檔案；
 - `browser/pdf-inspection.spec.mjs` 在讀兩頁 PDF 的像素後，刻意載入另一份單頁 PDF，確認驗收讀頁始終綁定被檢查的文件；文字與像素斷言保持原樣。
 
 - `browser/tool-coverage.spec.mjs` 補驗原本缺少的直接操作：圖片轉 PDF、拆分／範圍 ZIP、JPG 容量預估和圖片 ZIP、框選剪貼簿 PNG 的尺寸與 DPI／權限失敗，以及文字、螢光筆、箭頭、方框的實際輸出。
+
+## 0.12.1 工具狀態邊界
+
+`browser/tool-hub.spec.mjs` 補驗空頁面仍可復原、只有重做時定位到重做，以及未選頁仍可開啟既有文字辨識結果；並核對復原前後與校對開關後的實際 PDF。兩個案例都納入 Firefox／WebKit。相容性 suite 為 12 分鐘、job 15 分鐘；完整 Chromium 與安裝的 job 為 20 分鐘，單一案例時限與發布關卡保持。
