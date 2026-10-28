@@ -51,14 +51,14 @@
 | 框選複製／下載 (`capture`) | 拖曳選取局部，依 DPI 與長邊設定輸出圖片。 | [tool-coverage.spec.mjs](../tests/browser/tool-coverage.spec.mjs)、[safety-performance.spec.mjs](../tests/browser/safety-performance.spec.mjs) |
 | 高解析度圖片 (`images`) | PNG／JPG、DPI、長邊上限與常用方案。 | [multi-pdf.spec.mjs](../tests/browser/multi-pdf.spec.mjs)、[workflow.spec.mjs](../tests/browser/workflow.spec.mjs) |
 | 預估圖片大小 (`estimate`) | 依目前圖片設定估算檔案大小。 | [tool-coverage.spec.mjs](../tests/browser/tool-coverage.spec.mjs) |
-| 圖片預覽／全部下載 (`image-download`) | 轉換後預覽、複製圖片或下載 ZIP。 | [tool-coverage.spec.mjs](../tests/browser/tool-coverage.spec.mjs)、[multi-pdf.spec.mjs](../tests/browser/multi-pdf.spec.mjs) |
+| 圖片預覽／全部下載 (`image-download`) | 轉換後預覽、複製圖片或下載 ZIP。 | [tool-coverage.spec.mjs](../tests/browser/tool-coverage.spec.mjs)、[multi-pdf.spec.mjs](../tests/browser/multi-pdf.spec.mjs)、[tool-hub.spec.mjs](../tests/browser/tool-hub.spec.mjs) |
 
 ## A4 排版
 
 | 功能入口 | 使用範圍 | 實際操作驗收 |
 | --- | --- | --- |
 | A4 拼版 (`impose`) | 多頁拼成一張，調整格數、方向、間距與頁序。 | [imposition.spec.mjs](../tests/browser/imposition.spec.mjs) |
-| A4 自由排版 (`free-layout`) | 多張紙、框選片段、標題、多選對齊與磁吸。 | [workflow.spec.mjs](../tests/browser/workflow.spec.mjs)、[ease.spec.mjs](../tests/browser/ease.spec.mjs)、[ease-performance.spec.mjs](../tests/browser/ease-performance.spec.mjs) |
+| A4 自由排版 (`free-layout`) | 多張紙、框選片段、標題、多選對齊與磁吸。 | [workflow.spec.mjs](../tests/browser/workflow.spec.mjs)、[ease.spec.mjs](../tests/browser/ease.spec.mjs)、[ease-performance.spec.mjs](../tests/browser/ease-performance.spec.mjs)、[tool-hub.spec.mjs](../tests/browser/tool-hub.spec.mjs) |
 
 ## 說明與檢查
 
@@ -79,3 +79,5 @@
 [pdf-inspection.spec.mjs](../tests/browser/pdf-inspection.spec.mjs) 驗證讀頁檢查不受另一份不同頁數文件干擾，原有像素與文字斷言保持不變。自動化仍不取代真人、實機剪貼簿授權及複雜文件校對。
 
 0.12.1 在 `tool-hub.spec.mjs` 補驗移除全部頁面後的復原入口、只剩重做時的定位，以及未勾選頁面時開啟既有 OCR 校對。從入口定位不會直接操作；實際復原／重做及再次下載的 PDF 文字、尺寸與像素均需一致。
+
+0.12.2 補驗 A4 任務在未選頁、重新開啟草稿、工作區無頁面及空白排版時仍能接續；圖片零結果失敗／取消、部分結果取消與重試的入口狀態及實際輸出。`tool-state-matrix.spec.mjs` 另外對照 17 種一般狀態的 32 個入口與原有控制項。

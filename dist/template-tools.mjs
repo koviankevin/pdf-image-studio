@@ -1,4 +1,4 @@
-import {templateFields,cleanTemplate,readTemplates,encodeTemplates} from './template-core.mjs?v=20261028-hub3';
+import {templateFields,cleanTemplate,readTemplates,encodeTemplates} from './template-core.mjs?v=20261028-hub4';
 
 export function installTemplates(api){
   const {$}=api,key='shijian.templates.v1';

@@ -1,5 +1,5 @@
 import {PDFDocument, degrees, pushGraphicsState, popGraphicsState} from './vendor/pdf-lib/pdf-lib.mjs';
-import {assemblePdf} from './editor-core.mjs?v=20261028-hub3';
+import {assemblePdf} from './editor-core.mjs?v=20261028-hub4';
 import {checkpoint} from './cancellation.mjs';
 
 const MM = 72 / 25.4;

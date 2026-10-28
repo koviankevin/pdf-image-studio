@@ -1,4 +1,4 @@
-import {toolCatalog,toolGroups,toolAvailability} from './tool-catalog.mjs?v=20261028-hub3';
+import {toolCatalog,toolGroups,toolAvailability} from './tool-catalog.mjs?v=20261028-hub4';
 export function installToolHub(api){
  const {$}=api,panel=document.querySelector('.task-panel');
  panel.insertAdjacentHTML('beforeend',`<div id="common-tools" class="common-tools" aria-label="常用工具"></div><details id="tool-catalog" class="tool-catalog"><summary>所有功能與狀態 <span id="tool-total"></span></summary><div class="tool-catalog-heading"><label for="tool-query">找工具</label><input id="tool-query" type="search" maxlength="100" placeholder="例如：改字、合併、OCR、備份"><p id="tool-availability" class="field-hint" role="status"></p></div><div id="tool-groups" class="tool-groups"></div><p id="tool-no-results" class="field-hint" hidden>沒有符合的功能，試試「文字」「PDF」或「備份」。</p><p class="field-hint">依目前文件與勾選頁顯示可用狀態。點入口後可繼續設定；文件只在這台裝置處理。</p></details>`);
@@ -8,7 +8,7 @@ export function installToolHub(api){
  }
  for(const id of ['native','capture','impose','pdf-preview']){const tool=toolCatalog.find(t=>t.id===id),button=document.createElement('button'),title=document.createElement('strong'),status=document.createElement('span');button.type='button';button.className='secondary common-tool';button.dataset.shortcut=id;title.textContent=tool.label;status.className='tool-state';button.append(title,status);button.onclick=()=>void activate(tool);$('common-tools').append(button);controls.push({tool,status,button});}
  $('tool-total').textContent=`${toolCatalog.length} 項`;
- function state(){return{busy:api.isBusy(),dialog:!!document.querySelector('dialog[open]'),pages:api.getPages().length,selected:api.chosen().length,sources:api.getSources().size,images:!$('image-results').hidden};}
+ function state(){return{busy:api.isBusy(),dialog:!!document.querySelector('dialog[open]'),pages:api.getPages().length,selected:api.chosen().length,sources:api.getSources().size,images:api.getImageCount()>0};}
  function target(tool){const elements=[tool.selector,...(tool.alternatives||[])].map(selector=>document.querySelector(selector)).filter(Boolean);return elements.find(el=>!el.matches(':disabled'))||elements[0];}
  function availability(tool){const el=target(tool);return toolAvailability(tool,state(),{exists:!!el,disabled:!!el?.matches(':disabled')});}
  function reveal(el){for(let p=el;p;p=p.parentElement)if(p.tagName==='DETAILS')p.open=true;el.scrollIntoView({block:'center',behavior:'instant'});const control=el.matches('input,button,select,textarea,[tabindex]')?el:el.querySelector('summary,input,select,button');control?.focus({preventScroll:true});el.classList.add('tool-located');setTimeout(()=>el.classList.remove('tool-located'),1800);}

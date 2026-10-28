@@ -22,9 +22,10 @@ export function installTasks(api) {
     const button = document.createElement('button'); button.type = 'button'; button.className = 'secondary'; button.dataset.task = id; button.textContent = name;
     button.onclick = () => apply(id); $('task-options').append(button);
   }
+  function canStart() { return !api.isBusy() && (task === 'layout' ? !$('free-layout').disabled : api.chosen().length > 0); }
   function refresh() {
     for (const button of $('task-options').children) button.disabled = api.isBusy();
-    $('task-start').disabled = api.isBusy() || !api.chosen().length;
+    $('task-start').disabled = !canStart();
   }
   function apply(value) {
     task = Object.hasOwn(tasks, value) ? value : 'all';
@@ -38,7 +39,7 @@ export function installTasks(api) {
     refresh();api.refreshToolHub?.();
   }
   $('task-start').onclick = () => {
-    if (api.isBusy() || !api.chosen().length) return;
+    if (!canStart()) return;
     if (task === 'edit') void api.openMarks(api.chosen()[0],'native');
     else if (task === 'capture') api.openCrop(api.chosen()[0]);
     else $(task === 'organize' ? 'preview-pdf' : task === 'layout' ? 'free-layout' : 'ocr-start').click();

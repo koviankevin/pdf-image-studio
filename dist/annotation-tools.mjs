@@ -1,5 +1,5 @@
-import {replacementBrowserFont,replacementFontMetrics,inverse,multiply,transformPoint} from './document-model.mjs?v=20261028-hub3';
-import {replacementFonts,replacementLayout,replacementMeasure} from './replacement-core.mjs?v=20261028-hub3';
+import {replacementBrowserFont,replacementFontMetrics,inverse,multiply,transformPoint} from './document-model.mjs?v=20261028-hub4';
+import {replacementFonts,replacementLayout,replacementMeasure} from './replacement-core.mjs?v=20261028-hub4';
 const numberLabel=value=>String(Math.round(value*100)/100);
 const fieldIds=['mark-text','mark-color','mark-size','mark-stroke','mark-font','mark-background','mark-width','mark-height','mark-padding-x','mark-padding-y'];
 const NS='http://www.w3.org/2000/svg';
