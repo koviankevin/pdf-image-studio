@@ -19,6 +19,8 @@ export default defineConfig(regression, {
     'browser/native-text.spec.mjs',
     'browser/tool-hub.spec.mjs',
     'browser/tool-state-matrix.spec.mjs',
+    'browser/control-readiness.spec.mjs',
+    'browser/long-task-visibility.spec.mjs',
     'browser/pdf-inspection.spec.mjs',
     'browser/tool-coverage.spec.mjs',
     'compatibility/*.spec.mjs',

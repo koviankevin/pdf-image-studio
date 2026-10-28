@@ -1,4 +1,4 @@
-import {transformPoint} from './document-model.mjs?v=20261028-hub4';
+import {transformPoint} from './document-model.mjs?v=20261028-hub5';
 
 // PDF text advances along the transform's baseline, which may be rotated or skewed.
 export function textItemBounds(item,transform=[1,0,0,1,0,0]){

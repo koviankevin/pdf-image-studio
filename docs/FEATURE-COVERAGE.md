@@ -14,7 +14,7 @@
 | 圖片轉 PDF 設定 (`image-import`) | A4 或原尺寸、方向與留白，套用於接著加入的圖片。 | [tool-coverage.spec.mjs](../tests/browser/tool-coverage.spec.mjs) |
 | 工作區與專案備份 (`workspaces`) | 新增、切換工作區；下載或匯入專案接續編輯。 | [productivity.spec.mjs](../tests/browser/productivity.spec.mjs)、[productivity-regression.spec.mjs](../tests/browser/productivity-regression.spec.mjs) |
 | 自動儲存與草稿 (`autosave`) | 查看本機儲存狀態、立即儲存及草稿管理。 | [autosave.spec.mjs](../tests/browser/autosave.spec.mjs) |
-| 我的工作範本 (`templates`) | 保存常用輸出、頁碼與 A4 版型設定。 | [studio.spec.mjs](../tests/browser/studio.spec.mjs) |
+| 我的工作範本 (`templates`) | 保存常用輸出、頁碼與 A4 版型設定。 | [studio.spec.mjs](../tests/browser/studio.spec.mjs)、[long-task-visibility.spec.mjs](../tests/browser/long-task-visibility.spec.mjs) |
 | 預覽合併 PDF (`pdf-preview`) | 依目前勾選頁序檢查輸出，再下載新 PDF。 | [multi-pdf.spec.mjs](../tests/browser/multi-pdf.spec.mjs)、[workflow.spec.mjs](../tests/browser/workflow.spec.mjs) |
 | 下載新 PDF (`pdf-download`) | 合併目前選取頁與已儲存的裁切、文字和 OCR。 | [multi-pdf.spec.mjs](../tests/browser/multi-pdf.spec.mjs)、[native-text.spec.mjs](../tests/browser/native-text.spec.mjs)、[replacement.spec.mjs](../tests/browser/replacement.spec.mjs) |
 
@@ -39,7 +39,7 @@
 | 原文編輯 (`native`) | 修改 Word 類 PDF 的單行原文區塊；字型可能不同。 | [native-text.spec.mjs](../tests/browser/native-text.spec.mjs) |
 | 掃描文字替換 (`replace-text`) | 框住舊字，以底色與新文字覆蓋外觀。 | [replacement.spec.mjs](../tests/browser/replacement.spec.mjs) |
 | 文字／螢光筆／箭頭／方框 (`annotations`) | 加註、移動、刪除與復原標記。 | [tool-coverage.spec.mjs](../tests/browser/tool-coverage.spec.mjs)、[autosave.spec.mjs](../tests/browser/autosave.spec.mjs)、[workflow.spec.mjs](../tests/browser/workflow.spec.mjs) |
-| 中文 OCR／擷取文字 (`ocr`) | 自動擷取或強制辨識，支援一般、單欄與雙欄。 | [scanned-ocr.spec.mjs](../tests/browser/scanned-ocr.spec.mjs)、[scan-conditions.spec.mjs](../tests/browser/scan-conditions.spec.mjs)、[two-column-ocr.spec.mjs](../tests/browser/two-column-ocr.spec.mjs) |
+| 中文 OCR／擷取文字 (`ocr`) | 自動擷取或強制辨識，支援一般、單欄與雙欄。 | [scanned-ocr.spec.mjs](../tests/browser/scanned-ocr.spec.mjs)、[scan-conditions.spec.mjs](../tests/browser/scan-conditions.spec.mjs)、[two-column-ocr.spec.mjs](../tests/browser/two-column-ocr.spec.mjs)、[long-task-visibility.spec.mjs](../tests/browser/long-task-visibility.spec.mjs) |
 | 檢視／校對辨識文字 (`ocr-review`) | 辨識完成後校對、複製或加入可搜尋 PDF。 | [scanned-ocr.spec.mjs](../tests/browser/scanned-ocr.spec.mjs)、[two-column-ocr.spec.mjs](../tests/browser/two-column-ocr.spec.mjs)、[tool-hub.spec.mjs](../tests/browser/tool-hub.spec.mjs) |
 | 框選區域 OCR (`regional-ocr`) | 開啟框選，拖曳後選「辨識框選區域的文字」。 | [safety-performance.spec.mjs](../tests/browser/safety-performance.spec.mjs)、[ease.spec.mjs](../tests/browser/ease.spec.mjs) |
 | 搜尋文件文字 (`search`) | 搜尋原文、OCR 與新增文字，點結果定位頁面。 | [productivity.spec.mjs](../tests/browser/productivity.spec.mjs)、[productivity-regression.spec.mjs](../tests/browser/productivity-regression.spec.mjs)、[native-text.spec.mjs](../tests/browser/native-text.spec.mjs) |
@@ -81,3 +81,5 @@
 0.12.1 在 `tool-hub.spec.mjs` 補驗移除全部頁面後的復原入口、只剩重做時的定位，以及未勾選頁面時開啟既有 OCR 校對。從入口定位不會直接操作；實際復原／重做及再次下載的 PDF 文字、尺寸與像素均需一致。
 
 0.12.2 補驗 A4 任務在未選頁、重新開啟草稿、工作區無頁面及空白排版時仍能接續；圖片零結果失敗／取消、部分結果取消與重試的入口狀態及實際輸出。`tool-state-matrix.spec.mjs` 另外對照 17 種一般狀態的 32 個入口與原有控制項。
+
+0.12.3 在桌面與 320px 寬度驗證收合設定後仍可停止 OCR 與套用範本，範本進度持續可見，取消後實際 PDF 文字、尺寸與像素一致。欄位群組載入改用實際 `:disabled` 狀態；`control-readiness.spec.mjs` 驗證自身與繼承停用，單元政策阻擋舊 matcher 寫法。

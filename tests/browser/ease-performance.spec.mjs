@@ -1,5 +1,5 @@
 import {writeFile} from 'node:fs/promises';
-import {test,expect} from './fixtures.mjs';
+import {test,expect,expectControlEnabled} from './fixtures.mjs';
 import {createFixtures} from '../support/pdfs.mjs';
 
 test('30 selected layout items move in animation frames without rendering more page previews',async({page},testInfo)=>{
@@ -9,7 +9,7 @@ test('30 selected layout items move in animation frames without rendering more p
     const create=URL.createObjectURL.bind(URL);URL.createObjectURL=blob=>{if(blob instanceof Blob&&blob.type==='image/jpeg'&&document.querySelector('#free-dialog[open]'))easeMetrics.previews++;return create(blob);};
   });
   await page.goto('/');await expect(page.locator('#file-input')).toBeEnabled();const {sources}=await createFixtures(),source=sources.get('A');await page.locator('#file-input').setInputFiles({name:source.name,mimeType:'application/pdf',buffer:Buffer.from(source.bytes)});await expect(page.locator('#file-input')).toBeEnabled();await page.locator('#free-layout').click();await expect(page.locator('#free-preview')).toBeEnabled();
-  for(let i=1;i<15;i++){await page.locator('#free-add-selected').click();await expect(page.locator('#free-controls')).toBeEnabled();}
+  for(let i=1;i<15;i++){await page.locator('#free-add-selected').click();await expectControlEnabled(page.locator('#free-controls'));}
   await expect(page.locator('#free-sheet [data-item]')).toHaveCount(30);await page.locator('#free-select-all').click();await expect(page.locator('#free-selection-count')).toContainText('已選 30');
   const initialWidth=Number(await page.locator('#free-width').inputValue());await page.locator('#free-width').fill(String(initialWidth*.5));await page.locator('#free-width').blur();
   await page.locator('#free-sheet').scrollIntoViewIfNeeded();

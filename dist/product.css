@@ -59,3 +59,5 @@
 @media(max-width:480px){.page-grid{grid-template-columns:minmax(0,1fr)}.page-thumb{height:220px}}
 
 .task-options button,#task-start{white-space:normal;max-width:100%}.tool-card p{overflow-wrap:anywhere}
+
+#template-status:empty{margin:0}

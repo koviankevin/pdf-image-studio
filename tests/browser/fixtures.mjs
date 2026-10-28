@@ -67,3 +67,5 @@ export const test = base.extend({
 });
 
 export {expect};
+
+export {expectControlEnabled} from '../support/control-state.mjs';

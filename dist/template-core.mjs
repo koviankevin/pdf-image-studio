@@ -1,6 +1,6 @@
-import {validSettings} from './workflow-core.mjs?v=20261028-hub4';
-import {sheetLayout} from './imposition-core.mjs?v=20261028-hub4';
-import {validateFreeLayout} from './free-layout-core.mjs?v=20261028-hub4';
+import {validSettings} from './workflow-core.mjs?v=20261028-hub5';
+import {sheetLayout} from './imposition-core.mjs?v=20261028-hub5';
+import {validateFreeLayout} from './free-layout-core.mjs?v=20261028-hub5';
 
 const oneOf=(...values)=>value=>values.includes(value);
 const number=(min,max,integer=false)=>value=>value.trim()!==''&&Number.isFinite(Number(value))&&Number(value)>=min&&Number(value)<=max&&(!integer||Number.isInteger(Number(value)));

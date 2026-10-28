@@ -1,7 +1,7 @@
-import {openProjectCatalog,projectDB} from './project-catalog.mjs?v=20261028-hub4';
-import {openDraftStore} from './draft-store.mjs?v=20261028-hub4';
-import {packProject,unpackProject} from './project-files.mjs?v=20261028-hub4';
-import {inspectStoredWorkspace} from './storage-summary.mjs?v=20261028-hub4';
+import {openProjectCatalog,projectDB} from './project-catalog.mjs?v=20261028-hub5';
+import {openDraftStore} from './draft-store.mjs?v=20261028-hub5';
+import {packProject,unpackProject} from './project-files.mjs?v=20261028-hub5';
+import {inspectStoredWorkspace} from './storage-summary.mjs?v=20261028-hub5';
 
 export async function installProjects(api){
   const {$}=api;

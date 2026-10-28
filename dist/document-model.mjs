@@ -1,7 +1,7 @@
-import {nativeOcrLines} from './native-stream.mjs?v=20261028-hub4';
+import {nativeOcrLines} from './native-stream.mjs?v=20261028-hub5';
 import {PDFDocument,rgb,pushGraphicsState,popGraphicsState,concatTransformationMatrix,setTextRenderingMode,rectangle,clip,endPath} from './vendor/pdf-lib/pdf-lib.mjs';
 
-import {replacementFonts,replacementLayout,replacementMeasure} from './replacement-core.mjs?v=20261028-hub4';
+import {replacementFonts,replacementLayout,replacementMeasure} from './replacement-core.mjs?v=20261028-hub5';
 
 export const transformPoint=(m,x,y)=>[m[0]*x+m[2]*y+m[4],m[1]*x+m[3]*y+m[5]];
 export function multiply(a,b){return[a[0]*b[0]+a[2]*b[1],a[1]*b[0]+a[3]*b[1],a[0]*b[2]+a[2]*b[3],a[1]*b[2]+a[3]*b[3],a[0]*b[4]+a[2]*b[5]+a[4],a[1]*b[4]+a[3]*b[5]+a[5]];}

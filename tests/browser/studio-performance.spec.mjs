@@ -1,5 +1,5 @@
 import {writeFile} from 'node:fs/promises';
-import {test,expect} from './fixtures.mjs';
+import {test,expect,expectControlEnabled} from './fixtures.mjs';
 import {comparisonFiles} from '../support/comparison.mjs';
 import {createFixtures} from '../support/pdfs.mjs';
 
@@ -30,6 +30,6 @@ test('50-page comparison stays bounded, responds to cancellation and releases wo
 test('A4 duplicates reuse preview images and retain only the active sheet in the DOM',async({page},testInfo)=>{
   await page.addInitScript(()=>{window.layoutPreviewRenders=0;const create=URL.createObjectURL.bind(URL);URL.createObjectURL=value=>{if(document.querySelector('#free-dialog[open]')&&value instanceof Blob&&value.type==='image/jpeg')layoutPreviewRenders++;return create(value);};});
   await page.goto('/');await expect(page.locator('#file-input')).toBeEnabled();const {sources}=await createFixtures(),source=sources.get('A');await page.locator('#file-input').setInputFiles({name:source.name,mimeType:'application/pdf',buffer:Buffer.from(source.bytes)});await expect(page.locator('#file-input')).toBeEnabled();await page.locator('#free-layout').click();await expect(page.locator('#free-preview')).toBeEnabled();
-  for(let sheet=1;sheet<10;sheet++){await page.locator('#free-sheet-add').click();await page.locator('#free-add-selected').click();await expect(page.locator('#free-controls')).toBeEnabled();await expect(page.locator('#free-sheet [data-item]')).toHaveCount(2);}
+  for(let sheet=1;sheet<10;sheet++){await page.locator('#free-sheet-add').click();await page.locator('#free-add-selected').click();await expectControlEnabled(page.locator('#free-controls'));await expect(page.locator('#free-sheet [data-item]')).toHaveCount(2);}
   expect(await page.evaluate(()=>layoutPreviewRenders)).toBe(2);await expect(page.locator('#free-sheet-select option')).toHaveCount(10);await expect(page.locator('#free-sheet [data-item]')).toHaveCount(2);const report=testInfo.outputPath('a4-performance.json');await writeFile(report,JSON.stringify({sheets:10,totalItems:20,visibleItems:2,previewImages:2}));await testInfo.attach('a4-performance.json',{path:report,contentType:'application/json'});
 });

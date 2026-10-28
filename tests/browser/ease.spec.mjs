@@ -1,4 +1,4 @@
-import {test,expect} from './fixtures.mjs';
+import {test,expect,expectControlEnabled} from './fixtures.mjs';
 import {createFixtures} from '../support/pdfs.mjs';
 import {downloadBytes,inspectPdf} from '../support/ocr-pdf.mjs';
 
@@ -22,7 +22,7 @@ test('task modes reuse original crop, PDF, A4 and OCR paths without changing fil
   await ready(page);await expect(page.locator('[data-task="all"]')).toHaveAttribute('aria-pressed','true');await expect(page.locator('#task-start')).toBeHidden();
   await load(page);await page.locator('#dpi').selectOption('600');await page.locator('#max-edge').fill('2560');await page.locator('#max-edge').blur();
   const original=await inspectPdf(page,await downloadBytes(page,page.locator('#export-pdf')));
-  await mode(page,'capture');await expect(page.locator('#image-output')).toBeVisible();await expect(page.locator('#pdf-output')).toBeHidden();await expect(page.locator('.ocr-settings')).toBeHidden();await page.locator('#task-start').click();await expect(page.locator('#crop-dialog')).toBeVisible();await expect(page.locator('#crop-controls')).toBeEnabled();await expect(page.locator('#crop-output-settings')).toContainText('600');await page.locator('#crop-close').click();
+  await mode(page,'capture');await expect(page.locator('#image-output')).toBeVisible();await expect(page.locator('#pdf-output')).toBeHidden();await expect(page.locator('.ocr-settings')).toBeHidden();await page.locator('#task-start').click();await expect(page.locator('#crop-dialog')).toBeVisible();await expectControlEnabled(page.locator('#crop-controls'));await expect(page.locator('#crop-output-settings')).toContainText('600');await page.locator('#crop-close').click();
   await mode(page,'organize');await expect(page.locator('#compare-open')).toBeVisible();await expect(page.locator('#image-output')).toBeHidden();await expect(page.locator('#a4-output')).toBeHidden();await page.locator('#task-start').click();await expect(page.locator('#proof-download')).toBeEnabled();expect(await inspectPdf(page,await downloadBytes(page,page.locator('#proof-download')))).toEqual(original);await page.locator('#proof-close').click();
   await mode(page,'layout');await expect(page.locator('#a4-output')).toBeVisible();await expect(page.locator('#compare-open')).toBeHidden();await page.locator('#task-start').click();await expect(page.locator('#free-preview')).toBeEnabled();await expect(page.locator('#free-sheet [data-item]')).toHaveCount(2);await page.locator('#free-close').click();
   await mode(page,'text');await expect(page.locator('.ocr-settings')).toBeVisible();await expect(page.locator('.ocr-settings')).toHaveAttribute('open','');await page.locator('#task-start').click();await expect(page.locator('#ocr-dialog')).toBeVisible();await expect(page.locator('#ocr-lines textarea').first()).toHaveValue('SOURCE_A_PAGE_1');await page.locator('#ocr-close').click();
@@ -69,7 +69,7 @@ for(const task of ['capture','all'])test(`regional OCR from ${task} keeps cancel
   await page.route('**/vendor/ocr/tesseract.mjs',async route=>{const response=await route.fetch();requested();await gate;await route.fulfill({response});});
   await ready(page);await load(page);await mode(page,task);
   if(task==='all'){await page.locator('.ocr-settings > summary').click();await page.getByRole('button',{name:'框選第 1 頁',exact:true}).click();}else await page.locator('#task-start').click();
-  await expect(page.locator('#crop-controls')).toBeEnabled();await page.locator('#crop-ocr').click();await loading;
+  await expectControlEnabled(page.locator('#crop-controls'));await page.locator('#crop-ocr').click();await loading;
   try{
     await expect(page.locator(`[data-task="${task==='all'?'all':'text'}"]`)).toHaveAttribute('aria-pressed','true');await expect(page.locator('#ocr-cancel')).toBeVisible();await page.locator('#ocr-cancel').click();await expect(page.locator('#file-input')).toBeEnabled({timeout:2000});await expect(page.locator('#status')).toContainText('已停止');
   }finally{release();}

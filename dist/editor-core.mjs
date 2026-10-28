@@ -1,7 +1,7 @@
-import {removeNativeText} from './native-stream.mjs?v=20261028-hub4';
+import {removeNativeText} from './native-stream.mjs?v=20261028-hub5';
 import {PDFDocument,degrees} from './vendor/pdf-lib/pdf-lib.mjs';
 import {parsePages} from './utils.mjs';
-import {drawPageExtras,embedChineseFont} from './document-model.mjs?v=20261028-hub4';
+import {drawPageExtras,embedChineseFont} from './document-model.mjs?v=20261028-hub5';
 import {checkpoint} from './cancellation.mjs';
 
 export function parseSplitRanges(text,count){

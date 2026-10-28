@@ -1,6 +1,6 @@
-import {pdfCanvasContext} from './pdf-canvas.mjs?v=20261028-hub4';
+import {pdfCanvasContext} from './pdf-canvas.mjs?v=20261028-hub5';
 import * as pdfjs from './vendor/pdfjs/pdf.mjs';
-import {imposePdf, sheetLayout} from './imposition-core.mjs?v=20261028-hub4';
+import {imposePdf, sheetLayout} from './imposition-core.mjs?v=20261028-hub5';
 
 export function installImposition(api) {
   const {$} = api;

@@ -1,4 +1,4 @@
-import {test, expect} from './fixtures.mjs';
+import {test, expect,expectControlEnabled} from './fixtures.mjs';
 import {createFixtures} from '../support/pdfs.mjs';
 import {downloadBytes, inspectPdf} from '../support/ocr-pdf.mjs';
 
@@ -97,7 +97,7 @@ for (const width of [1440, 390]) test(`free A4 at ${width}px preserves edits, ti
 
 test('a crop can enter free A4 without changing the original workspace crop', async ({page}) => {
   await ready(page); await page.getByRole('button', {name: '框選第 1 頁', exact: true}).click();
-  await expect(page.locator('#crop-controls')).toBeEnabled();
+  await expectControlEnabled(page.locator('#crop-controls'));
   await page.locator('#crop-width').fill('75'); await page.locator('#crop-height').fill('50');
   await page.locator('#crop-add-layout').click(); await expect(page.locator('#free-preview')).toBeEnabled();
   await expect(page.locator('#free-item option')).toHaveCount(2);
@@ -124,7 +124,7 @@ test('closing and reopening PDF proof cannot show a superseded page selection', 
 test('adding another crop preserves manually positioned pieces and keyboard selection', async ({page}) => {
   await ready(page);
   await page.getByRole('button', {name:'框選第 1 頁', exact:true}).click();
-  await expect(page.locator('#crop-controls')).toBeEnabled();
+  await expectControlEnabled(page.locator('#crop-controls'));
   await page.locator('#crop-width').fill('75'); await page.locator('#crop-height').fill('50');
   await page.locator('#crop-add-layout').click(); await expect(page.locator('#free-preview')).toBeEnabled();
   await page.locator('#free-width').fill('70'); await page.locator('#free-width').blur();
@@ -134,7 +134,7 @@ test('adding another crop preserves manually positioned pieces and keyboard sele
   const before=await page.locator('#free-sheet [data-item]').first().locator('rect').first().evaluate(e=>['x','y','width','height'].map(k=>e.getAttribute(k)));
   await page.locator('#free-close').click();
   await page.getByRole('button', {name:'框選第 2 頁', exact:true}).click();
-  await expect(page.locator('#crop-controls')).toBeEnabled();
+  await expectControlEnabled(page.locator('#crop-controls'));
   await page.locator('#crop-add-layout').click(); await expect(page.locator('#free-item option')).toHaveCount(3);
   const original=page.locator(`#free-sheet [data-item="${first}"]`);
   expect(await original.locator('rect').first().evaluate(e=>['x','y','width','height'].map(k=>e.getAttribute(k)))).toEqual(before);
@@ -148,12 +148,12 @@ test('unapplied annotation and crop edits warn even after the workspace was expo
   await downloadBytes(page,page.locator('#proof-download')); await page.locator('#proof-close').click();
   expect(await pending(page)).toBe(false);
   await page.getByRole('button',{name:'標記第 1 頁',exact:true}).click();
-  await expect(page.locator('#mark-fields')).toBeEnabled(); expect(await pending(page)).toBe(false);
+  await expectControlEnabled(page.locator('#mark-fields')); expect(await pending(page)).toBe(false);
   await page.locator('[data-tool="text"]').click(); await page.locator('#mark-center').click();
   expect(await pending(page)).toBe(true);
   await page.locator('#mark-close').click(); expect(await pending(page)).toBe(false);
   await page.getByRole('button',{name:'框選第 1 頁',exact:true}).click();
-  await expect(page.locator('#crop-controls')).toBeEnabled(); expect(await pending(page)).toBe(false);
+  await expectControlEnabled(page.locator('#crop-controls')); expect(await pending(page)).toBe(false);
   await page.locator('#crop-width').fill('50'); expect(await pending(page)).toBe(true);
   await page.locator('#crop-close').click(); expect(await pending(page)).toBe(false);
 });

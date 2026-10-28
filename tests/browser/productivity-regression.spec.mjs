@@ -1,4 +1,4 @@
-import {test,expect} from './fixtures.mjs';
+import {test,expect,expectControlEnabled} from './fixtures.mjs';
 import {createFixtures} from '../support/pdfs.mjs';
 import {PDFDocument,StandardFonts,degrees} from '../../dist/vendor/pdf-lib/pdf-lib.mjs';
 
@@ -29,7 +29,7 @@ for(const stage of ['catalog-read','draft-open'])test(`startup recovers if anoth
 test('cropping across rotated native text keeps visible text searchable',{tag:'@compatibility'},async({page})=>{
   const source=await PDFDocument.create(),font=await source.embedFont(StandardFonts.Helvetica),sheet=source.addPage([200,200]);sheet.drawText('VERTICAL_VISIBLE',{x:100,y:10,size:12,font,rotate:degrees(90)});sheet.drawText('OUTSIDE',{x:5,y:20,size:8,font});
   await ready(page);await page.locator('#file-input').setInputFiles({name:'rotated-text.pdf',mimeType:'application/pdf',buffer:Buffer.from(await source.save())});await expect(page.locator('#file-input')).toBeEnabled();
-  await page.getByRole('button',{name:'框選第 1 頁',exact:true}).click();await expect(page.locator('#crop-controls')).toBeEnabled();for(const [name,value]of [['x','42.5'],['y','65'],['width','10'],['height','10']])await page.locator('#crop-'+name).fill(value);await page.locator('#crop-apply').click();await expect(page.locator('#file-input')).toBeEnabled();
+  await page.getByRole('button',{name:'框選第 1 頁',exact:true}).click();await expectControlEnabled(page.locator('#crop-controls'));for(const [name,value]of [['x','42.5'],['y','65'],['width','10'],['height','10']])await page.locator('#crop-'+name).fill(value);await page.locator('#crop-apply').click();await expect(page.locator('#file-input')).toBeEnabled();
   await page.locator('#document-query').fill('VERTICAL_VISIBLE');await expect(page.locator('#search-status')).toContainText('找到 1 頁');await page.locator('#document-query').fill('OUTSIDE');await expect(page.locator('#search-status')).toContainText('找到 0 頁');
   await page.locator('#ocr-start').click();await expect(page.locator('#ocr-dialog')).toBeVisible();await expect(page.locator('#ocr-save')).toBeEnabled();await expect(page.locator('#ocr-lines textarea')).toHaveValue('VERTICAL_VISIBLE');
 });

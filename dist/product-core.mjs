@@ -1,4 +1,4 @@
-export const PRODUCT_VERSION='0.12.2';
+export const PRODUCT_VERSION='0.12.3';
 export const RELEASE_DATE='2026-10-28';
 export const RELEASE_CHANNEL='商品化驗收版';
 export const issueCodes=new Set(['APP_RUNTIME','ASYNC_TASK','OPERATION_FAILED','FILE_IMPORT','PDF_EXPORT','IMAGE_EXPORT','STORAGE','BACKUP','DEMO','UPDATE']);

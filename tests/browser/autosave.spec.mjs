@@ -1,4 +1,4 @@
-import {test, expect} from './fixtures.mjs';
+import {test, expect,expectControlEnabled} from './fixtures.mjs';
 import {createFixtures} from '../support/pdfs.mjs';
 import {downloadBytes, inspectPdf} from '../support/ocr-pdf.mjs';
 import {createScanPdf,scanCases} from '../support/scans.mjs';
@@ -14,7 +14,7 @@ const warns = page => page.evaluate(()=>!window.dispatchEvent(new Event('beforeu
 
 test('closing the page restores sources, page order, selection, rotation and searchable annotations', {tag:'@compatibility'}, async ({page,context,baseURL})=>{
   await load(page,['A','B']);
-  await page.getByRole('button',{name:'標記第 1 頁',exact:true}).click(); await expect(page.locator('#mark-fields')).toBeEnabled();
+  await page.getByRole('button',{name:'標記第 1 頁',exact:true}).click(); await expectControlEnabled(page.locator('#mark-fields'));
   await page.locator('[data-tool="text"]').click(); await page.locator('#mark-text').fill('紙間本機草稿'); await page.locator('#mark-center').click();
   await page.locator('#mark-save').click(); await expect(page.locator('#file-input')).toBeEnabled();
   await page.getByRole('button',{name:'旋轉第 2 頁',exact:true}).click(); await expect(page.locator('#file-input')).toBeEnabled();
@@ -31,23 +31,23 @@ test('closing the page restores sources, page order, selection, rotation and sea
 });
 
 test('unapplied annotation text and crop fields resume in their editors', async ({page})=>{
-  await load(page); await page.getByRole('button',{name:'標記第 1 頁',exact:true}).click(); await expect(page.locator('#mark-fields')).toBeEnabled();
+  await load(page); await page.getByRole('button',{name:'標記第 1 頁',exact:true}).click(); await expectControlEnabled(page.locator('#mark-fields'));
   await page.locator('[data-tool="text"]').click(); await page.locator('#mark-center').click();
   await page.locator('#mark-text').fill('尚未按儲存的文字'); await saved(page); await page.reload();
   await expect(page.locator('#mark-dialog')).toBeVisible(); await expect(page.locator('#mark-text')).toHaveValue('尚未按儲存的文字');
   await expect(page.locator('#mark-overlay [data-mark]')).toHaveCount(1);
   await page.locator('#mark-close').click(); await saved(page);
-  await page.getByRole('button',{name:'框選第 1 頁',exact:true}).click(); await expect(page.locator('#crop-controls')).toBeEnabled();
-  await page.locator('#crop-rotate-right').click(); await expect(page.locator('#crop-controls')).toBeEnabled();
+  await page.getByRole('button',{name:'框選第 1 頁',exact:true}).click(); await expectControlEnabled(page.locator('#crop-controls'));
+  await page.locator('#crop-rotate-right').click(); await expectControlEnabled(page.locator('#crop-controls'));
   await page.locator('#crop-width').fill('55'); await saved(page); await page.reload();
-  await expect(page.locator('#crop-dialog')).toBeVisible(); await expect(page.locator('#crop-controls')).toBeEnabled();
+  await expect(page.locator('#crop-dialog')).toBeVisible(); await expectControlEnabled(page.locator('#crop-controls'));
   await expect(page.locator('#crop-width')).toHaveValue('55'); await page.locator('#crop-apply').click();
   await expect(page.locator('.page-card').first()).toContainText('已裁切'); await expect(page.locator('.page-card').first()).toContainText('已旋轉 90°');
 });
 
 test('free A4 positions, crops and an unblurred Chinese title survive reload', {tag:'@compatibility'}, async ({page})=>{
   await page.setViewportSize({width:390,height:1100}); await load(page);
-  await page.getByRole('button',{name:'框選第 1 頁',exact:true}).click(); await expect(page.locator('#crop-controls')).toBeEnabled();
+  await page.getByRole('button',{name:'框選第 1 頁',exact:true}).click(); await expectControlEnabled(page.locator('#crop-controls'));
   await page.locator('#crop-width').fill('75'); await page.locator('#crop-add-layout').click(); await expect(page.locator('#free-preview')).toBeEnabled();
   await page.locator('#free-width').fill('80'); await page.locator('#free-width').blur(); await page.locator('#free-x').fill('22'); await page.locator('#free-x').blur();
   const piece=await page.locator('#free-item').inputValue(); await page.locator('#free-add-title').click(); await expect(page.locator('#free-text')).toBeVisible();

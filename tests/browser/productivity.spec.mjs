@@ -1,4 +1,4 @@
-import {test,expect} from './fixtures.mjs';
+import {test,expect,expectControlEnabled} from './fixtures.mjs';
 import {createFixtures} from '../support/pdfs.mjs';
 import {downloadBytes,inspectPdf} from '../support/ocr-pdf.mjs';
 import {zipSync,strToU8} from '../../dist/vendor/fflate/fflate.mjs';
@@ -29,7 +29,7 @@ test('named workspaces switch independently and retain the original legacy draft
 test('portable backups restore files, annotations and A4 items in a fresh browser context',{tag:'@compatibility'},async({page,browser,baseURL})=>{
   await ready(page);await load(page);await rename(page,'跨電腦專案');
   await page.locator('#free-layout').click();await expect(page.locator('#free-preview')).toBeEnabled();await page.locator('#free-add-title').click();await expect(page.locator('#free-text')).toBeVisible();await page.locator('#free-text').fill('備份保留版面');await page.locator('#free-text').blur();await page.locator('#free-close').click();
-  await page.getByRole('button',{name:'標記第 1 頁',exact:true}).click();await expect(page.locator('#mark-fields')).toBeEnabled();await page.locator('[data-tool="text"]').click();await page.locator('#mark-text').fill('備份保留中文');await page.locator('#mark-center').click();await page.locator('#mark-save').click();await expect(page.locator('#file-input')).toBeEnabled();
+  await page.getByRole('button',{name:'標記第 1 頁',exact:true}).click();await expectControlEnabled(page.locator('#mark-fields'));await page.locator('[data-tool="text"]').click();await page.locator('#mark-text').fill('備份保留中文');await page.locator('#mark-center').click();await page.locator('#mark-save').click();await expect(page.locator('#file-input')).toBeEnabled();
   const expected=await pdf(page);await panel(page);const backup=await downloadBytes(page,page.locator('#project-backup'));
   const context=await browser.newContext(),next=await context.newPage();
   try{await next.goto(baseURL);await expect(next.locator('#dropzone')).toHaveAttribute('aria-disabled','false');await panel(next);
@@ -64,7 +64,7 @@ test('duplicate, blank insertion and replacement from a multi-page PDF support u
 
 test('shortcuts route undo and redo to workspace, annotations and A4 without stealing text editing',async({page})=>{
   await ready(page);await load(page);await page.getByRole('button',{name:'移除第 2 頁',exact:true}).click();await page.locator('body').click({position:{x:4,y:4}});await page.keyboard.press('Control+z');await expect(page.locator('#page-count')).toHaveText('2');await page.keyboard.press('Control+Shift+z');await expect(page.locator('#page-count')).toHaveText('1');await page.keyboard.press('Control+z');
-  await page.getByRole('button',{name:'標記第 1 頁',exact:true}).click();await expect(page.locator('#mark-fields')).toBeEnabled();await page.locator('[data-tool="text"]').click();await page.locator('#mark-center').click();await expect(page.locator('#mark-overlay [data-mark]')).toHaveCount(1);await page.keyboard.press('Control+z');await expect(page.locator('#mark-overlay [data-mark]')).toHaveCount(0);await page.keyboard.press('Control+y');await expect(page.locator('#mark-overlay [data-mark]')).toHaveCount(1);
+  await page.getByRole('button',{name:'標記第 1 頁',exact:true}).click();await expectControlEnabled(page.locator('#mark-fields'));await page.locator('[data-tool="text"]').click();await page.locator('#mark-center').click();await expect(page.locator('#mark-overlay [data-mark]')).toHaveCount(1);await page.keyboard.press('Control+z');await expect(page.locator('#mark-overlay [data-mark]')).toHaveCount(0);await page.keyboard.press('Control+y');await expect(page.locator('#mark-overlay [data-mark]')).toHaveCount(1);
   await page.locator('#mark-text').focus();await page.keyboard.type('native');await page.keyboard.press('Control+z');await expect(page.locator('#mark-overlay [data-mark]')).toHaveCount(1);await page.locator('#mark-close').click();
   await page.locator('#free-layout').click();await expect(page.locator('#free-preview')).toBeEnabled();await page.locator('#free-add-title').click();await expect(page.locator('#free-item option')).toHaveCount(4);await page.locator('#free-sheet').focus();await page.keyboard.press('Control+z');await expect(page.locator('#free-item option')).toHaveCount(3);await page.keyboard.press('Control+Shift+z');await expect(page.locator('#free-item option')).toHaveCount(4);await page.locator('#free-close').click();
   await page.locator('body').click({position:{x:4,y:4}});await page.keyboard.press('Control+f');await expect(page.locator('#document-query')).toBeFocused();
@@ -129,7 +129,7 @@ test('reviewing OCR from more than one 100-page batch remains recoverable',async
 });
 
 test('selecting an existing item and cancelling a drag preserve redo in both editors',async({page})=>{
-  await ready(page);await load(page);await page.getByRole('button',{name:'標記第 1 頁',exact:true}).click();await expect(page.locator('#mark-fields')).toBeEnabled();await page.locator('[data-tool="text"]').click();await page.locator('#mark-center').click();await page.locator('#mark-center').click();await page.locator('#mark-undo').click();await page.locator('[data-tool="select"]').click();
+  await ready(page);await load(page);await page.getByRole('button',{name:'標記第 1 頁',exact:true}).click();await expectControlEnabled(page.locator('#mark-fields'));await page.locator('[data-tool="text"]').click();await page.locator('#mark-center').click();await page.locator('#mark-center').click();await page.locator('#mark-undo').click();await page.locator('[data-tool="select"]').click();
   await page.locator('#mark-overlay [data-mark] text').click();await expect(page.locator('#mark-redo')).toBeEnabled();
   let box=await page.locator('#mark-overlay [data-mark] text').boundingBox();await page.mouse.move(box.x+box.width/2,box.y+box.height/2);await page.mouse.down();await page.mouse.move(box.x+box.width/2+8,box.y+box.height/2+8);await page.locator('#mark-overlay').dispatchEvent('pointercancel');await page.mouse.up();await expect(page.locator('#mark-redo')).toBeEnabled();await page.locator('#mark-redo').click();await expect(page.locator('#mark-overlay [data-mark]')).toHaveCount(2);await page.locator('#mark-close').click();
   await page.locator('#free-layout').click();await expect(page.locator('#free-preview')).toBeEnabled();await page.locator('#free-add-title').click();await page.locator('#free-undo').click();await page.locator('#free-sheet [data-item]').first().click();await expect(page.locator('#free-redo')).toBeEnabled();

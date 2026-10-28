@@ -1,5 +1,5 @@
 import {PDFDocument} from './vendor/pdf-lib/pdf-lib.mjs';
-import {embedChineseFont,inverse} from './document-model.mjs?v=20261028-hub4';
+import {embedChineseFont,inverse} from './document-model.mjs?v=20261028-hub5';
 
 export function installPageOperations(api){
   const {$}=api;
