@@ -22,7 +22,7 @@ export async function releaseManifest(){
     }
   }
   await walk(root);assets.sort((a,b)=>a.file<b.file?-1:a.file>b.file?1:0);
-  const info={version:PRODUCT_VERSION,date:RELEASE_DATE,channel:'readiness',buildId:digest(JSON.stringify(assets)),files:assets.length};
+  const info={version:PRODUCT_VERSION,date:RELEASE_DATE,channel:'stable',buildId:digest(JSON.stringify(assets)),files:assets.length};
   return {info,manifest:{format:'shijian-release',version:1,canonicalization:'utf8-lf-binary-raw',...info,assets}};
 }
 export async function writeRelease({check=false}={}){

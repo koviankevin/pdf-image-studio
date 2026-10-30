@@ -1,6 +1,6 @@
-export const PRODUCT_VERSION='0.12.3';
-export const RELEASE_DATE='2026-10-28';
-export const RELEASE_CHANNEL='商品化驗收版';
+export const PRODUCT_VERSION='1.0.0';
+export const RELEASE_DATE='2026-10-30';
+export const RELEASE_CHANNEL='正式版';
 export const issueCodes=new Set(['APP_RUNTIME','ASYNC_TASK','OPERATION_FAILED','FILE_IMPORT','PDF_EXPORT','IMAGE_EXPORT','STORAGE','BACKUP','DEMO','UPDATE']);
 export function validateReleaseInfo(value){
   if(!value||typeof value!=='object'||typeof value.version!=='string'||value.version.length>64||!/^\d+\.\d+\.\d+(?:-[a-zA-Z0-9.-]+)?$/.test(value.version)||!/^\d{4}-\d{2}-\d{2}$/.test(value.date)||!/^\w[\w -]{0,60}$/.test(value.channel)||!/^[a-f0-9]{64}$/.test(value.buildId)||!Number.isSafeInteger(value.files)||value.files<1||value.files>10000)throw Error('版本資訊格式不正確。');

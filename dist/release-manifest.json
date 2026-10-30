@@ -1,10 +1,10 @@
 {
   "format": "shijian-release",
-  "version": "0.12.3",
+  "version": "1.0.0",
   "canonicalization": "utf8-lf-binary-raw",
-  "date": "2026-10-28",
-  "channel": "readiness",
-  "buildId": "2d6cb5b55c248181ce686640130e56067c5f27ab2e413bf86af61ae76436eb08",
+  "date": "2026-10-30",
+  "channel": "stable",
+  "buildId": "9a75a5a37b7570d52adad30a036a119cb82260353c19a16db143ca935cdb3db8",
   "files": 279,
   "assets": [
     {
@@ -184,8 +184,8 @@
     },
     {
       "file": "product-core.mjs",
-      "size": 3757,
-      "sha256": "bc414dfef4da627ca53d873dd27e2b1212b240a316d4a088f0b46b9c9805623b"
+      "size": 3747,
+      "sha256": "e83ec26c471878d4b2731c4348781aebc372d6c403aca6ee7ba8879b04982ab0"
     },
     {
       "file": "product-tools.mjs",
