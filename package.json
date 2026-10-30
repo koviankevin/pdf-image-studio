@@ -3,6 +3,8 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "ocr:benchmark": "node scripts/ocr-benchmark.mjs",
+    "test:ocr:benchmark": "node --test tests/unit/ocr-benchmark.test.mjs",
     "test": "npm run test:ci && npm run test:unit && npm run test:browser",
     "test:unit": "node --test tests/unit/*.test.mjs",
     "test:browser": "playwright test",
@@ -23,3 +25,4 @@
   },
   "version": "1.0.0"
 }
+

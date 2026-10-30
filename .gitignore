@@ -7,3 +7,6 @@ node_modules/
 playwright-report/
 test-results/
 ocr-experiment-results/
+tests/real-scans/private/
+tests/real-scans/*.local.json
+
