@@ -1,5 +1,14 @@
 # 多來源 PDF 與掃描 OCR 回歸測試
 
+## 真實掃描準確率基準（準備中）
+
+新增 opt-in `npm run ocr:benchmark -- MANIFEST PREDICTIONS OUTPUT`，驗證來源／校對宣告、
+影像及真值雜湊，對現有三種模式分別計算嚴格／舊 CER、關鍵欄位與區塊閱讀順序。
+正式收錄仍為 **0 頁**；缺樣本或缺模式時直接失敗，不能將空報告當成準確率通過。
+工具尚不自動執行瀏覽器；格式、24 頁收集目標與資料候選限制見 [真實掃描基準](real-scans/README.md)。
+評分與防誤用測試為 `npm run test:ocr:benchmark`，亦沿用既有 `test:unit` 自動執行。
+未更動舊合成 fixture、CER、正式 OCR 或發布閘門。
+
 ## 原生文字編輯
 
 `browser/native-text.spec.mjs` 以合成 Word 類 TJ／內嵌中文字型 PDF，驗證原字不再擷取、彩色底與區域外像素相等、其他原文／Form／影像／第二頁保留、字型替換、PDF／PNG／A4、搜尋、復原重做、清空／刪除此編輯、旋轉後滑鼠選取、320 px、超出／不支援提示、未失焦草稿、跨 context 備份、字型失敗重試、延遲識別與預覽取消、Worker 回收及載入期間連點。前兩案納入 Firefox／WebKit；CI 用兩個 worker 執行隔離 context／伺服器。完整相容性案例與時間預算依目前設定檔，失敗仍阻擋部署。
@@ -362,3 +371,4 @@ PNG 簽章、實際／宣告尺寸、300 KB 上限及上傳目錄內的檔案；
 `long-task-visibility.spec.mjs` 在 1440px 與 320px 驗證 OCR／範本設定收合後的停止與進度、取消回復及實際 PDF。測試在真實模組匯入／PNG 編碼邊界等待，不以固定延遲猜測處理階段。
 
 `support/control-state.mjs` 的 `expectControlEnabled` 檢查實際 CSS `:disabled`，包含祖先 fieldset 停用；44 處 fieldset 等待已改用此 helper。`control-readiness.spec.mjs` 驗證停用時 helper 確實等待失敗、啟用後通過；`unit/control-state-policy.test.mjs` 防止已登錄 fieldset 使用會誤判的通用 enabled/disabled matcher。原有輸出與取消斷言保留。
+
